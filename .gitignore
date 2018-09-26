@@ -1,0 +1,10 @@
+.vagrant
+tmp
+*.log
+*/*.retry
+*/*.pem
+*/*.tfvars
+*/.DS_Store
+*/*.pub
+*.pub
+ansible
