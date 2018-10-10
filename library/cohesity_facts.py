@@ -108,18 +108,19 @@ import json
 import traceback
 from ansible.module_utils.urls import open_url, urllib_error
 try:
-  # => TODO:  Find a better way to handle this!!!
-  # => When unit testing, we need to look in the correct location however, when run via ansible,
-  # => the expectation is that the modules will live under ansible.
-  from module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
-  from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
+    # => TODO:  Find a better way to handle this!!!
+    # => When unit testing, we need to look in the correct location however, when run via ansible,
+    # => the expectation is that the modules will live under ansible.
+    from module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
 except:
-  from ansible.module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
-  from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
+    from ansible.module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
 
 
 class FactsError(Exception):
     pass
+
 
 def get_cluster(module):
 
@@ -135,7 +136,7 @@ def get_cluster(module):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
         cluster = open_url(url=uri, headers=headers,
-                         validate_certs=validate_certs)
+                           validate_certs=validate_certs)
         cluster = json.loads(cluster.read())
     except urllib_error.HTTPError as e:
         try:
@@ -147,6 +148,7 @@ def get_cluster(module):
         else:
             raise FactsError(e)
     return cluster
+
 
 def get_nodes(module):
 
@@ -161,7 +163,8 @@ def get_nodes(module):
         uri = "https://" + server + "/irisservices/api/v1/public/nodes"
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
-        nodes = open_url(url=uri, headers=headers, validate_certs=validate_certs)
+        nodes = open_url(url=uri, headers=headers,
+                         validate_certs=validate_certs)
         nodes = json.loads(nodes.read())
     except urllib_error.HTTPError as e:
         try:

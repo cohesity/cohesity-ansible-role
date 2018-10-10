@@ -1,2 +1,5 @@
 ---
 # defaults file for cohesity.modules
+cohesity_server:
+cohesity_admin:
+cohesity_password:
