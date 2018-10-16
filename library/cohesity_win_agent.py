@@ -14,9 +14,9 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 module: cohesity_win_agent
-short_description: Installs and Remove the Cohesity Agent on Windows Hosts.
+short_description: Management of Cohesity Physical Windows Agent
 description:
-    - Installation and Management of the Cohesity Agent.
+    - This module will install and remove the Cohesity Physical Agent on Windows based hosts.
 version_added: '2.6.5'
 author: 'Jeremy Goodrum (github.com/goodrum)'
 

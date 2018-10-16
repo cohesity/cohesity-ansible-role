@@ -16,7 +16,6 @@ import json
 from ansible.module_utils.urls import open_url, urllib_error
 import ansible.module_utils.six.moves.urllib.error as urllib_error
 from ansible.module_utils._text import to_bytes, to_native, to_text
-from urllib2 import URLError
 
 
 class ParameterViolation(Exception):
@@ -85,11 +84,10 @@ class Authentication(object):
                 response = json.loads(data.read())
                 self.token = response['accessToken']
                 return self.token
-            except URLError as e:
-                # => Capture and report any errors:
-                # TODO:  We need to figure out what kind of errors that we
-                # might have with this one.
-                raise TokenException(e)
+            except IOError as error:
+                raise TokenException(error)
+            except urllib_error.URLError as error:
+                raise TokenException(error.read())
         else:
             return self.token
 
@@ -127,3 +125,16 @@ class Authentication(object):
                 self.get_token(server)
             else:
                 raise TokenException(e)
+
+
+def get__cohesity_auth__token(self):
+    server = self.params.get('cluster')
+    validate_certs = self.params.get('validate_certs')
+    auth = Authentication()
+    auth.username = self.params.get('username')
+    auth.password = self.params.get('password')
+
+    if self.params.get('domain'):
+        auth.domain = self.params.get('domain')
+
+    return auth.get_token(server)

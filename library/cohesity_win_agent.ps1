@@ -100,10 +100,10 @@ Function New-CohesityToken {
 }
 
 Function Get-CohesityAgent {
-  Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | ?{$_.DisplayName -like "Cohesity Agent *"}
+  Get-ItemProperty HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\* | Where-Object{$_.DisplayName -like "Cohesity Agent *"}
 }
 
-Function Check-CohesityAgent {
+Function Find-CohesityAgent {
     param(
         [parameter(valuefrompipeline=$true)]
         $state
@@ -281,8 +281,7 @@ Function Remove-CohesityAgent {
 
 $results = @{
     changed = $false
-    args = ""
-    actions = @() # More for debug purposes
+    msg = @() # More for debug purposes
 }
 
 $params = Parse-Args $args -supports_check_mode $true
@@ -292,10 +291,10 @@ $module = @{}
 $module.check_mode     = Get-AnsibleParam -obj $params -name "_ansible_check_mode" -type "bool" -default $false
 
 # => Standard Parameters
-$module.server         = Get-AnsibleParam -obj $params -name "server" -type "str" -failifempty $true
+$module.server         = Get-AnsibleParam -obj $params -name "cluster" -type "str" -failifempty $true
 $module.username       = Get-AnsibleParam -obj $params -name "username" -type "str" -failifempty $true
 $module.password       = Get-AnsibleParam -obj $params -name "password" -type "str" -failifempty $true
-$module.validate_certs = Get-AnsibleParam -obj $params -name "validate_certs" -type "str" -failifempty $true
+$module.validate_certs = Get-AnsibleParam -obj $params -name "validate_certs" -type "str"
 
 # => Agent Specific Parameters
 $module.service_user     = Get-AnsibleParam -obj $params -name "service_user" -type "str"
@@ -307,23 +306,48 @@ $module.state            = Get-AnsibleParam -obj $params -name "state" -type "st
 
 # => Check if the Agent is currently installed and handle State validation.
 # => If the State should be absent then return the uninstaller string.
-$uninstaller = Check-CohesityAgent -State $module.state
 
+if ( $module.check_mode ){
+  switch($module.state){
+    "present" {
+      if ($uninstaller) {
+        $results.msg = "Check Mode: Agent is currently installed.  No changes"
+      }
+      else {
+        $results.msg = "Check Mode: Agent is currently not installed.  This action would install the Agent."
+      }
+    }
+    "absent" {
+      if ( $module.check_mode ){
+        if ($uninstaller) {
+          $results.msg = "Check Mode: Agent is currently installed.  This action would uninstall the Agent."
+        }
+        else {
+          $results.msg = "Check Mode: Agent is currently not installed.  No changes."
+        }
+        break
+      }
+    }
+    default {
+      $results = @{
+          changed = $false
+          state   = $module.state
+      }
+      Fail-Json $results "Invalid State Selected"
+    }
+  }
+  Exit-Json $results
+}
+else {
+  $uninstaller = Find-CohesityAgent -State $module.state
+}
 switch($module.state){
   "present" {
-    if ( $module.check_mode ){
-      $results.actions = "CheckMode: Will install the Cohesity Agent"
-      break
-    }
     $results.args = $module
     $results.filename = Invoke-AgentDownload -Self $module
     Install-CohesityAgent -Self $results
   }
   "absent" {
-    if ( $module.check_mode ){
-      $results.actions = "CheckMode: Will remove the Cohesity Agent" + (if ($module.preservesettings) { " and will PreserveSettings. "})
-      break
-    }
     if ( $module.preservesettings ) {
       Remove-CohesityAgent -Uninstaller $uninstaller -PreserveSettings $True
     }

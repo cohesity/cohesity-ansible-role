@@ -7,6 +7,21 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 from ansible.module_utils.basic import AnsibleModule
 
+import json
+import traceback
+from ansible.module_utils.urls import open_url, urllib_error
+try:
+    # => TODO:  Find a better way to handle this!!!
+    # => When unit testing, we need to look in the correct location however, when run via ansible,
+    # => the expectation is that the modules will live under ansible.
+    from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
+    from module_utils.storage.cohesity.cohesity_hints import *
+except:
+    from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
+    from ansible.module_utils.storage.cohesity.cohesity_hints import *
+
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
     'supported_by': 'community',
@@ -101,81 +116,10 @@ nodes:
   }
 ]"
 '''
-# NOTE: Required to find the location of the modules when testing
-# TODO:  Strip this from the final
-
-import json
-import traceback
-from ansible.module_utils.urls import open_url, urllib_error
-try:
-    # => TODO:  Find a better way to handle this!!!
-    # => When unit testing, we need to look in the correct location however, when run via ansible,
-    # => the expectation is that the modules will live under ansible.
-    from module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
-except:
-    from ansible.module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
 
 
 class FactsError(Exception):
     pass
-
-
-def get_cluster(module):
-
-    server = module.params.get('server')
-    validate_certs = module.params.get('validate_certs')
-    auth = Authentication()
-    auth.username = module.params.get('username')
-    auth.password = module.params.get('password')
-    token = auth.get_token(server)
-
-    try:
-        uri = "https://" + server + "/irisservices/api/v1/public/basicClusterInfo"
-        headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
-        cluster = open_url(url=uri, headers=headers,
-                           validate_certs=validate_certs)
-        cluster = json.loads(cluster.read())
-    except urllib_error.HTTPError as e:
-        try:
-            msg = json.loads(e.read())['message']
-        except:
-            # => For HTTPErrors that return no JSON with a message (bad errors), we
-            # => will need to handle this by setting the msg variable to some default.
-            msg = "no-json-data"
-        else:
-            raise FactsError(e)
-    return cluster
-
-
-def get_nodes(module):
-
-    server = module.params.get('server')
-    validate_certs = module.params.get('validate_certs')
-    auth = Authentication()
-    auth.username = module.params.get('username')
-    auth.password = module.params.get('password')
-    token = auth.get_token(server)
-
-    try:
-        uri = "https://" + server + "/irisservices/api/v1/public/nodes"
-        headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
-        nodes = open_url(url=uri, headers=headers,
-                         validate_certs=validate_certs)
-        nodes = json.loads(nodes.read())
-    except urllib_error.HTTPError as e:
-        try:
-            msg = json.loads(e.read())['message']
-        except:
-            # => For HTTPErrors that return no JSON with a message (bad errors), we
-            # => will need to handle this by setting the msg variable to some default.
-            msg = "no-json-data"
-        else:
-            raise FactsError(e)
-    return nodes
 
 
 def main():
@@ -185,11 +129,35 @@ def main():
         changed=False,
         cluster=''
     )
+    params = dict(
+        server=module.params.get('cluster'),
+        username=module.params.get('username'),
+        password=module.params.get('password'),
+        validate_certs=module.params.get('validate_certs'),
+        is_deleted=False
+    )
+    params['token'] = get__cohesity_auth__token(module)
     try:
-        results['cluster'] = get_cluster(module)
-        results['cluster']['nodes'] = get_nodes(module)
+        results['cluster'] = get__cluster(params)
+        results['cluster']['nodes'] = get__nodes(params)
+        results['cluster']['protection'] = dict()
+        results['cluster']['protection']['sources'] = dict()
+        env_types = ['GenericNas']
+        for env_type in env_types:
+            params['environment'] = env_type
+            results['cluster']['protection'][
+                'sources'][env_type] = get__prot_source__all(params)
+        params.pop('environment')
+        results['cluster']['protection'][
+            'policies'] = get__prot_policy__all(params)
+        results['cluster']['protection']['jobs'] = get__prot_job__all(params)
+        results['cluster'][
+            'storage_domains'] = get__storage_domain_id__all(params)
+        results['cluster']['protection'][
+            'runs'] = get__protection_run__all(params)
+
     except Exception as error:
-        module.fail_json(msg="Something went wrong",
+        module.fail_json(msg="Failure while collecting Cohesity Facts",
                          exception=traceback.format_exc())
     module.exit_json(**results)
 

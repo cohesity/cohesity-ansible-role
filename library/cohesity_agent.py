@@ -5,7 +5,23 @@
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
+
+import os
+import shutil
+import json
+from tempfile import mkstemp, mkdtemp
 from ansible.module_utils.basic import AnsibleModule
+from ansible.module_utils.urls import open_url, urllib_error
+
+try:
+    # => When unit testing, we need to look in the correct location however, when run via ansible,
+    # => the expectation is that the modules will live under ansible.
+    from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+except:
+    from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -15,11 +31,30 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = '''
 module: cohesity_agent
-short_description: Installs and Remove the Cohesity Agent.
+short_description: Management of Cohesity Physical Agent
 description:
-    - Installation and Management of the Cohesity Agent.
+    - This module will install and remove the Cohesity Physical Agent on Linux based hosts.
 version_added: '2.6.5'
-author: 'Jeremy Goodrum (github.com/goodrum)'
+author:
+  - Jeremy Goodrum (github.com/exospheredata)
+  - Cohesity, Inc
+
+options:
+  service_user:
+    description:
+      - Username underwhich the Cohesity Agent will be installed and run.
+      - This user must exist unless I(create_user=True) is also configured.
+    default: 'cohesityagent'
+  service_group:
+    description:
+      - Group underwhich permissions will be configured for the Cohesity Agent configuration.
+      - This group must exist unless I(create_user=True) is also configured.
+    default: 'cohesityagent'
+  create_user:
+    description:
+      - When enabled, will create a new user and group based on the values of I(service_user) and I(service_group)
+    type: bool
+    default: True
 
 extends_documentation_fragment:
     - cohesity
@@ -40,30 +75,20 @@ EXAMPLES = '''
     username: admin
     password: password
     state: present
-    user: cagent
-    group: cagent
+    service_user: cagent
+    service_group: cagent
     create_user: True
+
+# Remves the current installed agent from the host
+- cohesity_agent:
+    server: cohesity.lab
+    username: admin
+    password: password
+    state: absent
 '''
 
 RETURN = '''
 '''
-
-import os
-import shutil
-import json
-import traceback
-from tempfile import mkstemp, mkdtemp
-from ansible.module_utils.urls import open_url, urllib_error
-
-try:
-    # => TODO:  Find a better way to handle this!!!
-    # => When unit testing, we need to look in the correct location however, when run via ansible,
-    # => the expectation is that the modules will live under ansible.
-    from module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
-except:
-    from ansible.module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
 
 
 class InstallError(Exception):
@@ -107,17 +132,9 @@ def download_agent(module, path):
 
     os_type = "Linux"
 
-    server = module.params.get('server')
+    server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
-    auth = Authentication()
-    auth.username = module.params.get('username')
-    auth.password = module.params.get('password')
-    ####
-
-    # TODO:  Add Domain Information
-
-    ####
-    token = auth.get_token(server)
+    token = get__cohesity_auth__token(module)
 
     try:
         uri = "https://" + server + \
@@ -139,14 +156,18 @@ def download_agent(module, path):
         finally:
             f.close()
     except urllib_error.HTTPError as e:
-        try:
-            msg = json.loads(e.read())['message']
-        except:
-            # => For HTTPErrors that return no JSON with a message (bad errors), we
-            # => will need to handle this by setting the msg variable to some default.
-            msg = "no-json-data"
+        error_msg = json.loads(e.read())
+        if 'message' in error_msg:
+            module.fail_json(
+                msg="Failed to download the Cohesity Agent", reason=error_msg['message'])
         else:
-            raise InstallError(e)
+            raise__cohesity_exception__handler(e, module)
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
     return filename
 
 
@@ -216,14 +237,15 @@ def main():
     argument_spec.update(
         dict(
             state=dict(choices=['present', 'absent'], default='present'),
-            user=dict(default='cohesityagent', aliases=['service_user']),
-            group=dict(default='cohesityagent', aliases=['service_group']),
+            service_user=dict(default='cohesityagent'),
+            service_group=dict(default='cohesityagent'),
             create_user=dict(default=True, type='bool')
         )
     )
 
     # => Create a new module object
-    module = AnsibleModule(argument_spec=argument_spec)
+    module = AnsibleModule(argument_spec=argument_spec,
+                           supports_check_mode=True)
     results = dict(
         changed=False,
         version=False,
@@ -236,10 +258,36 @@ def main():
     )
     success = True
     try:
-        if module.params.get('state') == "present":
+        if module.check_mode:
+            results = check_agent(module, results)
+            check_mode_results = dict(
+                changed=False,
+                msg="Check Mode: Agent is Currently not Installed",
+                version=""
+            )
+            if module.params.get('state') == "present":
+                if results['version']:
+                    check_mode_results[
+                        'msg'] = "Check Mode: Agent is currently installed.  No changes"
+                else:
+                    check_mode_results[
+                        'msg'] = "Check Mode: Agent is currently not installed.  This action would install the Agent."
+                    check_mode_results['version'] = results['version']
+            else:
+                if results['version']:
+                    check_mode_results[
+                        'msg'] = "Check Mode: Agent is currently installed.  This action would uninstall the Agent."
+                    check_mode_results['version'] = results['version']
+                else:
+                    check_mode_results[
+                        'msg'] = "Check Mode: Agent is currently not installed.  No changes."
+            module.exit_json(**check_mode_results)
+
+        elif module.params.get('state') == "present":
             # => Check if the Cohesity Agent is currently installed and only trigger the install
             # => if the agent does not exist.
             results = check_agent(module, results)
+
             if not results['version']:
                 results['filename'] = download_agent(module, tempdir)
                 results['changed'], results['message'] = install_agent(
@@ -269,11 +317,11 @@ def main():
         else:
             # => This error should never happen based on the set assigned to the parameter.
             # => However, in case, we should raise an appropriate error.
-            raise "Invalid State selected: {}".format(
-                module.params.get('state'))
+            module.fail_json(msg="Invalid State selected: {}".format(
+                module.params.get('state')), changed=False)
     except Exception as error:
-        module.fail_json(msg="Unexpected error caused while managing the Cohesity Agent.",
-                         exception=traceback.format_exc())
+        pass
+
     finally:
         # => We should delete the downloaded installer regardless of our success.  This could be debated
         # => either way but seems like a better choice.

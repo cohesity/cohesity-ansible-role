@@ -3,3 +3,30 @@
 cohesity_server:
 cohesity_admin:
 cohesity_password:
+cohesity_validate_certs: True
+
+cohesity_agent:
+  state: "present"
+  reboot: False
+
+cohesity_source:
+  state: present
+  endpoint: ""
+  environment: ""
+  host_type: ""
+  vmware_type: ""
+  source_username: ""
+  source_password: ""
+  nas_protocol: ""
+  nas_username: ""
+  nas_password: ""
+
+cohesity_protection:
+  state: present
+  job_name: ""
+  endpoint: ""
+  environment: ""
+  storage_domain: DefaultIddStorageDomain
+  policy: Bronze
+  delete_backups: False
+  cancel_active: False

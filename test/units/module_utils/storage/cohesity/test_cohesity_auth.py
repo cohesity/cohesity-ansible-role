@@ -1,36 +1,45 @@
 #!/usr/bin/python
+# Make coding more python3-ish
+from __future__ import (absolute_import, division)
+__metaclass__ = type
 
-
-# NOTE: Required to find the location of the modules when testing
-# TODO:  Strip this from the final
-import sys
-import os
-sys.path.append(os.path.realpath('.'))
-sys.path.append(os.path.realpath('/vagrant/ansible/lib'))
-sys.path.append(os.path.join(os.path.dirname(__file__), 'helpers'))
-
-# => Import native Python Modules
-import pytest
-import json
-
-# => Import Ansible Test Modules
-from ansible.compat.tests import unittest
-from ansible.compat.tests.mock import call, create_autospec, patch
-from ansible.module_utils.six import StringIO
-import ansible.module_utils.six.moves.urllib.error as urllib_error
+# # NOTE: Required to find the location of the modules when testing
+from sys import path as sys_path
+from os import path as os_path
+from os import environ
 
 # => Import Cohesity Modules and Helpers
-from cohesity_helper import reg_verify
-from module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
 
+current_path = sys_path
+try:
+    sys_path.append(os_path.join(os_path.dirname(
+        __file__), '../../../../../module_utils'))
+    sys_path.append(os_path.join(os_path.dirname(__file__),
+                                 'helpers'))
+    from storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation, get__cohesity_auth__token
+    # => Set the default Module and ModuleUtility Paths
+    global_module_path = 'library'
+    global_module_util_path = 'storage.cohesity'
+    from cohesity_helper import *
+except:
+    # => Reset the correct path Location
+    sys_path = current_path
+    from ansible.modules_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation, get__cohesity_auth__token
+    sys_path.append(os_path.join(environ['PYTHONPATH'], '../test'))
+    from units.module_utils.storage.cohesity.helpers.cohesity_helper import *
+    # => Set the default Module and ModuleUtility Paths
+    global_module_path = 'ansible.modules.storage.cohesity'
+    global_module_util_path = 'ansible.module_utils.storage.cohesity'
 
 # => Success Test Cases
+
+
 class TestAuthentication(unittest.TestCase):
     ''' Cohesity Authentication Successful Tests '''
 
     def setUp(self):
         self.patcher = patch(
-            'module_utils.storage.cohesity.cohesity_auth.open_url')
+            global_module_util_path + '.cohesity_auth.open_url')
         self.open_url = self.patcher.start()
 
     def tearDown(self):
@@ -96,19 +105,38 @@ class TestAuthentication(unittest.TestCase):
                         "Accept": "application/json", "Authorization": "Bearer mytoken"}, validate_certs=False)
         self.assertEqual(expected, self.open_url.call_args)
 
+    def test__get__cohesity_auth__token(self):
+        module = FakeModule(
+            cluster="cohesity.lab",
+            username="admin",
+            password="password",
+            validate_certs=True
+        )
+
+        check_patcher = patch(
+            global_module_util_path + '.cohesity_auth.Authentication.get_token')
+        mock_check = check_patcher.start()
+        mock_check.return_value = 'mytoken'
+
+        return_id = get__cohesity_auth__token(module)
+
+        assert return_id == 'mytoken'
+        check_patcher.stop()
+
 # => Failure Test Cases
 
 
 class TestFailedAuthentication(unittest.TestCase):
 
     def test_raise_exception_when_url_invalid(self):
+
         cohesity_auth = Authentication()
         cohesity_auth.username = "administrator"
         cohesity_auth.password = "password"
         with pytest.raises(TokenException) as error:
             cohesity_auth.get_token('bad-host-domain')
         assert error.type == TokenException
-        assert reg_verify(
+        assert cohesity___reg_verify__helper(
             '.+(Name or service not known).+').__check__(str(error.value))
 
     def test__get__auth_token_no_username(self):
@@ -120,7 +148,7 @@ class TestFailedAuthentication(unittest.TestCase):
             Authentication().get_token(server)
         assert error.type == ParameterViolation
         error_list = str(error.value)
-        print error_list
+
         assert error_list.index('Username is a required Parameter')
 
     def test__get__auth_token_no_password(self):
@@ -134,7 +162,7 @@ class TestFailedAuthentication(unittest.TestCase):
             cohesity_auth.get_token(server)
         assert error.type == ParameterViolation
         error_list = str(error.value)
-        print error_list
+
         assert error_list.index('Password is a required Parameter')
 
 # => Failure Test Cases
@@ -144,7 +172,7 @@ class TestTokenRefresh(unittest.TestCase):
 
     def setUp(self):
         self.patcher = patch(
-            'module_utils.storage.cohesity.cohesity_auth.open_url')
+            global_module_util_path + '.cohesity_auth.open_url')
         self.open_url = self.patcher.start()
 
     def tearDown(self):
@@ -157,7 +185,7 @@ class TestTokenRefresh(unittest.TestCase):
         # => the call to the method `check_token` and force it to return False. This
         # => should trigger the Code to return back to the `get_token` method.
         check_patcher = patch(
-            'module_utils.storage.cohesity.cohesity_auth.Authentication.check_token')
+            global_module_util_path + '.cohesity_auth.Authentication.check_token')
         mock_check = check_patcher.start()
         mock_check.return_value = False
 
@@ -194,7 +222,7 @@ class TestTokenRefresh(unittest.TestCase):
         # => should trigger the Code to return back the current Token from the
         # => `get_token` method.
         check_patcher = patch(
-            'module_utils.storage.cohesity.cohesity_auth.Authentication.check_token')
+            global_module_util_path + '.cohesity_auth.Authentication.check_token')
         mock_check = check_patcher.start()
         mock_check.return_value = True
 
@@ -220,7 +248,7 @@ class TestTokenRefresh(unittest.TestCase):
         # => the call to the method `check_token` and force it to return False. This
         # => should trigger the Code to return back to the `get_token` method.
         check_patcher = patch(
-            'module_utils.storage.cohesity.cohesity_auth.open_url')
+            global_module_util_path + '.cohesity_auth.open_url')
         mock_check = check_patcher.start()
         check_var = mock_check.return_value
 
@@ -259,7 +287,7 @@ class TestTokenRefresh(unittest.TestCase):
         # => the call to the method `check_token` and force it to return False. This
         # => should trigger the Code to return back to the `get_token` method.
         check_patcher = patch(
-            'module_utils.storage.cohesity.cohesity_auth.open_url')
+            global_module_util_path + '.cohesity_auth.open_url')
         mock_check = check_patcher.start()
         mock_check.side_effect = urllib_error.HTTPError(
             uri,
@@ -280,7 +308,7 @@ class TestTokenRefresh(unittest.TestCase):
         with pytest.raises(TokenException) as error:
             cohesity_auth.check_token(server)
         assert error.type == TokenException
-        assert reg_verify('.+(Unauthorized)').__check__(str(error.value))
+        assert cohesity___reg_verify__helper('.+(Unauthorized)').__check__(str(error.value))
 
     def test__exception__check_token(self):
         ''' Test to see if a token refresh will handle an exception. '''
@@ -292,7 +320,7 @@ class TestTokenRefresh(unittest.TestCase):
         # => the call to the method `check_token` and force it to return False. This
         # => should trigger the Code to return back to the `get_token` method.
         check_patcher = patch(
-            'module_utils.storage.cohesity.cohesity_auth.open_url')
+            global_module_util_path + '.cohesity_auth.open_url')
         mock_check = check_patcher.start()
         mock_check.side_effect = urllib_error.HTTPError(
             uri,
@@ -313,5 +341,5 @@ class TestTokenRefresh(unittest.TestCase):
         with pytest.raises(TokenException) as error:
             cohesity_auth.check_token(server)
         assert error.type == TokenException
-        assert reg_verify(
+        assert cohesity___reg_verify__helper(
             '.+(Internal Server Error)').__check__(str(error.value))

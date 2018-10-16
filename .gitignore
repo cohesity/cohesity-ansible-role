@@ -9,3 +9,4 @@ tmp
 *.pub
 ansible
 *.pyc
+*/.pytest_cache

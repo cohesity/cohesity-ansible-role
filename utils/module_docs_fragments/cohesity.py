@@ -21,29 +21,29 @@ class ModuleDocFragment(object):
     # Core Cohesity Options documentation fragment
     DOCUMENTATION = """
 options:
-  server:
+  cluster:
     description:
       - IP or FQDN for the Cohesity Cluster
-    aliases: ['Cohesity_server', 'cluster']
-  username:
+    required: true
+  cohesity_admin:
     description:
       - Username with which Ansible will connect to the Cohesity Cluster
-    aliases: ['cohesity_user', 'admin_name']
-  password:
+    required: true
+  cohesity_password:
     description:
       - Password belonging to the selected Username.  This parameter will not be logged.
-    aliases: ['cohesity_password', 'admin_pass']
+    required: true
   validate_certs:
     description:
       - Switch determines if SSL Validation should be enabled.
     type: bool
-    default: 'no'
-  security_token:
-    description:
-      - Access Token with permisions to connect to the Cohesity Cluster.  This parameter will not be logged.
-    aliases: ['access_token']
+    default: False
+
 requirements:
-  - "python >= 2.6"
+  - A physical or virtual Cohesity system. The modules were developed with Cohesity version 6.1.0
+  - Ansible 2.6
+  - Python >= 2.6
+
 notes:
-  - "TODO: add notes"
+  - Currently, the Ansible Module requires Full Cluster Administrator access.
 """
