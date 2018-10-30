@@ -33,13 +33,23 @@ DOCUMENTATION = '''
 module: cohesity_agent
 short_description: Management of Cohesity Physical Agent
 description:
-    - This module will install and remove the Cohesity Physical Agent on Linux based hosts.
+    - Ansible Module used to deploy or remove the Cohesity Physical Agent from supported Linux Machines.
+    - When executed in a playbook, the Cohesity Agent installation will be validated and the appropriate
+    - state action will be applied.  The most recent version of the Cohesity Agent will be automatically
+    - downloaded to the host.
 version_added: '2.6.5'
 author:
   - Jeremy Goodrum (github.com/exospheredata)
   - Cohesity, Inc
 
 options:
+  state:
+    description:
+      - Determines if the agent should be C(present) or C(absent) from the host
+    choices:
+      - present
+      - absent
+    default: 'present'
   service_user:
     description:
       - Username underwhich the Cohesity Agent will be installed and run.
@@ -65,25 +75,25 @@ EXAMPLES = '''
 # Install the current version of the agent on Linux
 - cohesity_agent:
     server: cohesity.lab
-    username: admin
-    password: password
+    cohesity_admin: admin
+    cohesity_password: password
     state: present
 
 # Install the current version of the agent with custom User and Group
 - cohesity_agent:
     server: cohesity.lab
-    username: admin
-    password: password
+    cohesity_admin: admin
+    cohesity_password: password
     state: present
     service_user: cagent
     service_group: cagent
     create_user: True
 
-# Remves the current installed agent from the host
+# Removes the current installed agent from the host
 - cohesity_agent:
     server: cohesity.lab
-    username: admin
-    password: password
+    cohesity_admin: admin
+    cohesity_password: password
     state: absent
 '''
 
@@ -196,7 +206,7 @@ def install_agent(module, filename):
     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
     # => try..except will give us a clean backwards compatibility.
     try:
-        cmd = "{} --nox11 --noprogress -- --install --yes".format(filename)
+        cmd = "{0} --nox11 --noprogress -- --install --yes".format(filename)
     except:
         cmd = "%s --nox11 --noprogress -- --install --yes" % filename
 
@@ -218,7 +228,7 @@ def remove_agent(module, filename):
     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
     # => try..except will give us a clean backwards compatibility.
     try:
-        cmd = "{} --nox11 --noprogress -- --full-uninstall --yes".format(
+        cmd = "{0} --nox11 --noprogress -- --full-uninstall --yes".format(
             filename)
     except:
         cmd = "%s --nox11 --noprogress -- --full-uninstall --yes" % filename
@@ -227,7 +237,7 @@ def remove_agent(module, filename):
     # => Any return code other than 0 is considered a failure.
     if rc:
         installation_failures(
-            module, stdout, "Cohesity Agent is partially installed")
+            module, out, "Cohesity Agent is partially installed")
     return (True, "Successfully Removed the Cohesity agent")
 
 
@@ -317,7 +327,7 @@ def main():
         else:
             # => This error should never happen based on the set assigned to the parameter.
             # => However, in case, we should raise an appropriate error.
-            module.fail_json(msg="Invalid State selected: {}".format(
+            module.fail_json(msg="Invalid State selected: {0}".format(
                 module.params.get('state')), changed=False)
     except Exception as error:
         pass

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Make coding more python3-ish
 from __future__ import (absolute_import, division)
 __metaclass__ = type
@@ -20,13 +19,15 @@ try:
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'library'
     global_module_util_path = 'storage.cohesity'
-    from cohesity_helper import *
+    from cohesity_helper import unittest, patch, call, json, \
+        urllib_error, StringIO, pytest, cohesity___reg_verify__helper, FakeModule
 except:
     # => Reset the correct path Location
     sys_path = current_path
     from ansible.modules_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation, get__cohesity_auth__token
     sys_path.append(os_path.join(environ['PYTHONPATH'], '../test'))
-    from units.module_utils.storage.cohesity.helpers.cohesity_helper import *
+    from units.module_utils.storage.cohesity.helpers.cohesity_helper import unittest, patch, call, json, \
+        urllib_error, StringIO, pytest, cohesity___reg_verify__helper, FakeModule
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'ansible.modules.storage.cohesity'
     global_module_util_path = 'ansible.module_utils.storage.cohesity'
@@ -308,7 +309,8 @@ class TestTokenRefresh(unittest.TestCase):
         with pytest.raises(TokenException) as error:
             cohesity_auth.check_token(server)
         assert error.type == TokenException
-        assert cohesity___reg_verify__helper('.+(Unauthorized)').__check__(str(error.value))
+        assert cohesity___reg_verify__helper(
+            '.+(Unauthorized)').__check__(str(error.value))
 
     def test__exception__check_token(self):
         ''' Test to see if a token refresh will handle an exception. '''

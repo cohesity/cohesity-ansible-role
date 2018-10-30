@@ -24,4 +24,7 @@
     password: "{{ cohesity_password }}"
     validate_certs: "{{ cohesity_validate_certs }}"
     state: "{{ cohesity_agent.state }}"
+    service_user: "{{ cohesity_agent.service_user | default('cohesityagent') }}"
+    service_group: "{{ cohesity_agent.service_group | default('cohesityagent') }}"
+    create_user: "{{ cohesity_agent.create_user | default(True)}}"
   tags: always

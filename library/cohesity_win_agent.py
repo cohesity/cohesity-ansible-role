@@ -16,11 +16,21 @@ DOCUMENTATION = '''
 module: cohesity_win_agent
 short_description: Management of Cohesity Physical Windows Agent
 description:
-    - This module will install and remove the Cohesity Physical Agent on Windows based hosts.
+    - Ansible Module used to deploy or remove the Cohesity Physical Agent from supported Windows Machines.
+    - When executed in a playbook, the Cohesity Agent installation will be validated and the appropriate
+    - state action will be applied.  The most recent version of the Cohesity Agent will be automatically
+    - downloaded to the host.
 version_added: '2.6.5'
 author: 'Jeremy Goodrum (github.com/goodrum)'
 
 options:
+  state:
+    description:
+      - Determines if the agent should be C(present) or C(absent) from the host
+    choices:
+      - present
+      - absent
+    default: 'present'
   service_user:
     description:
       - Username with which Cohesity Agent will be installed
@@ -29,7 +39,7 @@ options:
       - Password belonging to the selected Username.  This parameter will not be logged.
   install_type:
     description:
-      - Installation type for the Cohesity Agent
+      - Installation type for the Cohesity Agent on Windows
     choices:
       - volcbt
       - fscbt
@@ -41,12 +51,6 @@ options:
       - Should the settings be retained when uninstalling the Cohesity Agent
     type: bool
     default: 'no'
-  state:
-    description:
-      - Determines if the agent should be installed or removed
-    choices:
-      - present
-      - absent
 
 
 extends_documentation_fragment:
@@ -55,21 +59,29 @@ requirements: []
 '''
 
 EXAMPLES = '''
-# Install the current version of the agent on Linux
-- cohesity_agent:
+# Install the current version of the agent on Windows
+- cohesity_win_agent:
     server: cohesity.lab
     username: admin
     password: password
     state: present
 
 # Install the current version of the agent with custom Service Username/Password
-- cohesity_agent:
+- cohesity_win_agent:
     server: cohesity.lab
     username: admin
     password: password
     state: present
     service_user: cagent
     service_password: cagent
+
+# Install the current version of the agent using FileSystem ChangeBlockTracker
+- cohesity_win_agent:
+    server: cohesity.lab
+    username: admin
+    password: password
+    state: present
+    install_type: fscbt
 '''
 
 RETURN = '''

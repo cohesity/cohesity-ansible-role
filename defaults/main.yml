@@ -7,6 +7,12 @@ cohesity_validate_certs: True
 
 cohesity_agent:
   state: "present"
+  service_user: "cohesityagent"
+  service_password: ""
+  service_group: "cohesityagent"
+  create_user: True
+  install_type: "volcbt"
+  preservesettings: False
   reboot: False
 
 cohesity_source:

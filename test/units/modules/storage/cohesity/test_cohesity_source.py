@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Make coding more python3-ish
 from __future__ import (absolute_import, division)
 __metaclass__ = type
@@ -15,17 +14,21 @@ try:
     sys_path.append(os_path.join(os_path.dirname(__file__), '../../../../../'))
     sys_path.append(os_path.join(os_path.dirname(__file__),
                                  '../../../module_utils/storage/cohesity/helpers'))
-    import library.cohesity_source as cohesity_source
+    from library import cohesity_source
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'library'
     global_module_util_path = 'module_utils.storage.cohesity'
-    from cohesity_helper import *
+    from cohesity_helper import unittest, FakeModule, ModuleTestCase, set_module_args, json, \
+        patch, AnsibleExitJson, AnsibleFailJson, cohesity___reg_verify__helper, pytest
 except:
     # => Reset the correct path Location
     sys_path = current_path
-    import ansible.modules.storage.cohesity.cohesity_source as cohesity_source
+    from ansible.modules.storage.cohesity import cohesity_source
     sys_path.append(os_path.join(environ['PYTHONPATH'], '../test'))
-    import units.module_utils.storage.cohesity.helpers.cohesity_helper as cohesity_helper
+    from units.module_utils.storage.cohesity.helpers.cohesity_helper import unittest, FakeModule, \
+        ModuleTestCase, set_module_args, json, \
+        patch, AnsibleExitJson, AnsibleFailJson, \
+        cohesity___reg_verify__helper, pytest
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'ansible.modules.storage.cohesity'
     global_module_util_path = 'ansible.module_utils.storage.cohesity'

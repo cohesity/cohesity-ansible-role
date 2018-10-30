@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # cohesity_authentication
 #
@@ -24,6 +23,6 @@ def cohesity_common_argument_spec():
 
 
 def raise__cohesity_exception__handler(error, module):
-        module.fail_json(msg="Unexpected error caused while managing the Cohesity Protection Source.",
-                         error_details=str(error),
-                         error_class=type(error).__name__)
+    module.fail_json(msg="Unexpected error caused while managing the Cohesity Protection Source.",
+                     error_details=str(error),
+                     error_class=type(error).__name__)

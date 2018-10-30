@@ -25,16 +25,26 @@ DOCUMENTATION = '''
 module: cohesity_source
 short_description: Management of Cohesity Protection Sources
 description:
-    - This module will register and remove Cohesity Protection Sources based on Environment type.
+    - Ansible Module used to register or remove the Cohesity Protection Sources to/from a Cohesity Cluster.
+    - When executed in a playbook, the Cohesity Protection Source will be validated and the appropriate
+    - state action will be applied.
 version_added: '2.6.5'
 author:
   - Jeremy Goodrum (github.com/exospheredata)
   - Cohesity, Inc
 
 options:
+  state:
+    description:
+      - Determines the state of the Protection Source
+    choices:
+      - present
+      - absent
+    default: 'present'
   endpoint:
     description:
-      - Specifies the network endpoint of the Protection Source where it is reachable. It could be an URL or hostname or an IP address of the Protection Source.
+      - Specifies the network endpoint of the Protection Source where it is reachable. It could
+      - be an URL or hostname or an IP address of the Protection Source or a NAS Share/Export Path.
     required: yes
     aliases:
       - hostname
@@ -42,10 +52,11 @@ options:
   environment:
     description:
       - Specifies the environment type (such as VMware or SQL) of the Protection Source this Job
-      - is protecting. Supported environment types include 'Physical', 'VMware'
+      - is protecting. Supported environment types include 'Physical', 'VMware', 'GenericNas'
     choices:
       - VMware
       - Physical
+      - GenericNas
     required: yes
   host_type:
     description:
@@ -110,7 +121,7 @@ options:
     description:
       - Specifies the type of connection for the NAS Mountpoint.
       - SMB Share paths must be in \\\\server\\share format.
-      - Required when I(state=present) and I(environment=Generic)
+      - Required when I(state=present) and I(environment=GenericNas)
     choices:
       - NFS
       - SMB
@@ -119,19 +130,12 @@ options:
     description:
       - Specifies username to access the target NAS Environment.
       - Supported Format is Username or Domain\\Username
-      - Required when I(state=present) and I(environment=Generic) and I(nas_protocol=SMB)
+      - Required when I(state=present) and I(environment=GenericNas) and I(nas_protocol=SMB)
   nas_password:
     description:
       - Specifies the password to accessthe target NAS Environment.
       - This parameter will not be logged.
-      - Required when I(state=present) and I(environment=Generic) and I(nas_protocol=SMB)
-  state:
-    description:
-      - Determines the state of the Protection Job
-    choices:
-      - present
-      - absent
-    default: 'present'
+      - Required when I(state=present) and I(environment=GenericNas) and I(nas_protocol=SMB)
 
 extends_documentation_fragment:
     - cohesity
@@ -164,6 +168,8 @@ EXAMPLES = '''
     password: password
     endpoint: myvcenter.host.lab
     environment: VMware
+    source_username: admin@vcenter.local
+    source_password: vmware
     vmware_type: Vcenter
     state: present
 
@@ -454,14 +460,13 @@ def main():
     argument_spec.update(
         dict(
             state=dict(choices=['present', 'absent'], default='present'),
-            endpoint=dict(type='str', required=True, aliases=[
-                          'hostname', 'ip_address']),
+            endpoint=dict(type='str', required=True),
             # => Currently, the only supported environments types are list in the choices
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
                 choices=['VMware', 'Physical', 'GenericNas'],
-                default='Physical'
+                required=True
             ),
             host_type=dict(choices=['Linux', 'Windows',
                                     'Aix'], default='Linux'),
@@ -476,7 +481,7 @@ def main():
                 default='VCenter'
             ),
             source_username=dict(type='str'),
-            source_password=dict(no_log=True),
+            source_password=dict(type='str', no_log=True),
             nas_protocol=dict(choices=['NFS', 'SMB'], default='NFS'),
             nas_username=dict(type='str'),
             nas_password=dict(type='str', no_log=True)
@@ -584,7 +589,7 @@ def main():
     else:
         # => This error should never happen based on the set assigned to the parameter.
         # => However, in case, we should raise an appropriate error.
-        module.fail_json(msg="Invalid State selected: {}".format(
+        module.fail_json(msg="Invalid State selected: {0}".format(
             module.params.get('state')), changed=False)
 
     module.exit_json(**results)

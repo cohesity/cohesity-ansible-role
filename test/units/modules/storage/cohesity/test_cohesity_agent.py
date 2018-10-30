@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Make coding more python3-ish
 from __future__ import (absolute_import, division)
 __metaclass__ = type
@@ -40,14 +39,14 @@ try:
     # => If we are testing within the role, then we should modify the
     # => path to include this Role (assuming we are at the root.)
     sys_path.append(os_path.realpath('.'))
-    import library.cohesity_agent as cohesity_agent
+    from library import cohesity_agent
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'library'
     global_module_util_path = 'module_utils.storage.cohesity'
 except:
     # => Reset the correct path Location
     sys_path = current_path
-    import ansible.modules.storage.cohesity.cohesity_agent as cohesity_agent
+    from ansible.modules.storage.cohesity import cohesity_agent
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'ansible.modules.storage.cohesity'
     global_module_util_path = 'ansible.module_utils.storage.cohesity'

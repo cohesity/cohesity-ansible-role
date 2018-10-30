@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Make coding more python3-ish
 from __future__ import (absolute_import, division)
 __metaclass__ = type
@@ -41,14 +40,14 @@ try:
     # => If we are testing within the role, then we should modify the
     # => path to include this Role (assuming we are at the root.)
     sys_path.append(os_path.realpath('.'))
-    import library.cohesity_facts as cohesity_facts
+    from library import cohesity_facts
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'library'
     global_module_util_path = 'module_utils.storage.cohesity'
 except:
     # => Reset the correct path Location
     sys_path = current_path
-    import ansible.modules.storage.cohesity.cohesity_facts as cohesity_facts
+    from ansible.modules.storage.cohesity import cohesity_facts
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'ansible.modules.storage.cohesity'
     global_module_util_path = 'ansible.module_utils.storage.cohesity'
@@ -74,7 +73,7 @@ class FakeModule(object):
 # => Success Test Cases
 class TestClusterFacts(unittest.TestCase):
 
-    def test__get__clusters(connection):
+    def test__get__clusters(self):
 
         # => In order to properly test this behavior, we will first need to Mock out
         # => the call to the method `check_token` and force it to return False. This
@@ -98,7 +97,7 @@ class TestClusterFacts(unittest.TestCase):
         assert cluster == [{"name": "cluster01",
                             "clusterSoftwareVersion": "6.0.0"}]
 
-    def test__get__cluster_failed(connection):
+    def test__get__cluster_failed(self):
 
         # => In order to properly test this behavior, we will first need to Mock out
         # => the call to the method `check_token` and force it to return False. This
@@ -123,7 +122,7 @@ class TestClusterFacts(unittest.TestCase):
 
 class TestNodeFacts(unittest.TestCase):
 
-    def test__get__nodes(connection):
+    def test__get__nodes(self):
 
         # => In order to properly test this behavior, we will first need to Mock out
         # => the call to the method `check_token` and force it to return False. This
@@ -146,7 +145,7 @@ class TestNodeFacts(unittest.TestCase):
         assert changed is False
         assert nodes == [{"id": "1234", "clusterPartitionName": "primary"}]
 
-    def test__get__nodes_empty(connection):
+    def test__get__nodes_empty(self):
 
         # => In order to properly test this behavior, we will first need to Mock out
         # => the call to the method `check_token` and force it to return False. This

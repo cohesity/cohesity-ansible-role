@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # cohesity_hints
 #
@@ -94,10 +93,10 @@ def get__prot_source__all(self):
                            validate_certs=self['validate_certs'])
         objects = json.loads(objects.read())
         if len(objects):
-          objects = objects[0]
+            objects = objects[0]
         return objects
     except urllib_error.URLError as error:
-        raise HTTPException(e.read())
+        raise HTTPException(error.read())
 
 
 def get__prot_source__roots(self):
@@ -114,7 +113,7 @@ def get__prot_source__roots(self):
         objects = json.loads(objects.read())
         return objects
     except urllib_error.URLError as error:
-        raise HTTPException(e.read())
+        raise HTTPException(error.read())
 
 
 def get__prot_policy__all(self):
@@ -131,7 +130,7 @@ def get__prot_policy__all(self):
         objects = json.loads(objects.read())
         return objects
     except urllib_error as error:
-        raise HTTPException(e.read())
+        raise HTTPException(error.read())
 
 
 def get__prot_job__all(self):
@@ -144,9 +143,15 @@ def get__prot_job__all(self):
                    "Authorization": "Bearer " + self['token']}
         objects = open_url(url=uri, headers=headers,
                            validate_certs=self['validate_certs'])
-        return json.loads(objects.read())
+        objects = json.loads(objects.read())
+
+        if 'is_deleted' in self:
+            if not self['is_deleted']:
+                objects = [objects_item for objects_item in objects if not objects_item.get(
+                    'name').startswith('_DELETED_')]
+        return objects
     except urllib_error as error:
-        raise HTTPException(e.read())
+        raise HTTPException(error.read())
 
 
 def get__storage_domain_id__all(self):
@@ -167,7 +172,7 @@ def get__storage_domain_id__all(self):
         objects = json.loads(objects.read())
         return objects
     except urllib_error.URLError as error:
-        raise HTTPException(e.read())
+        raise HTTPException(error.read())
 
 
 def get__protection_run__all(self):
@@ -183,7 +188,7 @@ def get__protection_run__all(self):
                            validate_certs=self['validate_certs'])
         objects = json.loads(objects.read())
 
-        if 'is_deleted' not in self:
+        if 'is_deleted' in self:
             if not self['is_deleted']:
                 objects = [objects_item for objects_item in objects if not objects_item.get(
                     'jobName').startswith('_DELETED_')]
@@ -194,7 +199,7 @@ def get__protection_run__all(self):
                     'backupRun'].get('status') == "kAccepted"]
         return objects
     except urllib_error.URLError as error:
-        raise HTTPException(e.read())
+        raise HTTPException(error.read())
 
 # => Filtered Queries
 

@@ -1,0 +1,116 @@
+# => Cohesity Protection Sources for Physical, VMware, and GenericNAS environments
+# =>
+# => Role: cohesity.ansible
+# => Version: 0.5.0
+# => Date: 2018-11-05
+# =>
+
+# => Register each Protection Source by Environment based on Ansible Inventory
+# =>
+---
+  - hosts: workstation
+    gather_facts: no
+    roles:
+      - cohesity.ansible
+    tasks:
+      - name: Remove registered Protection Source for each Physical Server
+        include_role:
+            name: cohesity.ansible
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_source:
+                state: absent
+                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+        with_items: "{{ groups.physical }}"
+        tags: [ 'cohesity', 'sources', 'register', 'physical' ]
+
+      - name: Remove registered Protection Source for each Vmware Server
+        include_role:
+            name: cohesity.ansible
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_source:
+                state: absent
+                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                environment: "{{ hostvars[item]['type'] }}"
+        with_items: "{{ groups.vmware }}"
+        tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
+
+      - name: Remove registered Protection Source for each NAS Endpoint
+        include_role:
+            name: cohesity.ansible
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_source:
+                state: absent
+                endpoint: "{{ hostvars[item]['endpoint'] }}"
+                environment: "{{ hostvars[item]['type'] }}"
+        with_items: "{{ groups.generic_nas }}"
+        tags: [ 'cohesity', 'sources', 'register', 'generic_nas' ]
+
+      # => Register each Protection Source
+      - name: Create new Protection Source for each Physical Server
+        include_role:
+            name: cohesity.ansible
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_source:
+                state: present
+                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                host_type: "{{ hostvars[item]['type'] }}"
+        with_items: "{{ groups.physical }}"
+        tags: [ 'cohesity', 'sources', 'register', 'physical' ]
+
+      - name: Create new Protection Source for each Vmware Server
+        include_role:
+            name: cohesity.ansible
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_source:
+                state: present
+                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                environment: "{{ hostvars[item]['type'] }}"
+                vmware_type: "{{ hostvars[item]['vmware_type'] }}"
+                source_username: "{{ hostvars[item]['source_username'] }}"
+                source_password: "{{ hostvars[item]['source_password'] }}"
+        with_items: "{{ groups.vmware }}"
+        tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
+
+      - name: Create new Protection Source for each NAS Endpoint
+        include_role:
+            name: cohesity.ansible
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_source:
+                state: present
+                endpoint: "{{ hostvars[item]['endpoint'] }}"
+                environment: "{{ hostvars[item]['type'] }}"
+                nas_protocol: "{{ hostvars[item]['nas_protocol'] | default('') }}"
+                nas_username: "{{ hostvars[item]['nas_username'] | default('') }}"
+                nas_password: "{{ hostvars[item]['nas_password'] | default('') }}"
+        with_items: "{{ groups.generic_nas }}"
+        tags: [ 'cohesity', 'sources', 'register', 'generic_nas' ]

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 #
 # cohesity_authentication
 #

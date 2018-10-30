@@ -6,6 +6,10 @@
     password: "{{ cohesity_password }}"
     validate_certs: "{{ cohesity_validate_certs }}"
     state: "{{ cohesity_agent.state }}"
+    service_user: "{{ cohesity_agent.service_user | default('') }}"
+    service_password: "{{ cohesity_agent.service_password | default('') }}"
+    preservesettings: "{{ cohesity_agent.preservesettings | default(False)}}"
+    install_type: "{{ cohesity_agent.install_type | default('volcbt') }}"
   tags: always
   register: installed
 

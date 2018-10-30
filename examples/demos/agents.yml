@@ -1,0 +1,76 @@
+# => Cohesity Agent Management for Physical environments
+# =>
+# => Role: cohesity.ansible
+# => Version: 0.5.0
+# => Date: 2018-11-05
+# =>
+
+# => Install the Cohesity Agent on each identified Linux and Windows environment
+# =>
+---
+  - hosts: linux
+    # => We need to gather facts to determine the OS type of
+    # => the machine
+    gather_facts: yes
+    become: true
+    roles:
+        - cohesity.ansible
+    tasks:
+      - name: Remove Cohesity Agent from each Linux Physical Server
+        include_role:
+            name: cohesity.ansible
+            tasks_from: agent
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_agent:
+                state: absent
+        tags: [ 'cohesity', 'agent', 'remove', 'physical', 'linux' ]
+
+      - name: Install new Cohesity Agent on each Linux Physical Server
+        include_role:
+            name: cohesity.ansible
+            tasks_from: agent
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_agent:
+                state: present
+        tags: [ 'cohesity', 'agent', 'install', 'physical', 'linux' ]
+
+  - hosts: windows
+    gather_facts: no
+    roles:
+        - cohesity.ansible
+    tasks:
+      - name: Remove Cohesity Agent from each Windows Physical Server
+        include_role:
+            name: cohesity.ansible
+            tasks_from: win_agent
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_agent:
+                state: absent
+                reboot: True
+        tags: [ 'cohesity', 'agent', 'remove', 'physical', 'windows' ]
+
+      - name: Install new Cohesity Agent on each Windows Physical Server
+        include_role:
+            name: cohesity.ansible
+            tasks_from: win_agent
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_agent:
+                state: present
+                reboot: True
+        tags: [ 'cohesity', 'agent', 'install', 'physical', 'windows' ]

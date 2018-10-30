@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # Make coding more python3-ish
 from __future__ import (absolute_import, division)
 __metaclass__ = type
@@ -15,38 +14,24 @@ try:
     sys_path.append(os_path.join(os_path.dirname(__file__), '../../../../../'))
     sys_path.append(os_path.join(os_path.dirname(__file__),
                                  '../../../module_utils/storage/cohesity/helpers'))
-    import library.cohesity_job as cohesity_job
+    from library import cohesity_job
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'library'
     global_module_util_path = 'module_utils.storage.cohesity'
-    from cohesity_helper import *
+    from cohesity_helper import unittest, FakeModule, ModuleTestCase, set_module_args, json, \
+        patch, AnsibleExitJson, AnsibleFailJson, cohesity___reg_verify__helper, pytest
 except:
     # => Reset the correct path Location
     sys_path = current_path
-    import ansible.modules.storage.cohesity.cohesity_job as cohesity_job
+    from ansible.modules.storage.cohesity import cohesity_job
     sys_path.append(os_path.join(environ['PYTHONPATH'], '../test'))
-    from units.module_utils.storage.cohesity.helpers.cohesity_helper import *
+    from units.module_utils.storage.cohesity.helpers.cohesity_helper import unittest, FakeModule, ModuleTestCase, set_module_args, json, \
+        patch, AnsibleExitJson, AnsibleFailJson, cohesity___reg_verify__helper, pytest
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'ansible.modules.storage.cohesity'
     global_module_util_path = 'ansible.module_utils.storage.cohesity'
 
 exit_return_dict = {}
-
-
-class FakeModule(object):
-
-    def __init__(self, **kwargs):
-        self.params = kwargs
-
-    def fail_json(self, *args, **kwargs):
-        self.exit_args = args
-        self.exit_kwargs = kwargs
-        raise Exception('FAIL')
-
-    def exit_json(self, *args, **kwargs):
-        self.exit_args = args
-        self.exit_kwargs = kwargs
-
 
 # => Success Test Cases
 class TestProtectionSource__Methods(unittest.TestCase):
@@ -282,8 +267,12 @@ class TestProtectionSource__Methods(unittest.TestCase):
             token='mytoken',
             id=24
         )
+        self.patcher_transition = patch(
+            global_module_path + '.cohesity_job.wait__for_job_state__transition')
+        self.patcher_transition.start()
         return_id = cohesity_job.stop_job(module, data)
 
+        self.patcher_transition.stop()
         assert return_id['id'] == 24
 
     def test__unregister_job__physical(self):
