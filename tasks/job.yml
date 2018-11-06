@@ -1,0 +1,17 @@
+---
+- name: "Cohesity Protection Job: Set {{ cohesity_protection.job_name | default('job_name') }} to state of {{ cohesity_protection.state | default('present') }}"
+  cohesity_job:
+    cluster: "{{ cohesity_server }}"
+    username: "{{ cohesity_admin }}"
+    password: "{{ cohesity_password }}"
+    validate_certs: "{{ cohesity_validate_certs }}"
+    state:  "{{ cohesity_protection.state | default('present') }}"
+    name: "{{ cohesity_protection.job_name | default('') }}"
+    environment: "{{ cohesity_protection.environment | default('Physical') }}"
+    protection_sources:
+      - "{{ cohesity_protection.endpoint | default('') }}"
+    protection_policy: "{{ cohesity_protection.policy | default('Bronze') }}"
+    storage_domain: "{{ cohesity_protection.storage_domain | default('DefaultIddStorageDomain') }}"
+    delete_backups: "{{ cohesity_protection.delete_backups | default(False) }}"
+    cancel_active: "{{ cohesity_protection.cancel_active | default(False) }}"
+  tags: always

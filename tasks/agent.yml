@@ -1,0 +1,30 @@
+---
+- name: Install Prerequisite Packages for CentOS
+  yum:
+    name: "wget,rsync,lsof,lvm2,nfs-utils"
+    state: present
+  when:
+    - ansible_distribution == "CentOS"
+    - cohesity_agent.state == "present"
+  tags: always
+
+- name: Install Prerequisite Packages for Ubuntu
+  yum:
+    name: "wget,rsync,lsof,lvm2,nfs-common"
+    state: present
+  when:
+    - ansible_distribution == "Ubuntu"
+    - cohesity_agent.state == "present"
+  tags: always
+
+- name: "Cohesity agent: Set Agent to state of {{ cohesity_agent.state | default('present') }}"
+  cohesity_agent:
+    cluster: "{{ cohesity_server }}"
+    username: "{{ cohesity_admin }}"
+    password: "{{ cohesity_password }}"
+    validate_certs: "{{ cohesity_validate_certs }}"
+    state: "{{ cohesity_agent.state }}"
+    service_user: "{{ cohesity_agent.service_user | default('cohesityagent') }}"
+    service_group: "{{ cohesity_agent.service_group | default('cohesityagent') }}"
+    create_user: "{{ cohesity_agent.create_user | default(True)}}"
+  tags: always

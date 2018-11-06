@@ -8,3 +8,5 @@ tmp
 */*.pub
 *.pub
 ansible
+*.pyc
+*/.pytest_cache
