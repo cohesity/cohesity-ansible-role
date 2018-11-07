@@ -18,7 +18,7 @@ try:
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
-except:
+except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
 
@@ -226,6 +226,7 @@ def installation_failures(module, stdout, rc, message):
     stdwarn = "\n".join(stdwarn)
     module.fail_json(changed=False, msg=message, error=stderr, output=stdout, warn=stdwarn, exitcode=rc)
 
+
 def install_agent(module, installer):
 
     # => This command will run the self-extracting installer for the agent on machine and
@@ -244,7 +245,7 @@ def install_agent(module, installer):
 
     try:
         cmd = "{0}/setup.sh --install --yes {1}".format(installer, install_opts)
-    except:
+    except Exception as e:
         cmd = "%s/setup.sh --install --yes %s" % (installer, install_opts)
 
     rc, stdout, stderr = module.run_command(cmd, cwd=installer)
@@ -255,6 +256,7 @@ def install_agent(module, installer):
             module, stdout, rc, "Cohesity Agent is partially installed")
     return (True, "Successfully Installed the Cohesity agent")
 
+
 def extract_agent(module, filename):
 
     # => This command will run the self-extracting installer in no execution mode
@@ -263,11 +265,11 @@ def extract_agent(module, filename):
     # => try..except will give us a clean backwards compatibility.
     import os
     directory = os.path.dirname(os.path.abspath(filename))
-    target = directory+"/install_files"
+    target = directory + "/install_files"
     create_download_dir(module, target)
     try:
         cmd = "{0} --nox11 --noexec --target {1} ".format(filename, target)
-    except:
+    except Exception as e:
         cmd = "%s --nox11 --noexec --target %s " % (filename, target)
 
     rc, stdout, stderr = module.run_command(cmd)
@@ -289,7 +291,7 @@ def remove_agent(module, installer):
     # => try..except will give us a clean backwards compatibility.
     try:
         cmd = "{0}/setup.sh --full-uninstall --yes".format(installer)
-    except:
+    except Exception as e:
         cmd = "%s/setup.sh --full-uninstall --yes" % (installer)
     rc, out, err = module.run_command(cmd, cwd=installer)
 
@@ -298,6 +300,7 @@ def remove_agent(module, installer):
         installation_failures(
             module, out, rc, "Cohesity Agent is partially installed")
     return (True, "Successfully Removed the Cohesity agent")
+
 
 def create_download_dir(module, dir_path):
     # => Note: 2018-12-06
@@ -437,7 +440,7 @@ def main():
         # => either way but seems like a better choice.
         if module.params.get('download_location'):
             if 'installer' in results:
-              shutil.rmtree(results['installer'])
+                shutil.rmtree(results['installer'])
         else:
             shutil.rmtree(tempdir)
 

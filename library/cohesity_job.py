@@ -18,7 +18,7 @@ try:
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
         get__protection_run__all__by_id
-except:
+except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
@@ -270,14 +270,14 @@ def wait__for_job_state__transition(module, self, job_runs, state='start'):
                         if status == check_state:
                             try:
                                 job_runs.pop(job_run)
-                            except:
+                            except Exception as e:
                                 if len(job_runs) == 1:
                                     job_runs = []
             else:
                 if not currently_active:
                     try:
                         job_runs.pop(job_run)
-                    except:
+                    except Exception as e:
                         if len(job_runs) == 1:
                             job_runs = []
         if not job_runs:

@@ -23,6 +23,8 @@
 - [cohesity_win_agent](modules/cohesity_win_agent.md)
 - [cohesity_source](modules/cohesity_source.md)
 - [cohesity_job](modules/cohesity_job.md)
+- [cohesity_restore_file](modules/cohesity_restore_file.md)
+- [cohesity_restore_vm](modules/cohesity_restore_vm.md)
 
 
 - **Tasks**
@@ -30,3 +32,5 @@
 - [win_agent](tasks/win_agent.md)
 - [source](tasks/source.md)
 - [job](tasks/job.md)
+- [restore_file](tasks/restore_file.md)
+- [restore_vm](tasks/restore_vm.md)

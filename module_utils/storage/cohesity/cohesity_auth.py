@@ -86,10 +86,10 @@ class Authentication(object):
                 return self.token
             except urllib_error.URLError as error:
                 try:
-                  # => Fixing this to deal with issues during unit testing
-                  error = error.read()
-                except:
-                  pass
+                    # => Fixing this to deal with issues during unit testing
+                    error = error.read()
+                except Exception as e:
+                    pass
                 raise TokenException(error)
             except IOError as error:
                 raise TokenException(error)
@@ -121,7 +121,7 @@ class Authentication(object):
         except urllib_error.HTTPError as e:
             try:
                 msg = json.loads(e.read())['message']
-            except:
+            except Exception as e:
                 # => For HTTPErrors that return no JSON with a message (bad errors), we
                 # => will need to handle this by setting the msg variable to some default.
                 msg = "no-json-data"

@@ -60,7 +60,7 @@ This example shows how to include the Cohesity Ansible Role in your custom playb
 This is an example playbook that creates a new Protection Job for all Physical hosts based on the registered inventory hostname. (Remember to change it to suit your environment.)
 > **Notes:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
-  - This example requires that the endpoint matches an existing Protection Source.  See [Task: Cohesity Protection Source Management](./source.md).
+  - This example requires that the endpoint matches an existing Protection Source.  See [Task: Cohesity Protection Source Management](tasks/source.md).
 
 ```yaml
 ---

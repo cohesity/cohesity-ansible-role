@@ -20,7 +20,7 @@ try:
     global_module_util_path = 'module_utils.storage.cohesity'
     from cohesity_helper import unittest, FakeModule, ModuleTestCase, set_module_args, json, \
         patch, AnsibleExitJson, AnsibleFailJson, cohesity___reg_verify__helper, pytest
-except:
+except Exception as e:
     # => Reset the correct path Location
     sys_path = current_path
     from ansible.modules.storage.cohesity import cohesity_source

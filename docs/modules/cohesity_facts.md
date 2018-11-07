@@ -68,7 +68,7 @@ This Ansible Module collects and compiles details about a Cohesity cluster.  The
 
 ```yaml
 - cohesity_facts:
-    server: <ip or hostname for cohesity cluster>
+    cluster: <ip or hostname for cohesity cluster>
     cohesity_admin: <username with cluster level permissions>
     cohesity_password: <password for the selected user>
     validate_certs: <boolean to determine if SSL certificates should be validated>

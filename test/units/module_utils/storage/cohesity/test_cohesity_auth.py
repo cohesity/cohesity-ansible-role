@@ -21,7 +21,7 @@ try:
     global_module_util_path = 'storage.cohesity'
     from cohesity_helper import unittest, patch, call, json, \
         urllib_error, StringIO, pytest, cohesity___reg_verify__helper, FakeModule
-except:
+except Exception as e:
     # => Reset the correct path Location
     sys_path = current_path
     from ansible.modules_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation, get__cohesity_auth__token
@@ -137,7 +137,6 @@ class TestFailedAuthentication(unittest.TestCase):
         server = "bad-host-domain"
         uri = "https://" + server + "/irisservices/api/v1/public/accessTokens"
         self.open_url.side_effect = urllib_error.URLError('Name or service not known')
-
 
         cohesity_auth = Authentication()
         cohesity_auth.username = "administrator"

@@ -19,7 +19,7 @@ try:
         get__prot_source__all, get__prot_policy__all, get__prot_job__all, \
         get__storage_domain_id__all, get__protection_run__all
 
-except:
+except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__cluster, get__nodes, \
