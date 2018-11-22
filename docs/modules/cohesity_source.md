@@ -4,9 +4,10 @@
 Ansible Module used to register or remove the Cohesity Protection Sources to/from a Cohesity Cluster.  When executed in a playbook, the Cohesity Protection Source will be validated and the appropriate state action will be applied.
 
 ### Requirements
-  - A physical or virtual Cohesity system. The modules were developed with Cohesity version 6.1.0
-  - Ansible 2.6
-  - Python >= 2.6
+* Cohesity Cluster running version 6.0 or higher
+* Ansible >= 2.6
+  * [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a unix system running any of the following operating systems: Linux (Red Hat, Debian, CentOS), macOS, any of the BSDs. Windows isn’t supported for the control machine.
+* Python >= 2.6
 
 ### Notes
   - Currently, the Ansible Module requires Full Cluster Administrator access.

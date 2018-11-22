@@ -1,7 +1,7 @@
 # Cohesity Facts Collection
 
 ## SYNOPSIS
-This example play leverages the `cohesity_facts` mdoule to dynamically discover and store all collected information about a Cohesity Cluster.
+This example play leverages the `cohesity_facts` module to dynamically discover and store all collected information about a Cohesity Cluster.
 Items Collected:
 - Cluster Details
 - Current Nodes
@@ -12,11 +12,6 @@ Items Collected:
 - Job Execution History for each Current Protection Job
 
 Upon completion of this play, the output will be written into a file called `cohesity_facts.json` and stored in the Ansible Inventory Directory.
-
-### Requirements
-  - A physical or virtual Cohesity system. The modules were developed with Cohesity version 6.1.0
-  - Ansible 2.6
-  - Python >= 2.6
 
 ### Notes
   - Currently, the Ansible Module requires Full Cluster Administrator access.

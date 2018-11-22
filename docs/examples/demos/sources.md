@@ -7,11 +7,6 @@ This example play leverages the Ansible Inventory to dynamically remove and regi
 
 NOTE: This example play should be considered for demo purposes only.  This will remove and then register all Physical, VMware, and GenericNAS Protection Sources based on the Ansible Inventory.  There are no job validations nor state checks to ensure that backups are not running.  If jobs exist for the Source, an error will be raised and the play will fail.
 
-### Requirements
-  - A physical or virtual Cohesity system. The modules were developed with Cohesity version 6.1.0
-  - Ansible 2.6
-  - Python >= 2.6
-
 ### Notes
   - Currently, the Ansible Module requires Full Cluster Administrator access.
 

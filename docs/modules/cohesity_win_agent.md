@@ -4,9 +4,10 @@
 Ansible Module used to deploy or remove the Cohesity Physical Agent from supported Windows Machines.  When executed in a playbook, the Cohesity Agent installation will be validated and the appropriate state action will be applied.  The most recent version of the Cohesity Agent will be automatically downloaded to the host.
 
 ### Requirements
-  - A physical or virtual Cohesity system. The modules were developed with Cohesity version 6.1.0
-  - Ansible 2.6
-  - Powershell >= 4.0
+* Cohesity Cluster running version 6.0 or higher
+* Ansible >= 2.6
+  * [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a unix system running any of the following operating systems: Linux (Red Hat, Debian, CentOS), macOS, any of the BSDs. Windows isn’t supported for the control machine.
+* Powershell >= 4.0
 
 ### Notes
   - Currently, the Ansible Module requires Full Cluster Administrator access.
@@ -75,6 +76,7 @@ Ansible Module used to deploy or remove the Cohesity Physical Agent from support
 |   | service_password | String | | Password belonging to the selected Service_Username.  This parameter will not be logged. |
 |   | install_type | Choice | -**volcbt**<br>-fscbt<br>-allcbt<br>-onlyagent | Installation type for the Cohesity Agent on Windows |
 |   | preservesettings | Boolean | False | Should the settings be retained when uninstalling the Cohesity Agent. |
+|   | reboot | Boolean | False | Should the host be rebooted when installing the Cohesity Agent. |
 
 
 ## OUTPUTS
