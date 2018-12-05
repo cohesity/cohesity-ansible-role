@@ -308,6 +308,9 @@ def main():
                 module.fail_json(
                     msg="Cohesity Agent is partially installed", **results)
             else:
+                # => If we received a valid version then the assumption will be
+                # => that the Agent is installed.  We should simply pass it foward
+                # => and act like things are normal.
                 pass
         elif module.params.get('state') == "absent":
             # => Check if the Cohesity Agent is currently installed and only trigger the uninstall
@@ -330,7 +333,13 @@ def main():
             module.fail_json(msg="Invalid State selected: {0}".format(
                 module.params.get('state')), changed=False)
     except Exception as error:
-        pass
+        # => The exception handler should still trigger but just in case, let's set this
+        # => variable 'success' to be False.
+        success = False
+
+        # => Call the proper error handler.
+        msg = "Unexpected error caused while managing the Cohesity Linux Agent."
+        raise__cohesity_exception__handler(error, module, msg)
 
     finally:
         # => We should delete the downloaded installer regardless of our success.  This could be debated
