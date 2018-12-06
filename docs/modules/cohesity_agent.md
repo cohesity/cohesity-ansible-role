@@ -24,6 +24,7 @@ Ansible Module used to deploy or remove the Cohesity Physical Agent from support
     service_user: <username underwhich the service will run>
     service_group: <group underwhich the service will be owned>
     create_user: <boolean to determine if the service_user and service_group should be created>
+    download_location: <optional path to which the installer will be downloaded>
 ```
 
 ## EXAMPLES
@@ -53,6 +54,13 @@ Ansible Module used to deploy or remove the Cohesity Physical Agent from support
     cohesity_password: password
     state: absent
 
+# Download the agent installer to a custom location.
+- cohesity_agent:
+    server: cohesity.lab
+    cohesity_admin: admin
+    cohesity_password: password
+    download_location: /software/installers
+    state: present
 ```
 
 
@@ -68,7 +76,7 @@ Ansible Module used to deploy or remove the Cohesity Physical Agent from support
 |   | service_user | String | cohesityagent | Username underwhich the Cohesity Agent will be installed and run. This user must exist unless *create_user=**True*** is also configured. |
 |   | service_group | String | cohesityagent | Group underwhich permissions will be configured for the Cohesity Agent configuration. This group must exist unless *create_user=**True*** is also configured. |
 |   | create_user | Boolean | True | When enabled, will create a new user and group based on the values of *service_user* and *service_group*. |
-
+|   | download_location: | String |  | Optional directory path to which the installer will be downloaded.  If not selected, then a temporary directory will be created in the default System Temp Directory.  When choosing an alternate directory, the directory and installer will not be deleted at the end of the execution. |
 
 ## OUTPUTS
 - N/A

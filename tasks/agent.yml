@@ -27,4 +27,5 @@
     service_user: "{{ cohesity_agent.service_user | default('cohesityagent') }}"
     service_group: "{{ cohesity_agent.service_group | default('cohesityagent') }}"
     create_user: "{{ cohesity_agent.create_user | default(True)}}"
+    download_location: "{{ cohesity_agent.download_location | default() }}"
   tags: always

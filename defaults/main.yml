@@ -11,6 +11,7 @@ cohesity_agent:
   service_password: ""
   service_group: "cohesityagent"
   create_user: True
+  download_location: ""
   install_type: "volcbt"
   preservesettings: False
   reboot: False
