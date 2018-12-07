@@ -195,7 +195,7 @@ def download_agent(module, path):
     return filename
 
 
-def installation_failures(module, stdout, message):
+def installation_failures(module, stdout, rc, message):
     # => The way that this installer works, we will not get back messages in stderr
     # => when a failure occurs.  For this reason, we need to jump through some hoops
     # => to extract the error messages.  The install will *Partially* complete even
@@ -206,9 +206,15 @@ def installation_failures(module, stdout, message):
     # => returned to a new list *stderr* which will be formatted into a \n delimited
     # => string as the final step, we will raise a module failure to halt progress.
     stdout_lines = stdout.split("\n")
+
+    # => Grab any Line that begins with Error:
     stderr = [k for k in stdout_lines if 'Error:' in k]
     stderr = "\n".join(stderr)
-    module.fail_json(changed=False, msg=message, error=stderr)
+
+    # => Grab any Line that begins with WARNING:
+    stdwarn = [k for k in stdout_lines if 'WARNING:' in k]
+    stdwarn = "\n".join(stdwarn)
+    module.fail_json(changed=False, msg=message, error=stderr, output=stdout, warn=stdwarn, exitcode=rc)
 
 
 def install_agent(module, filename):
@@ -229,7 +235,7 @@ def install_agent(module, filename):
     # => Any return code other than 0 is considered a failure.
     if rc:
         installation_failures(
-            module, stdout, "Cohesity Agent is partially installed")
+            module, stdout, rc, "Cohesity Agent is partially installed")
     return (True, "Successfully Installed the Cohesity agent")
 
 
@@ -251,7 +257,7 @@ def remove_agent(module, filename):
     # => Any return code other than 0 is considered a failure.
     if rc:
         installation_failures(
-            module, out, "Cohesity Agent is partially installed")
+            module, out, rc, "Cohesity Agent is partially installed")
     return (True, "Successfully Removed the Cohesity agent")
 
 def create_download_dir(module, dir_path):
