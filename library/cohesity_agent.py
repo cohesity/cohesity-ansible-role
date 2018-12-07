@@ -12,6 +12,7 @@ import json
 from tempfile import mkstemp, mkdtemp
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url, urllib_error
+from ansible.module_utils._text import to_bytes, to_native
 
 try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
@@ -50,6 +51,11 @@ options:
       - present
       - absent
     default: 'present'
+  download_location:
+    description:
+      - Optional directory path to which the installer will be downloaded.  If not selected, then a temporary
+      - directory will be created in the default System Temp Directory.  When choosing an alternate directory,
+      - the directory and installer will not be deleted at the end of the execution.
   service_user:
     description:
       - Username underwhich the Cohesity Agent will be installed and run.
@@ -95,6 +101,14 @@ EXAMPLES = '''
     cohesity_admin: admin
     cohesity_password: password
     state: absent
+
+# Download the agent installer to a custom location.
+- cohesity_agent:
+    server: cohesity.lab
+    cohesity_admin: admin
+    cohesity_password: password
+    download_location: /software/installers
+    state: present
 '''
 
 RETURN = '''
@@ -240,6 +254,28 @@ def remove_agent(module, filename):
             module, out, "Cohesity Agent is partially installed")
     return (True, "Successfully Removed the Cohesity agent")
 
+def create_download_dir(module, dir_path):
+    # => Note: 2018-12-06
+    # => Added this method to provide an alternate parameter to download the installer.
+    # => This code was almost entirely pulled out of the Ansible File module.
+    curpath = ''
+    # => Determine if the download directory exists and if not then create it.
+    for dirname in dir_path.strip('/').split('/'):
+        curpath = '/'.join([curpath, dirname])
+        # Remove leading slash if we're creating a relative path
+        if not os.path.isabs(dir_path):
+            curpath = curpath.lstrip('/')
+        b_curpath = to_bytes(curpath, errors='surrogate_or_strict')
+        if not os.path.exists(b_curpath):
+            try:
+                os.mkdir(b_curpath)
+            except OSError as ex:
+                import errno
+                # Possibly something else created the dir since the os.path.exists
+                # check above. As long as it's a dir, we don't need to error out.
+                if not (ex.errno == errno.EEXIST and os.path.isdir(b_curpath)):
+                    raise
+
 
 def main():
     # => Load the default arguments including those specific to the Cohesity Agent.
@@ -247,6 +283,7 @@ def main():
     argument_spec.update(
         dict(
             state=dict(choices=['present', 'absent'], default='present'),
+            download_location=dict(),
             service_user=dict(default='cohesityagent'),
             service_group=dict(default='cohesityagent'),
             create_user=dict(default=True, type='bool')
@@ -263,9 +300,13 @@ def main():
     )
 
     # => Make a temporary directory to house the downloaded installer.
-    tempdir = mkdtemp(
-        prefix="ansible."
-    )
+    if module.params.get('download_location'):
+        tempdir = module.params.get('download_location')
+        create_download_dir(module, tempdir)
+    else:
+        tempdir = mkdtemp(
+            prefix="ansible."
+        )
     success = True
     try:
         if module.check_mode:
@@ -344,7 +385,10 @@ def main():
     finally:
         # => We should delete the downloaded installer regardless of our success.  This could be debated
         # => either way but seems like a better choice.
-        shutil.rmtree(tempdir)
+        if module.params.get('download_location'):
+            pass
+        else:
+            shutil.rmtree(tempdir)
 
     if success:
         # -> Return Ansible JSON
