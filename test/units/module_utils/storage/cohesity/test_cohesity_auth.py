@@ -130,15 +130,26 @@ class TestAuthentication(unittest.TestCase):
 class TestFailedAuthentication(unittest.TestCase):
 
     def test_raise_exception_when_url_invalid(self):
+        self.patcher = patch(
+            global_module_util_path + '.cohesity_auth.open_url')
+        self.open_url = self.patcher.start()
+
+        server = "bad-host-domain"
+        uri = "https://" + server + "/irisservices/api/v1/public/accessTokens"
+        self.open_url.side_effect = urllib_error.URLError('Name or service not known')
+
 
         cohesity_auth = Authentication()
         cohesity_auth.username = "administrator"
         cohesity_auth.password = "password"
+
         with pytest.raises(TokenException) as error:
             cohesity_auth.get_token('bad-host-domain')
         assert error.type == TokenException
         assert cohesity___reg_verify__helper(
             '.+(Name or service not known).+').__check__(str(error.value))
+
+        self.patcher.stop()
 
     def test__get__auth_token_no_username(self):
         ''' Test to see if the token is expired and if so then trigger a refresh. '''
