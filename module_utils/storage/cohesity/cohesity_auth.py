@@ -84,7 +84,10 @@ class Authentication(object):
                 self.token = response['accessToken']
                 return self.token
             except urllib_error.URLError as error:
-                raise TokenException(error.read())
+                try:
+                  raise TokenException(error.read())
+                except:
+                  raise TokenException(error)
             except IOError as error:
                 raise TokenException(error)
         else:

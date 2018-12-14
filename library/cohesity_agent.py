@@ -71,6 +71,11 @@ options:
       - When enabled, will create a new user and group based on the values of I(service_user) and I(service_group)
     type: bool
     default: True
+  file_based:
+    description:
+      - When enabled, will install the agent in non-LVM mode and support only file based backups
+    type: bool
+    default: False
 
 extends_documentation_fragment:
     - cohesity
@@ -217,7 +222,28 @@ def installation_failures(module, stdout, rc, message):
     module.fail_json(changed=False, msg=message, error=stderr, output=stdout, warn=stdwarn, exitcode=rc)
 
 
-def install_agent(module, filename):
+# def install_agent(module, filename):
+
+#     # => This command will run the self-extracting installer for the agent on machine and
+#     # => suppress opening a new window (nox11) and not show the extraction (noprogress) results
+#     # => which end up in stderr.
+#     #
+#     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
+#     # => try..except will give us a clean backwards compatibility.
+#     try:
+#         cmd = "{0} --nox11 --noprogress -- --install --yes".format(filename)
+#     except:
+#         cmd = "%s --nox11 --noprogress -- --install --yes" % filename
+
+#     rc, stdout, stderr = module.run_command(cmd)
+
+#     # => Any return code other than 0 is considered a failure.
+#     if rc:
+#         installation_failures(
+#             module, stdout, rc, "Cohesity Agent is partially installed")
+#     return (True, "Successfully Installed the Cohesity agent")
+
+def install_agent(module, installer):
 
     # => This command will run the self-extracting installer for the agent on machine and
     # => suppress opening a new window (nox11) and not show the extraction (noprogress) results
@@ -225,12 +251,20 @@ def install_agent(module, filename):
     #
     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
     # => try..except will give us a clean backwards compatibility.
-    try:
-        cmd = "{0} --nox11 --noprogress -- --install --yes".format(filename)
-    except:
-        cmd = "%s --nox11 --noprogress -- --install --yes" % filename
+    install_opts = "--create-user " + str(int(module.params.get('create_user'))) + " "
+    if module.params.get('service_user'):
+        install_opts += "--service-user " + module.params.get('service_user') + " "
+    if module.params.get('service_group'):
+        install_opts += "--service-group " + module.params.get('service_group') + " "
+    if module.params.get('file_based'):
+        install_opts += "--skip-lvm-check "
 
-    rc, stdout, stderr = module.run_command(cmd)
+    try:
+        cmd = "{0}/setup.sh --install --yes {1}".format(installer, install_opts)
+    except:
+        cmd = "%s/setup.sh --install --yes %s" % (installer, install_opts)
+
+    rc, stdout, stderr = module.run_command(cmd, cwd=installer)
 
     # => Any return code other than 0 is considered a failure.
     if rc:
@@ -238,8 +272,31 @@ def install_agent(module, filename):
             module, stdout, rc, "Cohesity Agent is partially installed")
     return (True, "Successfully Installed the Cohesity agent")
 
+def extract_agent(module, filename):
 
-def remove_agent(module, filename):
+    # => This command will run the self-extracting installer in no execution mode
+    #
+    # => Note: Python 2.6 doesn't fully support the new string formatters, so this
+    # => try..except will give us a clean backwards compatibility.
+    import os
+    directory = os.path.dirname(os.path.abspath(filename))
+    target = directory+"/install_files"
+    create_download_dir(module, target)
+    try:
+        cmd = "{0} --nox11 --noexec --target {1} ".format(filename, target)
+    except:
+        cmd = "%s --nox11 --noexec --target %s " % (filename, target)
+
+    rc, stdout, stderr = module.run_command(cmd)
+
+    # => Any return code other than 0 is considered a failure.
+    if rc:
+        installation_failures(
+            module, stdout, rc, "Cohesity Agent is partially installed")
+    return (True, "Successfully Installed the Cohesity agent", target)
+
+
+def remove_agent(module, installer):
 
     # => This command will run the self-extracting installer for the agent on machine and
     # => suppress opening a new window (nox11) and not show the extraction (noprogress) results
@@ -248,11 +305,10 @@ def remove_agent(module, filename):
     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
     # => try..except will give us a clean backwards compatibility.
     try:
-        cmd = "{0} --nox11 --noprogress -- --full-uninstall --yes".format(
-            filename)
+        cmd = "{0}/setup.sh --full-uninstall --yes".format(installer)
     except:
-        cmd = "%s --nox11 --noprogress -- --full-uninstall --yes" % filename
-    rc, out, err = module.run_command(cmd)
+        cmd = "%s/setup.sh --full-uninstall --yes" % (installer)
+    rc, out, err = module.run_command(cmd, cwd=installer)
 
     # => Any return code other than 0 is considered a failure.
     if rc:
@@ -292,7 +348,8 @@ def main():
             download_location=dict(),
             service_user=dict(default='cohesityagent'),
             service_group=dict(default='cohesityagent'),
-            create_user=dict(default=True, type='bool')
+            create_user=dict(default=True, type='bool'),
+            file_based=dict(default=False, type='bool')
         )
     )
 
@@ -347,8 +404,10 @@ def main():
 
             if not results['version']:
                 results['filename'] = download_agent(module, tempdir)
-                results['changed'], results['message'] = install_agent(
+                results['changed'], results['message'], results['installer'] = extract_agent(
                     module, results['filename'])
+                results['changed'], results['message'] = install_agent(
+                    module, results['installer'])
                 results = check_agent(module, results)
             elif results['version'] == "unknown":
                 # => There is a problem that we should invesitgate.
@@ -372,8 +431,10 @@ def main():
                 # => When removing the agent, we will need to download the installer once again,
                 # => and then run the --full-uninstall command.
                 results['filename'] = download_agent(module, tempdir)
-                results['changed'], results['message'] = remove_agent(
+                results['changed'], results['message'], results['installer'] = extract_agent(
                     module, results['filename'])
+                results['changed'], results['message'] = remove_agent(
+                    module, results['installer'])
         else:
             # => This error should never happen based on the set assigned to the parameter.
             # => However, in case, we should raise an appropriate error.
@@ -392,9 +453,11 @@ def main():
         # => We should delete the downloaded installer regardless of our success.  This could be debated
         # => either way but seems like a better choice.
         if module.params.get('download_location'):
-            pass
+            if 'installer' in results:
+              shutil.rmtree(results['installer'])
         else:
-            shutil.rmtree(tempdir)
+            pass
+            # shutil.rmtree(tempdir)
 
     if success:
         # -> Return Ansible JSON
