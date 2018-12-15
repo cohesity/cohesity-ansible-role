@@ -105,7 +105,7 @@ Ansible Module used to register or remove the Cohesity Protection Sources to/fro
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity Cluster |
-| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity Cluster |
+| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity Cluster. Domain Specific credentails can be configured in one of two formats.<br>- Domain\\username<br>- username@domain |
 | X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter will not be logged. |
 |   | validate_certs | Boolean | False | Switch determines if SSL Validation should be enabled. |
 |   | state | Choice | -**present**<br>-absent | Determines the state of the Protection Source. |
