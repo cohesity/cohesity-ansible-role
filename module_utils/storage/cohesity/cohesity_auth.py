@@ -85,9 +85,11 @@ class Authentication(object):
                 return self.token
             except urllib_error.URLError as error:
                 try:
-                  raise TokenException(error.read())
+                  # => Fixing this to deal with issues during unit testing
+                  error = error.read()
                 except:
-                  raise TokenException(error)
+                  pass
+                raise TokenException(error)
             except IOError as error:
                 raise TokenException(error)
         else:
@@ -132,11 +134,22 @@ class Authentication(object):
 def get__cohesity_auth__token(self):
     server = self.params.get('cluster')
     validate_certs = self.params.get('validate_certs')
+
     auth = Authentication()
     auth.username = self.params.get('username')
     auth.password = self.params.get('password')
 
     if self.params.get('domain'):
         auth.domain = self.params.get('domain')
+
+    if "\\" in auth.username:
+        user_domain = auth.username.split("\\")
+        auth.username = user_domain[2]
+        auth.domain = user_domain[0]
+
+    if "@" in auth.username:
+        user_domain = auth.username.split("@")
+        auth.username = user_domain[0]
+        auth.domain = user_domain[2]
 
     return auth.get_token(server)

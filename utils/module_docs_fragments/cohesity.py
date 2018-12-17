@@ -27,7 +27,8 @@ options:
     required: true
   cohesity_admin:
     description:
-      - Username with which Ansible will connect to the Cohesity Cluster
+      - Username with which Ansible will connect to the Cohesity Cluster. Domain Specific credentails
+      - can be configured in one of two formats - (Domain\\username or username@domain)
     required: true
   cohesity_password:
     description:
