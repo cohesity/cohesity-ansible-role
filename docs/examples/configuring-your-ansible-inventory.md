@@ -1,19 +1,36 @@
 # Guide to configuring your Ansible Inventory
 
+## Table of Contents
+- [Synopsis](#synopsis)
+- [Ansible Inventory File](#Ansible-Inventory-File)
+    - [What is it?](#What-is-it)
+    - [Windows Hosts](#Special-Note-about-Windows-Hosts)
+    - [Required Components](#Required-Components)
+    - [Example Ansible Inventory File](#Example-Ansible-Inventory-File)
+
 ## SYNOPSIS
+[top](#Guide-to-configuring-your-Ansible-Inventory)
+
 The Cohesity.Ansible role includes several Demo and Complete plays designed to help you get your feet wet with using Ansible to manage your Cohesity cluster.  As part of this solution, we have integrated heavily with the Ansible Inventory to help streamline the process.  The inventory is a collection of hosts and variables that controls how the connections can be made.  We are able to leverage this information to simplify the process of deploying an entire solution on Day 1.
 
 ## Ansible Inventory File
+[top](#Guide-to-configuring-your-Ansible-Inventory)
 
 ### What is it?
+[top](#Guide-to-configuring-your-Ansible-Inventory)
+
 > Ansible works against multiple systems in your infrastructure at the same time. It does this by selecting portions of systems listed in Ansible’s inventory, which defaults to being saved in the location /etc/ansible/hosts. You can specify a different inventory file using the -i <path> option on the command line.
 
-[More details on the Ansible Inventory File](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html)
+For more details on the Ansible Inventory File, [see the official Ansible documentation](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html)
 
 ### Special Note about Windows Hosts
+[top](#Guide-to-configuring-your-Ansible-Inventory)
+
 By default, Ansible leverages Python and SSH to communicate.  This role is written specifically to be used from a Linux based workstation and leveraging Python.  However, the module `cohesity_win_agent` is the exception to this rule.  This module will allow for the installation of the Cohesity Agent on Physical Windows servers by means with WinRM and Powershell.  In order to connect, please read the Official documentation on [Setting up a Windows Host](https://docs.ansible.com/ansible/latest/user_guide/windows_setup.html) to work with Ansible.
 
 ### Required Components
+[top](#Guide-to-configuring-your-Ansible-Inventory)
+
 The Below list comprises the required settings and values in order to leverage the demo and complete examples.
 
 | Key Name | Description | Usage |
@@ -28,6 +45,8 @@ The Below list comprises the required settings and values in order to leverage t
 | [generic_nas:vars] | Supported Variables as required by GenericNas Environment Management | Variable Types:<br>**type**=GenericNas<br>**nas_protocol**=SMB<br>**nas_username**=username<br>**nas_password**=password|
 
 ### Example Ansible Inventory File
+[top](#Guide-to-configuring-your-Ansible-Inventory)
+
 ```
 # => Workstation Declaration which will also be included in our
 # => Backup

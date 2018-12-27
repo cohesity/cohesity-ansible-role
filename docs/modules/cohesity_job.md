@@ -1,18 +1,37 @@
 # Cohesity Protection Job
 
+## Table of Contents
+- [Synopsis](#synopsis)
+- [Requirements](#requirements)
+- [Syntax](#syntax)
+- [Examples](#examples)
+  - [Create a new Physical Server Protection Job](#Create-a-new-Physical-Server-Protection-Job)
+  - [Create a new VMware Server Protection Job](#Create-a-new-VMware-Server-Protection-Job)
+  - [Remove an existing VMware Server Protection Job](#Remove-an-existing-VMware-Server-Protection-Job)
+  - [Remove an existing VMware Server Protection Job and remove all Backups](#Remove-an-existing-VMware-Server-Protection-Job-and-remove-all-Backups)
+  - [Start an existing VMware Server Protection Job](#Start-an-existing-VMware-Server-Protection-Job)
+  - [Stop an actively running VMware Server Protection Job](#Stop-an-actively-running-VMware-Server-Protection-Job)
+- [Parameters](#parameters)
+- [Outputs](#outputs)
+
 ## SYNOPSIS
+[top](#cohesity-protection-job)
+
 Ansible Module used to register, remove, start, and stop the Cohesity Protection Job on a Cohesity Cluster.  When executed in a playbook, the Cohesity Protection Job will be validated and the appropriate state action will be applied.
 
 ### Requirements
+[top](#cohesity-protection-job)
+
 * Cohesity Cluster running version 6.0 or higher
 * Ansible >= 2.6
   * [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a unix system running any of the following operating systems: Linux (Red Hat, Debian, CentOS), macOS, any of the BSDs. Windows isn’t supported for the control machine.
 * Python >= 2.6
 
-### Notes
+> **Notes**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
 
 ## SYNTAX
+[top](#cohesity-protection-job)
 
 ```yaml
 - cohesity_job:
@@ -36,9 +55,12 @@ Ansible Module used to register, remove, start, and stop the Cohesity Protection
 ```
 
 ## EXAMPLES
+[top](#cohesity-protection-job)
+
+### Create a new Physical Server Protection Job
+[top](#cohesity-protection-job)
 
 ```yaml
-# Create a new Physical Server Protection Job
 - cohesity_job:
     cluster: cohesity.lab
     username: admin
@@ -50,8 +72,12 @@ Ansible Module used to register, remove, start, and stop the Cohesity Protection
       - myhost.domain.lab
     protection_policy: Bronze
     storage_domain: Default
+```
 
-# Create a new VMware Server Protection Job
+### Create a new VMware Server Protection Job
+[top](#cohesity-protection-job)
+
+```yaml
 - cohesity_job:
     cluster: cohesity.lab
     username: admin
@@ -63,8 +89,12 @@ Ansible Module used to register, remove, start, and stop the Cohesity Protection
       - myvcenter.domain.lab
     protection_policy: Gold
     storage_domain: Default
+```
 
-# Remove an existing VMware Server Protection Job
+### Remove an existing VMware Server Protection Job
+[top](#cohesity-protection-job)
+
+```yaml
 - cohesity_job:
     cluster: cohesity.lab
     username: admin
@@ -73,7 +103,12 @@ Ansible Module used to register, remove, start, and stop the Cohesity Protection
     name: myvcenter
     environment: VMware
 
-# Remove an existing VMware Server Protection Job and remove all Backups
+```
+
+### Remove an existing VMware Server Protection Job and remove all Backups
+[top](#cohesity-protection-job)
+
+```yaml
 - cohesity_job:
     cluster: cohesity.lab
     username: admin
@@ -83,7 +118,12 @@ Ansible Module used to register, remove, start, and stop the Cohesity Protection
     environment: VMware
     delete_backups: True
 
-# Start an existing VMware Server Protection Job
+```
+
+### Start an existing VMware Server Protection Job
+[top](#cohesity-protection-job)
+
+```yaml
 - cohesity_job:
     cluster: cohesity.lab
     username: admin
@@ -92,7 +132,12 @@ Ansible Module used to register, remove, start, and stop the Cohesity Protection
     name: myvcenter
     environment: VMware
 
-# Stop an actively running VMware Server Protection Job
+```
+
+### Stop an actively running VMware Server Protection Job
+[top](#cohesity-protection-job)
+
+```yaml
 - cohesity_job:
     cluster: cohesity.lab
     username: admin
@@ -104,6 +149,7 @@ Ansible Module used to register, remove, start, and stop the Cohesity Protection
 
 
 ## PARAMETERS
+[top](#cohesity-protection-job)
 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
@@ -126,5 +172,7 @@ Ansible Module used to register, remove, start, and stop the Cohesity Protection
 
 
 ## OUTPUTS
+[top](#cohesity-protection-job)
+
 - Returns the registered Protection Job ID
 

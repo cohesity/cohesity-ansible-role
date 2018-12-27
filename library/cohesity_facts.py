@@ -115,6 +115,38 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
+{
+  "cluster": {
+    "nodes": [
+          # Array of Cohesity Node Details
+    ],
+    "protection": {
+      "jobs": [
+        # Array of Job Details
+      ],
+      "policies": [
+        # Array of Backup Policy Information
+      ],
+      "runs": [
+        # Array of Backup executions
+      ],
+      "sources": {
+        "GenericNas": [
+          # Array of GenericNas Protection Sources
+        ],
+        "Physical": [
+          # Array of Physical Protection Sources
+        ],
+        "VMware":  [
+          # Array of VMware Protection Sources
+        ],
+      }
+    },
+    "storage_domains": [
+          # Array of Cohesity Backup Storage Domains
+    ],
+  }
+}
 
 '''
 

@@ -1,18 +1,38 @@
 # Cohesity Agent Management - Linux
 
+## Table of Contents
+- [Synopsis](#synopsis)
+- [Requirements](#requirements)
+- [Syntax](#syntax)
+- [Examples](#examples)
+  - [Install the current version of the agent on Linux](#Install-the-current-version-of-the-agent-on-Linux)
+  - [Install the current version of the agent on Linux using LDAP credentials](#Install-the-current-version-of-the-agent-on-Linux-using-LDAP-credentials)
+  - [Install the current version of the agent on Linux in Non-LVM mode](#Install-the-current-version-of-the-agent-on-Linux-in-Non-LVM-mode)
+  - [Install the current version of the agent with custom User and Group](#Install-the-current-version-of-the-agent-with-custom-User-and-Group)
+  - [Remove the current installed agent from the host](#Remove-the-current-installed-agent-from-the-host)
+  - [Download the agent installer to a custom location](#Download-the-agent-installer-to-a-custom-location)
+- [Parameters](#parameters)
+- [Outputs](#outputs)
+
 ## SYNOPSIS
+[top](#cohesity-agent-management-linux)
+
 Ansible Module used to deploy or remove the Cohesity Physical Agent from supported Linux Machines.  When executed in a playbook, the Cohesity Agent installation will be validated and the appropriate state action will be applied.  The most recent version of the Cohesity Agent will be automatically downloaded to the host.
 
 ### Requirements
+[top](#cohesity-agent-management-linux)
+
 * Cohesity Cluster running version 6.0 or higher
 * Ansible >= 2.6
   * [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a unix system running any of the following operating systems: Linux (Red Hat, Debian, CentOS), macOS, any of the BSDs. Windows isn’t supported for the control machine.
 * Python >= 2.6
 
-### Notes
+> **Notes**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
+  - When using the default download location, the Cohesity agent installer will be place in `/tmp/<temp-dir` location.  If your environment prevents the use of `/tmp` with a `noexec` option, then the alternate location must be set.
 
 ## SYNTAX
+[top](#cohesity-agent-management-linux)
 
 ```yaml
 - cohesity_agent:
@@ -25,19 +45,50 @@ Ansible Module used to deploy or remove the Cohesity Physical Agent from support
     service_group: <group underwhich the service will be owned>
     create_user: <boolean to determine if the service_user and service_group should be created>
     download_location: <optional path to which the installer will be downloaded>
+    file_based: <boolean to determine if the agent install will be in non-LVM mode and support only file based backups
 ```
 
 ## EXAMPLES
+[top](#cohesity-agent-management-linux)
+
+### Install the current version of the agent on Linux
+[top](#cohesity-agent-management-linux)
 
 ```yaml
-# Install the current version of the agent on Linux
 - cohesity_agent:
     server: cohesity.lab
     cohesity_admin: admin
     cohesity_password: password
     state: present
+```
 
-# Install the current version of the agent with custom User and Group
+### Install the current version of the agent on Linux using LDAP credentials
+[top](#cohesity-agent-management-linux)
+
+```yaml
+- cohesity_agent:
+    server: cohesity.lab
+    cohesity_admin: demo\\administrator
+    cohesity_password: password
+    state: present
+```
+
+### Install the current version of the agent on Linux in Non-LVM mode
+[top](#cohesity-agent-management-linux)
+
+```yaml
+- cohesity_agent:
+    server: cohesity.lab
+    cohesity_admin: admin
+    cohesity_password: password
+    state: present
+    file_based: True
+```
+
+### Install the current version of the agent with custom User and Group
+[top](#cohesity-agent-management-linux)
+
+```yaml
 - cohesity_agent:
     server: cohesity.lab
     cohesity_admin: admin
@@ -46,15 +97,23 @@ Ansible Module used to deploy or remove the Cohesity Physical Agent from support
     service_user: cagent
     service_group: cagent
     create_user: True
+```
 
-# Removes the current installed agent from the host
+### Remove the current installed agent from the host
+[top](#cohesity-agent-management-linux)
+
+```yaml
 - cohesity_agent:
     server: cohesity.lab
     cohesity_admin: admin
     cohesity_password: password
     state: absent
+```
 
-# Download the agent installer to a custom location.
+### Download the agent installer to a custom location
+[top](#cohesity-agent-management-linux)
+
+```yaml
 - cohesity_agent:
     server: cohesity.lab
     cohesity_admin: admin
@@ -65,6 +124,7 @@ Ansible Module used to deploy or remove the Cohesity Physical Agent from support
 
 
 ## PARAMETERS
+[top](#cohesity-agent-management-linux)
 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
@@ -77,6 +137,7 @@ Ansible Module used to deploy or remove the Cohesity Physical Agent from support
 |   | service_group | String | cohesityagent | Group underwhich permissions will be configured for the Cohesity Agent configuration. This group must exist unless *create_user=**True*** is also configured. |
 |   | create_user | Boolean | True | When enabled, will create a new user and group based on the values of *service_user* and *service_group*. |
 |   | download_location: | String |  | Optional directory path to which the installer will be downloaded.  If not selected, then a temporary directory will be created in the default System Temp Directory.  When choosing an alternate directory, the directory and installer will not be deleted at the end of the execution. |
+|   | file_based | Boolean | False | When enabled, will install the agent in non-LVM mode and support only file based backups. |
 
 ## OUTPUTS
 - N/A

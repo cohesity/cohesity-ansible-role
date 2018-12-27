@@ -300,7 +300,7 @@ $module.validate_certs = Get-AnsibleParam -obj $params -name "validate_certs" -t
 $module.service_user     = Get-AnsibleParam -obj $params -name "service_user" -type "str"
 $module.service_password = Get-AnsibleParam -obj $params -name "service_password" -type "str"
 $module.install_type     = Get-AnsibleParam -obj $params -name "type" -type "str" -default "volcbt" -validateset "volcbt","fscbt","allcbt","onlyagent"
-$module.preservesettings = Get-AnsibleParam -obj $params -name "password" -type "bool" -default $False
+$module.preservesettings = Get-AnsibleParam -obj $params -name "preservesettings" -type "bool" -default $False
 $module.state            = Get-AnsibleParam -obj $params -name "state" -type "str" -default "present" -validateset "present","absent"
 
 

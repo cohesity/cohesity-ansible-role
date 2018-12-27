@@ -1,18 +1,41 @@
 # Cohesity Protection Source
 
+## Table of Contents
+- [Synopsis](#synopsis)
+- [Requirements](#requirements)
+- [Syntax](#syntax)
+- [Examples](#examples)
+  - [Register a Physical Cohesity Protection Source on a selected Linux endpoint using Defaults](#Register-a-Physical-Cohesity-Protection-Source-on-a-selected-Linux-endpoint-using-Defaults)
+  - [Register a Physical Cohesity Protection Source on a selected Windows endpoint](#Register-a-Physical-Cohesity-Protection-Source-on-a-selected-Windows-endpoint)
+  - [Register a VMware Cohesity Protection Source on a selected endpoint](#Register-a-VMware-Cohesity-Protection-Source-on-a-selected-endpoint)
+  - [Register a NAS Cohesity Protection Source on a selected NFS mountpoint](#Register-a-NAS-Cohesity-Protection-Source-on-a-selected-NFS-mountpoint)
+  - [Register a NAS Cohesity Protection Source on a selected SMB share](#Register-a-NAS-Cohesity-Protection-Source-on-a-selected-SMB-share)
+  - [Unegister an existing Cohesity Protection Source on a selected endpoint](#Unegister-an-existing-Cohesity-Protection-Source-on-a-selected-endpoint)
+- [Parameters](#parameters)
+- [Outputs](#outputs)
+  - [Example return from a succesful registration of a Linux Physical Source](#Example-return-from-a-succesful-registration-of-a-Linux-Physical-Source)
+  - [Example return from a succesful registration of a VMware Source](#Example-return-from-a-succesful-registration-of-a-VMware-Source)
+  - [Example return from a succesful registration of a GenericNas Source](#Example-return-from-a-succesful-registration-of-a-GenericNas-Source)
+  - [Example return from the succesful unregistration of a Protection Source](#Example-return-from-the-succesful-unregistration-of-a-Protection-Source)
+
 ## SYNOPSIS
+[top](#cohesity-protection-source)
+
 Ansible Module used to register or remove the Cohesity Protection Sources to/from a Cohesity Cluster.  When executed in a playbook, the Cohesity Protection Source will be validated and the appropriate state action will be applied.
 
 ### Requirements
+[top](#cohesity-protection-source)
+
 * Cohesity Cluster running version 6.0 or higher
 * Ansible >= 2.6
   * [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a unix system running any of the following operating systems: Linux (Red Hat, Debian, CentOS), macOS, any of the BSDs. Windows isn’t supported for the control machine.
 * Python >= 2.6
 
-### Notes
+> **Notes**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
 
 ## SYNTAX
+[top](#cohesity-protection-source)
 
 ```yaml
 - cohesity_source:
@@ -35,9 +58,12 @@ Ansible Module used to register or remove the Cohesity Protection Sources to/fro
 ```
 
 ## EXAMPLES
+[top](#cohesity-protection-source)
+
+### Register a Physical Cohesity Protection Source on a selected Linux endpoint using Defaults
+[top](#cohesity-protection-source)
 
 ```yaml
-# Register a Physical Cohesity Protection Source on a selected Linux endpoint using Defaults
 - cohesity_source:
     server: cohesity.lab
     username: admin
@@ -45,7 +71,12 @@ Ansible Module used to register or remove the Cohesity Protection Sources to/fro
     endpoint: mylinux.host.lab
     state: present
 
-# Register a Physical Cohesity Protection Source on a selected Windows endpoint
+```
+
+### Register a Physical Cohesity Protection Source on a selected Windows endpoint
+[top](#cohesity-protection-source)
+
+```yaml
 - cohesity_source:
     server: cohesity.lab
     username: admin
@@ -55,7 +86,12 @@ Ansible Module used to register or remove the Cohesity Protection Sources to/fro
     host_type: Windows
     state: present
 
-# Register a VMware Cohesity Protection Source on a selected endpoint
+```
+
+### Register a VMware Cohesity Protection Source on a selected endpoint
+[top](#cohesity-protection-source)
+
+```yaml
 - cohesity_source:
     server: cohesity.lab
     username: admin
@@ -67,7 +103,12 @@ Ansible Module used to register or remove the Cohesity Protection Sources to/fro
     vmware_type: Vcenter
     state: present
 
-# Register a NAS Cohesity Protection Source on a selected NFS mountpoint
+```
+
+### Register a NAS Cohesity Protection Source on a selected NFS mountpoint
+[top](#cohesity-protection-source)
+
+```yaml
 - cohesity_source:
     server: cohesity.lab
     username: admin
@@ -76,7 +117,12 @@ Ansible Module used to register or remove the Cohesity Protection Sources to/fro
     environment: GenericNas
     state: present
 
-# Register a NAS Cohesity Protection Source on a selected SMB share
+```
+
+### Register a NAS Cohesity Protection Source on a selected SMB share
+[top](#cohesity-protection-source)
+
+```yaml
 - cohesity_source:
     server: cohesity.lab
     username: admin
@@ -87,8 +133,12 @@ Ansible Module used to register or remove the Cohesity Protection Sources to/fro
     nas_username: administrator
     nas_password: password
     state: present
+```
 
-# Unegister an existing Cohesity Protection Source on a selected endpoint
+### Unegister an existing Cohesity Protection Source on a selected endpoint
+[top](#cohesity-protection-source)
+
+```yaml
 - cohesity_source:
     server: cohesity.lab
     username: admin
@@ -101,6 +151,7 @@ Ansible Module used to register or remove the Cohesity Protection Sources to/fro
 
 
 ## PARAMETERS
+[top](#cohesity-protection-source)
 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
@@ -122,5 +173,72 @@ Ansible Module used to register or remove the Cohesity Protection Sources to/fro
 |   | nas_password | String | | Specifies the password to accessthe target NAS Environment. This parameter will not be logged. Required when *state=present* and *environment=GenericNas* and *nas_protocol=SMB* |
 
 ## OUTPUTS
-- Returns the registered Protection Source ID
+[top](#cohesity-protection-source)
 
+>**Note**
+ - Data returned from the Cohesity API will often be prepended with a 'k' such as 'kVMware' or 'kPhysical'.  To adhere to these standards, the Cohesity Ansible module will return these values exactly.
+
+### Example return from a succesful registration of a Linux Physical Source
+[top](#cohesity-protection-source)
+
+```json
+{
+  "ProtectionSource": {
+    "hostType": "kLinux",
+    "id": {
+      "clusterId": 8621173906188849,
+      "clusterIncarnationId": 1538852526333,
+      "id": 240
+    },
+    "name": "10.2.55.72",
+    "type": "kHost"
+  },
+  "changed": true,
+  "item": "control",
+  "msg": "Registration of Cohesity Protection Source Complete"
+}
+```
+
+### Example return from a succesful registration of a VMware Source
+[top](#cohesity-protection-source)
+
+```json
+{
+  "ProtectionSource": {
+    "id": {
+      "uuid": "ebd9bfce-b845-4aa3-842a-3f0dc381bbab"
+    },
+    "name": "vc-67.eco.eng.cohesity.com",
+    "type": "kVCenter"
+  },
+  "changed": true,
+  "msg": "Registration of Cohesity Protection Source Complete"
+}
+```
+
+### Example return from a succesful registration of a GenericNas Source
+[top](#cohesity-protection-source)
+
+```json
+{
+  "ProtectionSource ": {
+    "environment ": "kGenericNas ",
+    "id": 396,
+    "name ": "10.2.145.19:/export_path",
+    "path": "10.2.145.19:/export_path",
+    "protocol ": "NFS"
+  }
+}
+```
+
+### Example return from the succesful unregistration of a Protection Source
+[top](#cohesity-protection-source)
+
+```json
+{
+  "changed": true,
+  "id": 241,
+  "endpoint": "mylinux.host.lab"
+  "msg": "Unregistration of Cohesity Protection Source Complete"
+}
+```

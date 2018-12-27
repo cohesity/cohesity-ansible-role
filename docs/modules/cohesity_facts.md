@@ -1,18 +1,70 @@
 # Cohesity Facts
 
+## Table of Contents
+- [Synopsis](#synopsis)
+- [Requirements](#requirements)
+- [Syntax](#syntax)
+- [Examples](#examples)
+  - [Gather facts about all nodes and supported resources in a cluster](#Gather-facts-about-all-nodes-and-supported-resources-in-a-cluster)
+  - [Gather facts about all nodes and protection sources in a cluster](#Gather-facts-about-all-nodes-and-protection-sources-in-a-cluster)
+  - [Gather facts about all nodes and return active job executions in a cluster](#Gather-facts-about-all-nodes-and-return-active-job-executions-in-a-cluster)
+- [Parameters](#parameters)
+- [Outputs](#outputs)
+
 ## SYNOPSIS
-Ansible Module used to collect and compile details about a Cohesity Cluster.  The data can be compiled and returned as a variable which can then be used to perform actions based on the collected information.
+[top](#cohesity-facts)
+
+The ansible modules `cohesity_facts` is used to collect and compile details about a Cohesity Cluster.  The data can be compiled and returned as a variable which can then be used to perform actions based on the collected information.  The following information is collected.
+
+```json
+{
+  "cluster": {
+    "nodes": [
+          # Array of Cohesity Node Details
+    ],
+    "protection": {
+      "jobs": [
+        # Array of Job Details
+      ],
+      "policies": [
+        # Array of Backup Policy Information
+      ],
+      "runs": [
+        # Array of Backup executions
+      ],
+      "sources": {
+        "GenericNas": [
+          # Array of GenericNas Protection Sources
+        ],
+        "Physical": [
+          # Array of Physical Protection Sources
+        ],
+        "VMware":  [
+          # Array of VMware Protection Sources
+        ],
+      }
+    },
+    "storage_domains": [
+          # Array of Cohesity Backup Storage Domains
+    ],
+  }
+}
+```
 
 ### Requirements
+[top](#cohesity-facts)
+
 * Cohesity Cluster running version 6.0 or higher
 * Ansible >= 2.6
   * [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a unix system running any of the following operating systems: Linux (Red Hat, Debian, CentOS), macOS, any of the BSDs. Windows isn’t supported for the control machine.
 * Python >= 2.6
 
-### Notes
+> **Note:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
 
 ## SYNTAX
+[top](#cohesity-facts)
+
 
 ```yaml
 - cohesity_facts:
@@ -29,23 +81,33 @@ Ansible Module used to collect and compile details about a Cohesity Cluster.  Th
 ```
 
 ## EXAMPLES
+[top](#cohesity-facts)
+
+### Gather facts about all nodes and supported resources in a cluster
+[top](#cohesity-facts)
 
 ```yaml
-# Gather facts about all nodes and supported resources in a cluster
 - cohesity_facts:
     cluster: cohesity.lab
     username: admin
     password: password
+```
+### Gather facts about all nodes and protection sources in a cluster
+[top](#cohesity-facts)
 
-# Gather facts about all nodes and protection sources in a cluster
+```yaml
 - cohesity_facts:
     cluster: cohesity.lab
     username: admin
     password: password
     state: minimal
     include_sources: True
+```
 
-# Gather facts about all nodes and return active job executions in a cluster
+### Gather facts about all nodes and return active job executions in a cluster
+[top](#cohesity-facts)
+
+```yaml
 - cohesity_facts:
     cluster: cohesity.lab
     username: admin
@@ -58,6 +120,8 @@ Ansible Module used to collect and compile details about a Cohesity Cluster.  Th
 
 
 ## PARAMETERS
+[top](#cohesity-facts)
+
 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
@@ -73,5 +137,39 @@ Ansible Module used to collect and compile details about a Cohesity Cluster.  Th
 |   | include_deleted | Boolean | False | Determines if results should include deleted items. |
 
 ## OUTPUTS
-- N/A
+[top](#cohesity-facts)
 
+```json
+{
+  "cluster": {
+    "nodes": [
+          # Array of Cohesity Node Details
+    ],
+    "protection": {
+      "jobs": [
+        # Array of Job Details
+      ],
+      "policies": [
+        # Array of Backup Policy Information
+      ],
+      "runs": [
+        # Array of Backup executions
+      ],
+      "sources": {
+        "GenericNas": [
+          # Array of GenericNas Protection Sources
+        ],
+        "Physical": [
+          # Array of Physical Protection Sources
+        ],
+        "VMware":  [
+          # Array of VMware Protection Sources
+        ],
+      }
+    },
+    "storage_domains": [
+          # Array of Cohesity Backup Storage Domains
+    ],
+  }
+}
+```

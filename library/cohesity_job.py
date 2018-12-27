@@ -183,6 +183,7 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
+Returns the registered Protection Job ID
 '''
 
 
