@@ -13,8 +13,7 @@ Items collected:
 
 Upon completion of this play, the output is written to a file called `cohesity_facts.json` and stored in the Ansible Inventory Directory.
 
-### Notes
-  - Currently, the Ansible Module requires Full Cluster Administrator access.
+> **Tip:**  Currently, the Ansible Module requires Full Cluster Administrator access.
 
 ## Ansible Variables
 
