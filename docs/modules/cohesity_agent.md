@@ -71,7 +71,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 | X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentails can be configured in one of two formats.<br>- Domain\\username<br>- username@domain |
 | X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
-|   | state | Choice | -**present**<br>-absent | Determines whether the agent is *present* or *absent* from the host |
+|   | state | Choice | -**present**<br>-absent | Determines whether the agent is *present* or *absent* from the host. |
 |   | service_user | String | cohesityagent | Username under which the Cohesity Agent is installed and run. This user must exist unless _create_user=**True**_ is also configured. |
 |   | service_group | String | cohesityagent | Group under which permissions are set for the Cohesity Agent configuration. This group must exist unless _create_user=**True**_ is also configured. |
 |   | create_user | Boolean | True | When enabled, this creates a new user and group based on the values of *service_user* and *service_group*. |
