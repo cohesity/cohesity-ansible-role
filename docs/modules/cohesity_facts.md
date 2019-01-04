@@ -64,7 +64,7 @@ The Ansible Module collects and compiles details about a Cohesity cluster.  The 
 | X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentails can be configured in one of two formats.<br>- Domain\\username<br>- username@domain |
 | X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
-|   | state | Choice | -**complete**<br>-minimal | Determines what the level of collection should be *complete* or *absent* from the cluster.  If *complete*, then all data is collected automatically regardless of the specified inclusions excluding `include_deleted`. |
+|   | state | Choice | -**complete**<br>-minimal | Determines the level of data collection from the cluster: *complete* or *minimal*.<br>- If *complete*, all data is collected automatically regardless of any *include_X* settings, with the exception of the `include_deleted` option; if `include_deleted` is set to **False**, jobs and sources that are marked as _deleted_ are ignored.<br>- If *minimal*, only the base information about the cluster and nodes is collected. If additional *include_X* items are set to **True**, those items are also included. |
 |   | include_sources | Boolean | False | Determines whether the specified resource information is collected. |
 |   | include_jobs | Boolean | False | Determines whether the specified resource information is collected. |
 |   | include_runs | Boolean | False | Determines whether the specified resource information is collected. |
