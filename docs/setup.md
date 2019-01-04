@@ -14,8 +14,7 @@
   ansible-galaxy install -r requirements.yml
   ```
 * All set! You can now reference the `cohesity.ansible` role in your plays directly, like this:
-  ```
-  yaml
+  ```yaml
   roles:
       - cohesity.ansible
   ```
