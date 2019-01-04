@@ -72,8 +72,8 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 | X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
 |   | state | Choice | -**present**<br>-absent | Determines whether the agent is *present* or *absent* from the host |
-|   | service_user | String | cohesityagent | Username under which the Cohesity Agent is installed and run. This user must exist unless *create_user=**True** is also configured. |
-|   | service_group | String | cohesityagent | Group under which permissions are set for the Cohesity Agent configuration. This group must exist unless *create_user=**True** is also configured. |
+|   | service_user | String | cohesityagent | Username under which the Cohesity Agent is installed and run. This user must exist unless _create_user=**True**_ is also configured. |
+|   | service_group | String | cohesityagent | Group under which permissions are set for the Cohesity Agent configuration. This group must exist unless _create_user=**True**_ is also configured. |
 |   | create_user | Boolean | True | When enabled, this creates a new user and group based on the values of *service_user* and *service_group*. |
 |   | download_location: | String |  | Optional directory path to which the installer is downloaded. If not selected, then a temporary directory is created in the default System Temp Directory. If you choose an alternate directory, the directory and installer will not be deleted at the end of the execution. |
 
