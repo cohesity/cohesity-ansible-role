@@ -1,7 +1,8 @@
 #
 # cohesity_hints
 #
-# Copyright information
+# Copyright (c) 2018 Cohesity Inc
+# Apache License Version 2.0
 #
 
 
