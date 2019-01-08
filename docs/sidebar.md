@@ -1,6 +1,6 @@
 - **Getting Started**
 - [Introduction](overview.md)
-- [Pre-requisites](pre-requisites.md)
+- [Prerequisites](pre-requisites.md)
 - [Setup](setup.md)
 - [How to use](how-to-use.md)
 - [Configure your Ansible Inventory](examples/configuring-your-ansible-inventory.md)

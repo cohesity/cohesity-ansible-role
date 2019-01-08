@@ -11,20 +11,20 @@
 ## SYNOPSIS
 [top](#cohesity-agent-uninstallation-and-installation-using-ansible-inventory)
 
-This example play leverages the Ansible Inventory to dynamically remove and install the Cohesity Agent on the supported platforms.  This source file for this playbook is located at the root of the role in `examples/demos/agents.yml`
+This example play employs the Ansible Inventory to dynamically remove and install the Cohesity Agent on the supported platforms. This source file for this playbook is located at the root of the role in `examples/demos/agents.yml`
 > **IMPORTANT**!<br>
   This example play should be considered for demo purposes only.  This will uninstall and then install the Cohesity Agent on all Physical hosts based on the Ansible Inventory.  There are no job or source validations nor state checks to ensure that backups are not running.
 
 #### How it works
 - The play starts by reading all `linux` servers from the Ansible Inventory and uninstalling the agent (if present).
-- Upon completion of the agent removal, the latest version of the agent will be installed on the `linux` servers.
-- The next step will be to perform the uninstallation of the Agent on `windows` servers.
-  - This will be followed by a mandatory reboot of the server as a part of the uninstallation (only if the agent was present).
-- Once the reboot is complete, the latest version of the agent will be installed on the `windows` servers.
-  - If the windows `install_type` is `volcbt` then a reboot of the windows servers will be triggered.
+- Upon completion of agent removal, the latest version of the agent is installed on the `linux` servers.
+- The next step is to perform the uninstallation of the Agent on `windows` servers.
+  - This is followed by a mandatory reboot of the server as a part of the uninstallation (only if the agent was present).
+- Once the reboot is complete, the latest version of the agent is installed on the `windows` servers.
+  - If the windows `install_type` is `volcbt`, then a reboot of the windows servers is triggered.
 
 > **Note:**
-  - Currently, the Ansible Module requires Full Cluster Administrator access.
+  - Currently, the Cohesity Ansible Role requires Cohesity Cluster Administrator access.
   - Prior to using this playbook, refer to the [Setup](/setup.md) and [How to use](/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
@@ -32,10 +32,10 @@ This example play leverages the Ansible Inventory to dynamically remove and inst
 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
-| X | **var_cohesity_server** | String | | IP or FQDN for the Cohesity Cluster |
-| X | **var_cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity Cluster |
-| X | **var_cohesity_password** | String | | Password belonging to the selected Username.  This parameter will not be logged. |
-|   | var_validate_certs | Boolean | False | Switch determines if SSL Validation should be enabled. |
+| X | **var_cohesity_server** | String | | IP or FQDN for the Cohesity cluster |
+| X | **var_cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster |
+| X | **var_cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
+|   | var_validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
 
 ## Ansible Inventory Configuration
 [top](#cohesity-agent-uninstallation-and-installation-using-ansible-inventory)
@@ -91,7 +91,7 @@ Here is an example playbook that installs the Cohesity agent on all `linux` host
 ---
   - hosts: linux
     # => We need to specify these variables to connect
-    # => to the Cohesity Cluster
+    # => to the Cohesity cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: admin
@@ -133,7 +133,7 @@ Here is an example playbook that installs the Cohesity agent on all `windows` ho
 # =>
   - hosts: windows
     # => We need to specify these variables to connect
-    # => to the Cohesity Cluster
+    # => to the Cohesity cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: admin
@@ -171,4 +171,30 @@ Here is an example playbook that installs the Cohesity agent on all `windows` ho
                 state: present
                 install_type: "{{ var_agent_install_type }}"
                 reboot: "{{ var_windows_reboot }}"
+```
+
+## Ansible Inventory Configuration
+
+To take full advantage of this Ansible Play, configure your Ansible Inventory File with the keys and values shown. This makes it much easier to manage the overall experience.
+
+Here is an example Inventory File. Before using it, edit it to address your own environment.
+```ini
+[linux]
+10.2.46.96
+10.2.46.97
+10.2.46.98
+10.2.46.99
+
+[linux:vars]
+ansible_user=root
+
+[windows]
+10.2.45.88
+10.2.45.89
+
+[windows:vars]
+ansible_user=administrator
+ansible_password=secret
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore
 ```

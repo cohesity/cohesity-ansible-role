@@ -14,7 +14,7 @@
 ## SYNOPSIS
 [top](#cohesity-facts)
 
-The ansible modules `cohesity_facts` is used to collect and compile details about a Cohesity Cluster.  The data can be compiled and returned as a variable which can then be used to perform actions based on the collected information.  The following information is collected.
+This Ansible Module collects and compiles details about a Cohesity cluster.  The data can be compiled and returned as a variable, which can then be used to perform actions based on the collected information.
 
 ```json
 {
@@ -54,10 +54,10 @@ The ansible modules `cohesity_facts` is used to collect and compile details abou
 ### Requirements
 [top](#cohesity-facts)
 
-* Cohesity Cluster running version 6.0 or higher
-* Ansible >= 2.6
-  * [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a unix system running any of the following operating systems: Linux (Red Hat, Debian, CentOS), macOS, any of the BSDs. Windows isn’t supported for the control machine.
-* Python >= 2.6
+* Cohesity DataPlatform running version 6.0 or higher
+* Ansible version 2.6 or higher
+  * The [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a system running one of the following UNIX operating systems: Linux (Red Hat, Debian, CentOS), macOS, or any of the BSDs. Windows is not supported for the Control Machine.
+* Python version 2.6 or higher
 
 > **Note:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
@@ -125,16 +125,16 @@ The ansible modules `cohesity_facts` is used to collect and compile details abou
 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
-| X | **cluster** | String | | IP or FQDN for the Cohesity Cluster |
-| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity Cluster. Domain Specific credentails can be configured in one of two formats.<br>- Domain\\username<br>- username@domain |
-| X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter will not be logged. |
-|   | validate_certs | Boolean | False | Switch determines if SSL Validation should be enabled. |
-|   | state | Choice | -**complete**<br>-minimal | Determines what the level of collection should be *complete* or *absent* from the Cluster.  If *complete*, then all data is collected automatically regardless of the specified inclusions excluding `include_deleted`. |
-|   | include_sources | Boolean | False | Determines if the specified resource information should be collected. |
-|   | include_jobs | Boolean | False | Determines if the specified resource information should be collected. |
-|   | include_runs | Boolean | False | Determines if the specified resource information should be collected. |
-|   | active_only | Boolean | False | Determines if only active jobs should be collected. |
-|   | include_deleted | Boolean | False | Determines if results should include deleted items. |
+| X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
+| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentails can be configured in one of two formats.<br>- Domain\\username<br>- username@domain |
+| X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
+|   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
+|   | state | Choice | -**complete**<br>-minimal | Determines the level of data collection from the cluster: *complete* or *minimal*.<br>- If *complete*, all data is collected automatically regardless of any *include_X* settings, with the exception of the `include_deleted` option; if `include_deleted` is set to **False**, jobs and sources that are marked as _deleted_ are ignored.<br>- If *minimal*, only the base information about the cluster and nodes is collected. If additional *include_X* items are set to **True**, those items are also included. |
+|   | include_sources | Boolean | False | Determines whether the specified resource information is collected. |
+|   | include_jobs | Boolean | False | Determines whether the specified resource information is collected. |
+|   | include_runs | Boolean | False | Determines whether the specified resource information is collected. |
+|   | active_only | Boolean | False | Determines whether only active jobs are collected. |
+|   | include_deleted | Boolean | False | Determines whether results include deleted items. |
 
 ## OUTPUTS
 [top](#cohesity-facts)
