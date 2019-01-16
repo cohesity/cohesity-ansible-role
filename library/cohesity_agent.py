@@ -1,7 +1,6 @@
 #!/usr/bin/python
 # Copyright (c) 2017 Ansible Project
-# GNU General Public License v3.0+ (see COPYING or
-# https://www.gnu.org/licenses/gpl-3.0.txt)
+# Apache License Version 2.0
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -132,29 +131,35 @@ def verify_dependencies():
 
 def check_agent(module, results):
     # => Determine if the Cohesity Agent is currently installed
-    if not os.path.exists("/etc/init.d/cohesity-agent"):
-        # => If the file is not found then let's return False
+    if os.path.exists("/etc/init.d/cohesity-agent"):
+        cmd = "/etc/init.d/cohesity-agent version"
+        rc, out, err = module.run_command(cmd)
+        version = out.split("\n")[1]
+
+        if version.startswith('Version'):
+            # => When the agent is installed, we should be able to return
+            # => the version information
+            results['version'] = version
+        else:
+            # => If this didn't return a Version, then we have bigger problems
+            # => and probably should try to re-install or force the uninstall.
+            results['version'] = "unknown"
+            results['check_agent'] = dict(
+                stdout=out,
+                stderr=err
+            )
+
+        return results
+    elif os.path.exists("/etc/cohesity-agent"):
+        # => If the file is found then let's return an unknown state
+        # => immediately
+        results['version'] = "unknown"
+        return results
+    else:
+        # => If the files are not found then let's return False
         # => immediately
         results['version'] = False
         return results
-
-    cmd = "/etc/init.d/cohesity-agent version"
-    rc, out, err = module.run_command(cmd)
-
-    version = out.split("\n")[1]
-    if version.startswith('Version'):
-        # => When the agent is installed, we should be able to return
-        # => the version information
-        results['version'] = version
-    else:
-        # => If this didn't return a Version, then we have bigger problems
-        # => and probably should try to re-install or force the uninstall.
-        results['version'] = "unknown"
-        results['check_agent'] = dict(
-            stdout=out,
-            stderr=err
-        )
-    return results
 
 
 def download_agent(module, path):
@@ -220,28 +225,6 @@ def installation_failures(module, stdout, rc, message):
     stdwarn = [k for k in stdout_lines if 'WARNING:' in k]
     stdwarn = "\n".join(stdwarn)
     module.fail_json(changed=False, msg=message, error=stderr, output=stdout, warn=stdwarn, exitcode=rc)
-
-
-# def install_agent(module, filename):
-
-#     # => This command will run the self-extracting installer for the agent on machine and
-#     # => suppress opening a new window (nox11) and not show the extraction (noprogress) results
-#     # => which end up in stderr.
-#     #
-#     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
-#     # => try..except will give us a clean backwards compatibility.
-#     try:
-#         cmd = "{0} --nox11 --noprogress -- --install --yes".format(filename)
-#     except:
-#         cmd = "%s --nox11 --noprogress -- --install --yes" % filename
-
-#     rc, stdout, stderr = module.run_command(cmd)
-
-#     # => Any return code other than 0 is considered a failure.
-#     if rc:
-#         installation_failures(
-#             module, stdout, rc, "Cohesity Agent is partially installed")
-#     return (True, "Successfully Installed the Cohesity agent")
 
 def install_agent(module, installer):
 
@@ -456,8 +439,7 @@ def main():
             if 'installer' in results:
               shutil.rmtree(results['installer'])
         else:
-            pass
-            # shutil.rmtree(tempdir)
+            shutil.rmtree(tempdir)
 
     if success:
         # -> Return Ansible JSON

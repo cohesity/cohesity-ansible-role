@@ -1,33 +1,52 @@
-# Guide to configuring your Ansible Inventory
+# Configure Your Ansible Inventory
 
-## SYNOPSIS
-The Cohesity.Ansible role includes several Demo and Complete plays designed to help you get your feet wet with using Ansible to manage your Cohesity cluster.  As part of this solution, we have integrated heavily with the Ansible Inventory to help streamline the process.  The inventory is a collection of hosts and variables that controls how the connections can be made.  We are able to leverage this information to simplify the process of deploying an entire solution on Day 1.
+## Table of Contents
+- [Synopsis](#synopsis)
+- [Ansible Inventory File](#Ansible-Inventory-File)
+    - [What is it?](#What-is-it)
+    - [Special Note about Windows Hosts](#Special-Note-about-Windows-Hosts)
+    - [Required Components](#Required-Components)
+    - [Example Ansible Inventory File](#Example-Ansible-Inventory-File)
+
+## Synopsis
+[top](#Configure-Your-Ansible-Inventory)
+
+The Cohesity Ansible Role includes several Demo and Complete plays designed to help you get started using Ansible to manage your Cohesity cluster.  As part of this solution, we have integrated heavily with the Ansible Inventory to help streamline the process.  The inventory is a collection of hosts and variables that controls how the connections are made.  We are able to leverage this information to simplify the process of deploying an entire solution on Day 1.
 
 ## Ansible Inventory File
+[top](#Configure-Your-Ansible-Inventory)
 
 ### What is it?
-> Ansible works against multiple systems in your infrastructure at the same time. It does this by selecting portions of systems listed in Ansible’s inventory, which defaults to being saved in the location /etc/ansible/hosts. You can specify a different inventory file using the -i <path> option on the command line.
+[top](#Configure-Your-Ansible-Inventory)
 
-[More details on the Ansible Inventory File](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html)
+> Ansible works against multiple systems in your infrastructure at the same time. It does this by selecting portions of systems listed in Ansible’s inventory, which defaults to being saved in the `/etc/ansible/hosts` location. You can specify a different inventory file using the *-i <path>* option on the command line.
+
+For more details on the Ansible Inventory File, see [Working with Inventory](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html) in the *Ansible User Guide*.
 
 ### Special Note about Windows Hosts
-By default, Ansible leverages Python and SSH to communicate.  This role is written specifically to be used from a Linux based workstation and leveraging Python.  However, the module `cohesity_win_agent` is the exception to this rule.  This module will allow for the installation of the Cohesity Agent on Physical Windows servers by means with WinRM and Powershell.  In order to connect, please read the Official documentation on [Setting up a Windows Host](https://docs.ansible.com/ansible/latest/user_guide/windows_setup.html) to work with Ansible.
+[top](#Configure-Your-Ansible-Inventory)
+
+By default, Ansible uses Python and SSH to communicate.  This role is written specifically to be used from a Linux-based workstation, leveraging Python.  However, the `cohesity_win_agent` module is the exception to this.  That module allows you to install the Cohesity Agent on Physical Windows servers by using WinRM and Powershell.  To connect and work with Ansible, read [Setting up a Windows Host](https://docs.ansible.com/ansible/latest/user_guide/windows_setup.html).
 
 ### Required Components
-The Below list comprises the required settings and values in order to leverage the demo and complete examples.
+[top](#Configure-Your-Ansible-Inventory)
+
+The list below comprises the required settings and values in order to use the Demo and Complete examples.
 
 | Key Name | Description | Usage |
 | --- | --- | --- |
-| **[workstation]** | Required: Single host identifier from which calls to the Cohesity Cluster will be made.  This can be your local machine or a remote Linux workstation.  | If local, leverage the `ansible_connection=local` option to prevent SSH calls |
+| **[workstation]** | Required: Single host identifier from which calls to the Cohesity cluster are made.  This can be your local machine or a remote Linux workstation.  | If local, employ the `ansible_connection=local` option to prevent SSH calls. |
 | [physical:children] | Collection of groups to include in all Physical Environment actions | This can be a collection of other groups like<br>[physical:children]<br>linux<br>windows |
-| [group_name] | Organized by Platform, OS, or any other common characteristics.  The name of the server should be resolvable otherwise insert `ansible_host=IP` to handle the registration.|  If each item should have different values, then each of the supported inventory options can be included there. |
-| [group_name:vars] | Collection of variables belonging to the specific named group.  This can include any defauls required such as authentication settings or other related variables. | Note: If specific configured in the [group_name] a variable at that level will override the value in this section. |
-| [vmware] | Inventory name followed by **ansible_host**="vCenter IP" information for managed VMware Endpoints | Note: If the inventory name is resolvable, then the `ansible_host` information is not required. |
-| [vmware:vars] | Supported Variables as required by VMware Environment Management | Variable Types:<br>**type**=VMware<br>**vmware_type**=VCenter<br>**source_username**=username<br>**source_password**=password|
-| [generic_nas] | Inventory name followed by **endpoint**="path" information for managed GenericNas Endpoints | Note: Windows Shares must have each '\' escaped as such `\\\\windows_host\\share_name` |
-| [generic_nas:vars] | Supported Variables as required by GenericNas Environment Management | Variable Types:<br>**type**=GenericNas<br>**nas_protocol**=SMB<br>**nas_username**=username<br>**nas_password**=password|
+| [group_name] | Organized by platform, OS, or any other common characteristics.  If the name of the server does not resolve, insert `ansible_host=IP` to handle the registration.|  If each item should have different values, then each of the supported inventory options can be included there. |
+| [group_name:vars] | Collection of variables belonging to the named group.  This can include any required defaults, such as authentication settings or other related variables. | **Note**: If specifically configured in `[group_name]`, a variable at that level will override the value in this section. |
+| [vmware] | Inventory name followed by **ansible_host**="vCenter IP" information for managed VMware endpoints | **Note**: If the inventory name is resolvable, then the `ansible_host` information is not required. |
+| [vmware:vars] | Supported variables as required by VMware Environment Management | Variable Types:<br>**type**=VMware<br>**vmware_type**=VCenter<br>**source_username**=username<br>**source_password**=password|
+| [generic_nas] | Inventory name followed by **endpoint**="path" information for managed GenericNAS Endpoints | **Note**: Windows Shares must have '\' escaped, as in: `\\\\windows_host\\share_name` |
+| [generic_nas:vars] | Supported variables as required by GenericNAS Environment Management | Variable Types:<br>**type**=GenericNas<br>**nas_protocol**=SMB<br>**nas_username**=username<br>**nas_password**=password|
 
 ### Example Ansible Inventory File
+[top](#Configure-Your-Ansible-Inventoryy)
+
 ```
 # => Workstation Declaration which will also be included in our
 # => Backup

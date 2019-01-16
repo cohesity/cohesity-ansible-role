@@ -1,14 +1,21 @@
 # => Cohesity Protection Jobs for Physical, VMware, and GenericNAS environments
 # =>
 # => Role: cohesity.ansible
-# => Version: 0.5.0
-# => Date: 2018-11-05
+# => Version: 0.6.0
+# => Date: 2018-12-28
 # =>
 
 # => Create a new Protection Job by Endpoint based on Ansible Inventory
 # =>
 ---
   - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: admin
+        var_cohesity_password: admin
+        var_validate_certs: False
     gather_facts: no
     roles:
       - cohesity.ansible
@@ -28,7 +35,7 @@
               job_name: "{{ hostvars[item]['ansible_host'] }}"
               cancel_active: True
         with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'sources', 'stopped', 'remove', 'physical' ]
+        tags: [ 'cohesity', 'jobs', 'stopped', 'remove', 'physical' ]
 
       - name: Remove Protection Jobs for each Physical Server
         include_role:
@@ -45,7 +52,7 @@
               endpoint: "{{ hostvars[item]['ansible_host'] }}"
               delete_backups: True
         with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'sources', 'remove', 'physical' ]
+        tags: [ 'cohesity', 'jobs', 'remove', 'physical' ]
 
       - name: Create new Protection Jobs for each Physical Server
         include_role:
@@ -61,7 +68,7 @@
               job_name: "{{ hostvars[item]['ansible_host'] }}"
               endpoint: "{{ hostvars[item]['ansible_host'] }}"
         with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'sources', 'register', 'physical' ]
+        tags: [ 'cohesity', 'jobs', 'register', 'physical' ]
 
       - name: Start On-Demand Protection Job Execution for each Physical Server
         include_role:
@@ -76,7 +83,7 @@
               state: started
               job_name: "{{ hostvars[item]['ansible_host'] }}"
         with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'sources', 'started', 'physical' ]
+        tags: [ 'cohesity', 'jobs', 'started', 'physical' ]
 
         # => Manage VMware
       - name: Stop existing Protection Job Execution for each VMware Server
@@ -94,7 +101,7 @@
               environment: "{{ hostvars[item]['type'] }}"
               cancel_active: True
         with_items: "{{ groups.vmware }}"
-        tags: [ 'cohesity', 'sources', 'stopped', 'remove', 'vmware' ]
+        tags: [ 'cohesity', 'jobs', 'stopped', 'remove', 'vmware' ]
 
       - name: Remove Protection Jobs for each VMware Server
         include_role:
@@ -112,7 +119,7 @@
               environment: "{{ hostvars[item]['type'] }}"
               delete_backups: True
         with_items: "{{ groups.vmware }}"
-        tags: [ 'cohesity', 'sources', 'remove', 'vmware' ]
+        tags: [ 'cohesity', 'jobs', 'remove', 'vmware' ]
 
       - name: Create new Protection Jobs for each VMware Server
         include_role:
@@ -129,7 +136,7 @@
               endpoint: "{{ hostvars[item]['ansible_host'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.vmware }}"
-        tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
+        tags: [ 'cohesity', 'jobs', 'register', 'vmware' ]
 
       - name: Start On-Demand Protection Job Execution for each VMware Server
         include_role:
@@ -145,7 +152,7 @@
               job_name: "{{ hostvars[item]['ansible_host'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.vmware }}"
-        tags: [ 'cohesity', 'sources', 'started', 'vmware' ]
+        tags: [ 'cohesity', 'jobs', 'started', 'vmware' ]
 
         # => Manage Generic NAS Endpoints
       - name: Stop existing Protection Job Execution for each NAS Endpoint
@@ -163,7 +170,7 @@
               environment: "{{ hostvars[item]['type'] }}"
               cancel_active: True
         with_items: "{{ groups.generic_nas }}"
-        tags: [ 'cohesity', 'sources', 'stopped', 'remove', 'generic_nas' ]
+        tags: [ 'cohesity', 'jobs', 'stopped', 'remove', 'generic_nas' ]
 
       - name: Remove Protection Jobs for each NAS Endpoint
         include_role:
@@ -181,7 +188,7 @@
               environment: "{{ hostvars[item]['type'] }}"
               delete_backups: True
         with_items: "{{ groups.generic_nas }}"
-        tags: [ 'cohesity', 'sources', 'remove', 'generic_nas' ]
+        tags: [ 'cohesity', 'jobs', 'remove', 'generic_nas' ]
 
       - name: Create new Protection Jobs for each NAS Endpoint
         include_role:
@@ -198,7 +205,7 @@
               endpoint: "{{ hostvars[item]['endpoint'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.generic_nas }}"
-        tags: [ 'cohesity', 'sources', 'register', 'generic_nas' ]
+        tags: [ 'cohesity', 'jobs', 'register', 'generic_nas' ]
 
       - name: Start On-Demand Protection Job Execution for each NAS Endpoint
         include_role:
@@ -214,6 +221,6 @@
               job_name: "{{ hostvars[item]['endpoint'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.generic_nas }}"
-        tags: [ 'cohesity', 'sources', 'started', 'generic_nas' ]
+        tags: [ 'cohesity', 'jobs', 'started', 'generic_nas' ]
 
 

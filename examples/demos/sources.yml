@@ -1,14 +1,21 @@
 # => Cohesity Protection Sources for Physical, VMware, and GenericNAS environments
 # =>
 # => Role: cohesity.ansible
-# => Version: 0.5.0
-# => Date: 2018-11-05
+# => Version: 0.6.0
+# => Date: 2018-12-28
 # =>
 
 # => Register each Protection Source by Environment based on Ansible Inventory
 # =>
 ---
   - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: admin
+        var_cohesity_password: admin
+        var_validate_certs: False
     gather_facts: no
     roles:
       - cohesity.ansible
