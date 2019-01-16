@@ -1,17 +1,34 @@
-# How to use
+# How to Use
+## Table of Contents
+- [Getting Started](#Getting-Started)
+- [Ansible Inventory](#Ansible-Inventory)
+- [Using the Cohesity Ansible Role](#Using-the-cohesity-ansible-Role) 
 
 ## Getting Started
-If you haven't used Ansible before, you may want to watch this [quick-start video](https://www.ansible.com/resources/videos/quick-start-video) to get started.
+[top](#how-to-use)
+
+If you haven't used Ansible before, watch this [quick-start video](https://www.ansible.com/resources/videos/quick-start-video) to get started.
 
 ## Ansible Inventory
-Please make sure that your [Ansible Inventory File](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html) is setup correctly.
+[top](#how-to-use)
 
-  > **Tip:** What is [Ansible Inventory File](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html)?
+Make sure that your [Ansible Inventory File](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html) is set up correctly.
+
+  > **Tip:** What is the [Ansible Inventory File](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html)?
   - Ansible works against multiple systems in your infrastructure at the same time. It does this by selecting a set of systems listed in Ansible’s inventory (default location: `/etc/ansible/hosts`).
   - You can also specify a different inventory file using the `-i <inventory_file>` option on the command line.
-  - You can test if the inventory file is setup correctly by testing connection to all the hosts: `ansible -m ping -i <inventory_file> all`
+  - Aternately, you can include the inventory keypair in your ansible.cfg file to set the default file location
+  ```ini
+  >$> vi ansible.cfg
+  [defaults]
+  inventory = ./dev
+  roles_path = ./roles
+  ```
+  - You can test if the inventory file is setup correctly by testing connection to all the hosts:
+    - `ansible -m ping -i <inventory_file> all`
+    - `ansible -m ping all` (if using the ansible.cfg overide)
 
-  * Here is an example of the inventory file. This inventory is simple and has only one host group called `linux`. Typically the inventory file will contain multiple host groups.
+  * This is an example of the inventory file. This inventory is simple and has only one host group called `linux`, but typically, the inventory file will contain multiple host groups.
     ```ini
       [linux]
       10.2.46.95
@@ -22,14 +39,46 @@ Please make sure that your [Ansible Inventory File](https://docs.ansible.com/ans
       ansible_user=root
     ```
 
+  * Here is a more advanced example of the inventory file. This inventory is contains multiple host groups (ubuntu and centos) and one roll-up group called `linux`. This model allows for creating different configurations and settings depending on the host information.  In this case, we can perform actions on only the `centos` or `ubuntu` groups or on both groups simultaneously by referencing the `linux` group
+    ```ini
+      [workstation]
+      control ansible_connection=local ansible_host=10.2.46.94 type=Linux
+
+      [linux]
+      ubuntu
+      centos
+
+      [ubuntu]
+      10.2.46.95
+
+      [centos]
+      10.2.46.96
+      10.2.46.97
+
+      [linux:vars]
+      type=Linux
+
+      [ubuntu:vars]
+      ansible_user=ubuntu
+
+      [centos:vars]
+      ansible_user=root
+      ansible_become=False
+
+    ```
+
   * If you plan to run Ansible tasks against Windows hosts, please make sure that the [windows hosts are setup correctly](https://www.ansible.com/blog/connecting-to-a-windows-host).
 
-## Using `cohesity.ansible` Role
-* After [installing Cohesity Ansible Role](setup.md), you can include the `cohesity.ansible` role and specific tasks along with the supported variables in your plays.
+  * For more information on how to use the Ansible Inventory, see [Configure Your Ansible Inventory](examples/configuring-your-ansible-inventory.md).
 
-* Here is an example playbook that uninstalls the Cohesity agent (only if present), then installs the latest Cohesity agent on all the `linux` hosts in the inventory file.
+## Using the Cohesity Ansible Role
+[top](#how-to-use)
 
-  You can create a file called `deploy-cohesity-agent.yml`, add the contents below and then run this playbook using `ansible-playbook`:
+* After [installing the Cohesity Ansible Role](setup.md), you can include the `cohesity.ansible` role and specific tasks along with the supported variables, in your plays.
+
+* Below is an example playbook that uninstalls the Cohesity agent (if present), then installs the latest Cohesity agent on all the `linux` hosts in the inventory file.
+
+  You can create a file called `deploy-cohesity-agent.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
   ansible-playbook -i <inventory_file> deploy-cohesity-agent.yml
   ```

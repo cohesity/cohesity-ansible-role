@@ -1,14 +1,21 @@
 # => Cohesity Full Protection for Physical, VMware, and GenericNAS environments
 # =>
 # => Role: cohesity.ansible
-# => Version: 0.5.0
-# => Date: 2018-11-05
+# => Version: 0.6.0
+# => Date: 2018-12-28
 # =>
 
 # => Install the Cohesity Agent on each identified Linux and Windows environment
 # =>
 ---
   - hosts: linux
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: admin
+        var_cohesity_password: admin
+        var_validate_certs: False
     become: true
     # => We need to gather facts to determine the OS type of
     # => the machine
@@ -30,6 +37,13 @@
         tags: [ 'cohesity', 'agent', 'install', 'physical', 'linux' ]
 
   - hosts: windows
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: admin
+        var_cohesity_password: admin
+        var_validate_certs: False
     gather_facts: no
     roles:
         - cohesity.ansible
@@ -54,6 +68,13 @@
 # =>
 
   - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: admin
+        var_cohesity_password: admin
+        var_validate_certs: False
     gather_facts: no
     roles:
       - cohesity.ansible

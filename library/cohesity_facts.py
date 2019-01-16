@@ -1,7 +1,6 @@
 #!/usr/bin/python
-# Copyright (c) 2017 Ansible Project
-# GNU General Public License v3.0+ (see COPYING or
-# https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2018 Cohesity Inc
+# Apache License Version 2.0
 
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
@@ -115,6 +114,38 @@ EXAMPLES = '''
 '''
 
 RETURN = '''
+{
+  "cluster": {
+    "nodes": [
+          # Array of Cohesity Node Details
+    ],
+    "protection": {
+      "jobs": [
+        # Array of Job Details
+      ],
+      "policies": [
+        # Array of Backup Policy Information
+      ],
+      "runs": [
+        # Array of Backup executions
+      ],
+      "sources": {
+        "GenericNas": [
+          # Array of GenericNas Protection Sources
+        ],
+        "Physical": [
+          # Array of Physical Protection Sources
+        ],
+        "VMware":  [
+          # Array of VMware Protection Sources
+        ],
+      }
+    },
+    "storage_domains": [
+          # Array of Cohesity Backup Storage Domains
+    ],
+  }
+}
 
 '''
 

@@ -1,7 +1,6 @@
 #!powershell
-# Copyright (c) 2017 Ansible Project
-# GNU General Public License v3.0+ (see COPYING or
-# https://www.gnu.org/licenses/gpl-3.0.txt)
+# Copyright (c) 2018 Cohesity Inc
+# Apache License Version 2.0
 
 #Requires -Module Ansible.ModuleUtils.Legacy
 
@@ -300,7 +299,7 @@ $module.validate_certs = Get-AnsibleParam -obj $params -name "validate_certs" -t
 $module.service_user     = Get-AnsibleParam -obj $params -name "service_user" -type "str"
 $module.service_password = Get-AnsibleParam -obj $params -name "service_password" -type "str"
 $module.install_type     = Get-AnsibleParam -obj $params -name "type" -type "str" -default "volcbt" -validateset "volcbt","fscbt","allcbt","onlyagent"
-$module.preservesettings = Get-AnsibleParam -obj $params -name "password" -type "bool" -default $False
+$module.preservesettings = Get-AnsibleParam -obj $params -name "preservesettings" -type "bool" -default $False
 $module.state            = Get-AnsibleParam -obj $params -name "state" -type "str" -default "present" -validateset "present","absent"
 
 
