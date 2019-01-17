@@ -156,10 +156,37 @@ def check_agent(module, results):
         results['version'] = "unknown"
         return results
     else:
-        # => If the files are not found then let's return False
-        # => immediately
-        results['version'] = False
-        return results
+        cmd = "ps -aux | grep [c]ohesity | grep -v python | awk '{print $2}'"
+        rc, out, err = module.run_command(cmd,check_rc=True,use_unsafe_shell=True)
+        if out:
+            orphaned_agents = out.split("\n")
+            for process in orphaned_agents:
+                if process:
+                    try:
+                        cmd = "kill -9 {0}".format(process)
+                    except:
+                        cmd = "kill -9 %s" % (process)
+                    rc, out, err = module.run_command(cmd)
+
+                    if err:
+                        results['changed'] = False
+                        results['Failed'] = True
+                        results['check_agent'] = dict(
+                            stdout=out,
+                            stderr=err
+                        )
+                        results['process_id'] = process
+                        module.fail_json(msg="Failed to remove an orphaned Cohesity Agent service which is still running", **results)
+                    else:
+                        pass
+            results['version'] = False
+            return results
+
+        else:
+            # => If the files are not found then let's return False
+            # => immediately
+            results['version'] = False
+            return results
 
 
 def download_agent(module, path):
