@@ -169,14 +169,19 @@ def check_agent(module, results):
                     rc, out, err = module.run_command(cmd)
 
                     if err:
-                        results['changed'] = False
-                        results['Failed'] = True
-                        results['check_agent'] = dict(
-                            stdout=out,
-                            stderr=err
-                        )
-                        results['process_id'] = process
-                        module.fail_json(msg="Failed to remove an orphaned Cohesity Agent service which is still running", **results)
+                        pattern = "No such process"
+                        if pattern in err:
+                            # => Since the kill command returned 'No such process' we will just continue
+                            pass
+                        else: 
+                            results['changed'] = False
+                            results['Failed'] = True
+                            results['check_agent'] = dict(
+                                stdout=out,
+                                stderr=err
+                            )
+                            results['process_id'] = process
+                            module.fail_json(msg="Failed to remove an orphaned Cohesity Agent service which is still running", **results)
                     else:
                         pass
             results['version'] = False
