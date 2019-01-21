@@ -39,7 +39,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 
 ```yaml
 - cohesity_source:
-    server: <ip or hostname for cohesity cluster>
+    cluster: <ip or hostname for cohesity cluster>
     cohesity_admin: <username with cluster level permissions>
     cohesity_password: <password for the selected user>
     validate_certs: <boolean to determine if SSL certificates should be validated>
@@ -65,10 +65,11 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 
 ```yaml
 - cohesity_source:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     endpoint: mylinux.host.lab
+    environment: Physical
     state: present
 
 ```
@@ -78,7 +79,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 
 ```yaml
 - cohesity_source:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     endpoint: mywindows.host.lab
@@ -93,7 +94,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 
 ```yaml
 - cohesity_source:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     endpoint: myvcenter.host.lab
@@ -110,7 +111,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 
 ```yaml
 - cohesity_source:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     endpoint: mynfs.host.lab:/exports
@@ -124,7 +125,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 
 ```yaml
 - cohesity_source:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     endpoint: \\\\myfileserver.host.lab\\data
@@ -140,7 +141,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 
 ```yaml
 - cohesity_source:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     endpoint: myvcenter.host.lab
