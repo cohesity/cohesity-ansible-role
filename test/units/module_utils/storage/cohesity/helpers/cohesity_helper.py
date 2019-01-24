@@ -20,7 +20,7 @@ from os import environ
 try:
     from ansible.compat.tests import unittest
     from ansible.compat.tests.mock import call, create_autospec, patch
-except:
+except Exception as e:
     # => With this change, we need to include the 'test' directory
     # => in our path
     sys_path.append(os_path.join(environ['PYTHONPATH'], '../test'))

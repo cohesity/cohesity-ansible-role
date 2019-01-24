@@ -34,7 +34,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_win_agent:
-    server: <ip or hostname for cohesity cluster>
+    cluster: <ip or hostname for cohesity cluster>
     cohesity_admin: <username with cluster level permissions>
     cohesity_password: <password for the selected user>
     validate_certs: <boolean to determine if SSL certificates should be validated>
@@ -53,7 +53,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_win_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     state: present
@@ -64,7 +64,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_win_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     state: present
@@ -77,7 +77,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_win_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     state: present
@@ -89,7 +89,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_win_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     username: admin
     password: password
     state: absent

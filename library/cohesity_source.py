@@ -15,7 +15,7 @@ try:
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source__all
-except:
+except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source__all

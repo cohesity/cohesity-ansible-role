@@ -14,6 +14,7 @@ from Cohesity Platforms.
 import json
 import traceback
 from ansible.module_utils.urls import open_url, urllib_error
+import ansible.module_utils.six.moves.urllib_parse as urllib_parse
 
 try:
     # => TODO:  Find a better way to handle this!!!
@@ -21,7 +22,7 @@ try:
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
-except:
+except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
 
@@ -51,7 +52,7 @@ def get__cluster(self):
     except urllib_error.HTTPError as e:
         try:
             msg = json.loads(e.read())['message']
-        except:
+        except Exception as e:
             # => For HTTPErrors that return no JSON with a message (bad errors), we
             # => will need to handle this by setting the msg variable to some default.
             msg = "no-json-data"
@@ -72,7 +73,7 @@ def get__nodes(self):
     except urllib_error.HTTPError as e:
         try:
             msg = json.loads(e.read())['message']
-        except:
+        except Exception as e:
             # => For HTTPErrors that return no JSON with a message (bad errors), we
             # => will need to handle this by setting the msg variable to some default.
             msg = "no-json-data"
@@ -357,3 +358,76 @@ def get__protection_run__all__by_id(module, self):
     except Exception as error:
         module.fail_json(msg="Unexpected error caused while managing the Cohesity Protection Jobs.",
                          exception=traceback.format_exc())
+
+
+def get__file_snapshot_information__by_filename(module, self):
+
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = self['token']
+    try:
+        # => We need to make this a safe querystring filename
+        filename = urllib_parse.quote_plus(self['restore_obj']['filename'])
+        uri = "https://" + server + \
+            "/irisservices/api/v1/public/restore/files/snapshotsInformation?jobId=" + str(self['restore_obj']['jobUid']['id']) + \
+            "&clusterId=" + str(self['restore_obj']['jobUid']['clusterId']) + \
+            "&clusterIncarnationId=" + str(self['restore_obj']['jobUid']['clusterIncarnationId']) + \
+            "&sourceId=" + str(self['restore_obj']['protectionSourceId']) + \
+            "&filename=" + filename
+
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        objects = open_url(url=uri, headers=headers,
+                           validate_certs=validate_certs)
+        objects = json.loads(objects.read())
+
+        # => Returns an array of snapshots that contain that file.
+        return objects
+    except urllib_error.URLError as error:
+        raise HTTPException(error.read())
+
+
+def get__vmware_snapshot_information__by_vmname(module, self):
+
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = self['token']
+    try:
+        uri = "https://" + server + \
+            "/irisservices/api/v1/public/restore/objects" + \
+            "?environments[]=kVMware&search=" + self['restore_obj']['vmname'] + "&jobIds[]=" + str(self['restore_obj']['jobUid']['id'])
+
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        objects = open_url(url=uri, headers=headers,
+                           validate_certs=validate_certs)
+        objects = json.loads(objects.read())
+
+        # => Returns an array of snapshots that contain that file.
+        return objects
+    except urllib_error.URLError as error:
+        raise HTTPException(error.read())
+
+
+def get__restore_job__by_type(module, self):
+
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = self['token']
+    try:
+        uri = "https://" + server + \
+            "/irisservices/api/v1/public/restore/tasks?taskTypes=" + self['restore_type']
+
+        if "count" in self:
+            uri = uri + "&pageCount=" + str(self['count'])
+
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        objects = open_url(url=uri, headers=headers,
+                           validate_certs=validate_certs)
+        objects = json.loads(objects.read())
+
+        # => Returns an array of snapshots that contain that file.
+        return objects
+    except urllib_error.URLError as error:
+        raise HTTPException(error.read())

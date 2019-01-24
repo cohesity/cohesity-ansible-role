@@ -25,7 +25,7 @@ def cohesity_common_argument_spec():
 
 def raise__cohesity_exception__handler(error, module, message=""):
     if not message:
-      message = "Unexpected error caused while managing the Cohesity Module."
+        message = "Unexpected error caused while managing the Cohesity Module."
 
     module.fail_json(msg=message,
                      error_details=str(error),

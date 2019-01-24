@@ -22,7 +22,7 @@ from os import environ
 try:
     from ansible.compat.tests import unittest
     from ansible.compat.tests.mock import call, create_autospec, patch
-except:
+except Exception as e:
     # => With this change, we need to include the 'test' directory
     # => in our path
     sys_path.append(os_path.join(environ['PYTHONPATH'], '../test'))
@@ -44,7 +44,7 @@ try:
     # => Set the default Module and ModuleUtility Paths
     global_module_path = 'library'
     global_module_util_path = 'module_utils.storage.cohesity'
-except:
+except Exception as e:
     # => Reset the correct path Location
     sys_path = current_path
     from ansible.modules.storage.cohesity import cohesity_facts

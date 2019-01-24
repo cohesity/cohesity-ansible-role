@@ -20,7 +20,7 @@ try:
     global_module_util_path = 'module_utils.storage.cohesity'
     from cohesity_helper import unittest, FakeModule, ModuleTestCase, set_module_args, json, \
         patch, AnsibleExitJson, AnsibleFailJson, cohesity___reg_verify__helper, pytest
-except:
+except Exception as e:
     # => Reset the correct path Location
     sys_path = current_path
     from ansible.modules.storage.cohesity import cohesity_job
@@ -33,9 +33,9 @@ except:
 
 exit_return_dict = {}
 
+
 # => Success Test Cases
 class TestProtectionSource__Methods(unittest.TestCase):
-
     def tearDown(self):
         self.patcher.stop()
 

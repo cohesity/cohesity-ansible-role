@@ -36,7 +36,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_agent:
-    server: <ip or hostname for cohesity cluster>
+    cluster: <ip or hostname for cohesity cluster>
     cohesity_admin: <username with cluster level permissions>
     cohesity_password: <password for the selected user>
     validate_certs: <boolean to determine if SSL certificates should be validated>
@@ -56,7 +56,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     cohesity_admin: admin
     cohesity_password: password
     state: present
@@ -67,7 +67,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     cohesity_admin: demo\\administrator
     cohesity_password: password
     state: present
@@ -78,7 +78,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     cohesity_admin: admin
     cohesity_password: password
     state: present
@@ -90,7 +90,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     cohesity_admin: admin
     cohesity_password: password
     state: present
@@ -104,7 +104,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     cohesity_admin: admin
     cohesity_password: password
     state: absent
@@ -115,7 +115,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 
 ```yaml
 - cohesity_agent:
-    server: cohesity.lab
+    cluster: cohesity.lab
     cohesity_admin: admin
     cohesity_password: password
     download_location: /software/installers

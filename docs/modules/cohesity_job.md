@@ -35,7 +35,7 @@ This Ansible Module registers, removes, starts, and stops the Cohesity Protectio
 
 ```yaml
 - cohesity_job:
-    server: <ip or hostname for cohesity cluster>
+    cluster: <ip or hostname for cohesity cluster>
     cohesity_admin: <username with cluster level permissions>
     cohesity_password: <password for the selected user>
     validate_certs: <boolean to determine if SSL certificates should be validated>
