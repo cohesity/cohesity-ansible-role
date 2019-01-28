@@ -1,4 +1,4 @@
-# Cohesity Ansible Role <small>BETA</small>
+# Cohesity Ansible Role
 
 ![](assets/images/cohesity_ansible.png)
 ---
