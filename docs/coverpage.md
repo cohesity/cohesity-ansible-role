@@ -1,6 +1,6 @@
 ![](assets/images/cohesity_ansible.png)
 
-# Cohesity Ansible Role <small>BETA</small>
+# Cohesity Ansible Role
 
 * Ansible role for interacting with [__Cohesity DataPlatform__](https://www.cohesity.com/products/data-platform).
 * Makes it easy to automate common tasks and orchestrate workflows.

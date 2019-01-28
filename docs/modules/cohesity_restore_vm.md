@@ -6,14 +6,14 @@
 - [Syntax](#syntax)
 - [Examples](#examples)
   - [Restore a single Virtual Machine](#Restore-a-single-Virtual-Machine)
-  - [Restore multiple Virtual Machines from a specific snapshot with a new prefix and disable the network](#Restore-multiple-Virtual-Machines-from-a-specific-snapshot-with-a-new-prefix-and-disable-the-network)
+  - [Restore multiple Virtual Machines from a specific Snapshot with a new prefix and disable the network](#Restore-multiple-Virtual-Machines-from-a-specific-snapshot-with-a-new-prefix-and-disable-the-network)
 - [Parameters](#parameters)
 - [Outputs](#outputs)
 
 ## Synopsis
 [top](#cohesity-restore-virtual-machines)
 
-This Ansible Module supports Physical and GenericNAS environments and initiates a file and folder recovery operation for the chosen Cohesity Protection Job on a Cohesity cluster.  When executed in a playbook, the Cohesity Restore operation is validated and the appropriate recovery action is applied.
+This Ansible Module supports Physical and GenericNAS environments and initiates a file and folder restore operation for the selected Cohesity Protection Job on a Cohesity cluster. When executed in a playbook, the Cohesity restore operation is validated and the appropriate restore action is applied.
 
 ### Requirements
 [top](#cohesity-restore-virtual-machines)
@@ -35,16 +35,16 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     cohesity_admin: <username with cluster level permissions>
     cohesity_password: <password for the selected user>
     validate_certs: <boolean to determine if SSL certificates should be validated>
-    state: <state of the Recovery Operation>
-    name: <assigned descriptor to assign to the Recovery Job.  The Recovery Job name will consist of the job_name:name format>
+    state: <state of the restore operation>
+    name: <assigned descriptor to assign to the Restore Job.  The Restore Job name will consist of the job_name:name format>
     environment: <protection source environment type>
-    job_name: <selected Protection Job from which the recovery will be initated>
-    endpoint: <identifies the source endpoint to which the the recovery operation will be performed>
+    job_name: <selected Protection Job from which the restore will be initated>
+    endpoint: <identifies the source endpoint to which the the restore operation will be performed>
     backup_id: <optional Cohesity Backup Run ID for the restore operation.  If not selected, the most recent RunId will be used>
     backup_timestamp: <not implemented>
     vm_names:
-      - <list of virtual machines to be recovered by the operation>
-    wait_for_job: <boolean to determine if the task should wait for the recovery operation to complete prior to moving to the next operation>
+      - <list of virtual machines to be restored by the operation>
+    wait_for_job: <boolean to determine if the task should wait for the restore operation to complete prior to moving to the next operation>
     wait_minutes: <number of minutes to wait until the job completes>
     datastore_id: <id of the datastore to which the machines will be restored>
     datastore_folder_id: <id of the datastore_folder to which the machines will be restored>
@@ -79,7 +79,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
       - chs-win-01
 ```
 
-### Restore multiple Virtual Machines from a specific snapshot with a new prefix and disable the network
+### Restore multiple Virtual Machines from a specific Snapshot with a new prefix and disable the network
 [top](#cohesity-restore-virtual-machines)
 
 ```yaml
@@ -111,31 +111,31 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
 | X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentails can be configured in one of two formats.<br>- Domain\\username<br>- username@domain |
 | X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
-|   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the Recovery Operation. |
-| X | **name** | String | | Descriptor to assign to the Recovery Job.  The Recovery Job name will consist of the job_name:name format |
+|   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the restore operation. |
+| X | **name** | String | | Descriptor to assign to the Restore Job.  The Restore Job name will consist of the job_name:name format |
 | X | **job_name** | String | | Name of the Protection Job |
-| X | **environment** | Choice | -VMware | Specifies the environment type (such as VMware) of the Protection Source this Job is protecting. Supported environment types include 'VMware' |
+| X | **environment** | Choice | -VMware | Specifies the environment type (such as VMware) of the Protection Source this Job is protecting. Supported environment types currently include `VMware`. |
 | X | **endpoint** | String | | Specifies the network endpoint where the Protection Source is reachable. It can be the URL, hostname, IP address, NFS mount point, or SMB Share of the Protection Source. |
-|   | backup_id | String |  | Optional Cohesity ID to use as source for the Restore operation.  If not selected, the most recent RunId will be used. |
+|   | backup_id | String |  | Optional Cohesity ID to use as source for the restore operation.  If not selected, the most recent RunId will be used. |
 |   | backup_timestamp | String |  | Not implemented. |
 | X | **vm_names** | Array |  | Array of Virtual Machines to restore. |
 |   | wait_for_job | Boolean | True | Should wait until the Restore Job completes |
 |   | wait_minutes | String | 5 | Number of minutes to wait until the job completes. |
-|   | datastore_id | String | | Specifies the datastore where the object’s files should be recovered to. This field is mandatory to recover objects to a different resource pool or to a different parent source. If not specified, objects are recovered to their original datastore locations in the parent source. |
+|   | datastore_id | String | | Specifies the datastore where the object’s files should be restored. This field is mandatory to restore objects to a different resource pool or to a different parent source. If not specified, objects are restored to their original datastore locations in the parent source. |
 |   | datastore_folder_id | String | | Specifies the folder where the restore datastore should be created. This is applicable only when the VMs are being cloned. |
 |   | network_connected | Boolean | True | Specifies whether the network should be left in disabled state. Attached network is enabled by default. Set this flag to true to disable it. |
-|   | network_id | String | | Specifies a network configuration to be attached to the cloned or recovered object. Specify this field to override the preserved network configuration or to attach a new network configuration to the cloned or recovered objects. You can get the networkId of the kNetwork object by setting includeNetworks to ‘true’ in the GET /public/protectionSources operation. In the response, get the id of the desired kNetwork object, the resource pool, and the registered parent Protection Source. |
-|   | power_state | Boolean | True| Specifies the power state of the cloned or recovered objects. By default, the cloned or recovered objects are powered off. |
-|   | resource_pool_id | String | | Specifies the resource pool where the cloned or recovered objects are attached. |
-|   | prefix | String | | Specifies a prefix to prepended to the source object name to derive a new name for the recovered or cloned object. |
-|   | suffix | String | | Specifies a suffix to appended to the original source object name to derive a new name for the recovered or cloned object |
+|   | network_id | String | | Specifies a network configuration to be attached to the cloned or restored object. Specify this field to override the preserved network configuration or to attach a new network configuration to the cloned or restored objects. |
+|   | power_state | Boolean | True| Specifies the power state of the cloned or restored objects. By default, the cloned or restored objects are powered off. |
+|   | resource_pool_id | String | | Specifies the resource pool where the cloned or restored objects are attached. |
+|   | prefix | String | | Specifies a prefix to prepended to the source object name to derive a new name for the restored or cloned object. |
+|   | suffix | String | | Specifies a suffix to appended to the original source object name to derive a new name for the restored or cloned object |
 |   | vm_folder_id | String | | Specifies a folder where the VMs should be restored |
 
 
 ## Outputs
 [top](#cohesity-restore-virtual-machines)
 
-- Returns the Recovery Operation Details as an array of Recovery Job details.
+- Returns the restore operation Details as an array of Restore Job details.
 
 ```json
 {
