@@ -11,16 +11,16 @@
 ## Synopsis
 [top](#task-cohesity-virtual-machine-restore-operation)
 
-Use this task to perform a Cohesity Restore operation
+Use this task to perform a Cohesity VM restore operation. 
 
 #### How It Works
-- The task starts by determining whether the named task exists and is not running.
-- Upon validation, the task creates a new Restore Operation (*state=present*) to recover files from the cluster.
+- This Ansible task starts by determining whether the named restore task exists and is not running.
+- Upon validation, the task creates a new restore operation to recover VMs from the cluster.
 
 ### Requirements
 [top](#task-cohesity-virtual-machine-restore-operation)
 
-* Cohesity Cluster running version 6.0 or higher
+* Cohesity DataPlatform running version 6.0 or higher
 * Ansible version 2.6 or higher
   * The [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a system running one of the following UNIX operating systems: Linux (Red Hat, Debian, CentOS), macOS, or any of the BSDs. Windows is not supported for the Control Machine.
 * Python version 2.6 or higher
@@ -32,7 +32,7 @@ Use this task to perform a Cohesity Restore operation
 ## Ansible Variables
 [top](#task-cohesity-virtual-machine-restore-operation)
 
-The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Cohesity Protection Job](/modules/cohesity_job.md?id=syntax).
+The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Syntax](/modules/cohesity_job.md?id=syntax) in the Cohesity Protection Job module.
 ```yaml
 cohesity_restore_vm:
   state: present
@@ -62,11 +62,11 @@ This example shows how to include the Cohesity Ansible Role in your custom playb
 ### Restore a Virtual Machine from most recent snapshot
 [top](#task-cohesity-virtual-machine-restore-operation)
 
-This is an example playbook that creates a new Virtual Machine Recovery Operation for Protection Job. (Remember to change it to suit your environment.)
+This is an example playbook that creates a new Virtual Machine restore operation for a Protection Job. (Remember to change it to suit your environment.)
 > **Notes:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
-  - This example requires that the endpoint matches an existing Protection Source.  See [Task: Cohesity Protection Source Management](tasks/source.md).
-  - This example requires that the Protection job exists and has been run at least once.  See [Task: Cohesity Protection Job Management](tasks/job.md).
+  - This example requires that the endpoint matches an existing Protection Source. See the [Cohesity Protection Source Management](tasks/source.md) task.
+  - This example requires that the Protection job exists and has been run at least once. See the [Cohesity Protection Job Management](tasks/job.md) task.
 
 ```yaml
 ---
@@ -117,7 +117,7 @@ This is an example playbook that creates a new Virtual Machine Recovery Operatio
 ## How the Task Works
 [top](#task-cohesity-virtual-machine-restore-operation)
 
-The following information is copied directly from the included task in this role.  The source file is located at the root of this role in `/tasks/restore_vm.yml`.
+The following information is copied directly from the included task in this role. The source file is located at the root of this role in `/tasks/restore_vm.yml`.
 ```yaml
 ---
 - name: "Cohesity Recovery Job: Restore a set of Virtual Machines"
