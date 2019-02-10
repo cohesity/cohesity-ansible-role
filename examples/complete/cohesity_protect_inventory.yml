@@ -236,10 +236,3 @@
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.generic_nas }}"
         tags: [ 'cohesity', 'jobs', 'started', 'generic_nas' ]
-
-
-
-
-
-
-

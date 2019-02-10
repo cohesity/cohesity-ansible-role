@@ -24,4 +24,3 @@
     suffix: "{{ cohesity_restore_vm.suffix | default('') }}"
     vm_folder_id: "{{ cohesity_restore_vm.vm_folder_id | default('') }}"
   tags: always
-

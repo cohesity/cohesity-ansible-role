@@ -18,4 +18,3 @@
     preserve_attributes: "{{ cohesity_restore_file.preserve_attributes | default('yes') }}"
     restore_location: "{{ cohesity_restore_file.restore_location | default('') }}"
   tags: always
-

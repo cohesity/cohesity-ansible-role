@@ -32,4 +32,3 @@
 
         - name: "Write the Collected Facts to {{ inventory_dir }}/cohesity_facts.json"
           local_action: copy content="{{ cohesity | to_nice_json }}" dest="{{ inventory_dir }}/cohesity_facts.json"
-```
