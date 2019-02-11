@@ -14,7 +14,7 @@ This example play shows how to use information collected by the *cohesity_facts*
 > **IMPORTANT**!<br>
   This example play should be considered for demo purposes only.  This play cancels **all** actively running backups on an existing Cohesity cluster.
 
-#### How It Works 
+#### How It Works
 - The play starts by reading all data about the Cohesity cluster and registering a new variable.
 - For each active Protection Job, a call is made to cancel the backup.
 
@@ -57,7 +57,7 @@ Here is an example playbook that queries the Cohesity cluster for all Protection
 ```yaml
 # => Cohesity Protection Job cancellation for all active Jobs
 # =>
-# => Role: cohesity.ansible
+# => Role: cohesity_ansible_role
 # => Version: 0.6.0
 # => Date: 2018-12-28
 # =>
@@ -74,7 +74,7 @@ Here is an example playbook that queries the Cohesity cluster for all Protection
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity.ansible
+      - cohesity_ansible_role
     tasks:
         # => Gather Cohesity Facts
         - name: Gather Cohesity Cluster Details
@@ -90,7 +90,7 @@ Here is an example playbook that queries the Cohesity cluster for all Protection
 
         - name: "Cohesity Protection Job: Modify Job to state of stopped/canceled."
           include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: job
           vars:
             cohesity_server: "{{ var_cohesity_server }}"

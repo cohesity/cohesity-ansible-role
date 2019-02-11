@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  role_name: cohesity
+  role_name: cohesity_ansible_role
   author: Cohesity
   description: Ansible role to manage Cohesity DataPlatform
   company: Cohesity

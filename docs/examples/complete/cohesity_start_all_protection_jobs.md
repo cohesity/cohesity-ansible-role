@@ -12,7 +12,7 @@
 
 This example play shows how to use information collected by the *cohesity_facts* module to discover all registered Protection Jobs and start each backup automatically.
 
-#### How It Works 
+#### How It Works
 - The play starts by reading all data about the Cohesity cluster and registering a new variable.
 - For each registered Protection Job, a call is made to start the backup.
 
@@ -55,7 +55,7 @@ This is an example playbook that queries the Cohesity cluster for all Protection
 ```yaml
 # => Cohesity Protection Job start for all registered Jobs
 # =>
-# => Role: cohesity.ansible
+# => Role: cohesity_ansible_role
 # => Version: 0.6.0
 # => Date: 2018-12-28
 # =>
@@ -72,7 +72,7 @@ This is an example playbook that queries the Cohesity cluster for all Protection
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity.ansible
+      - cohesity_ansible_role
     tasks:
         # => Gather Cohesity Facts
         - name: Gather Cohesity Cluster Details
@@ -87,7 +87,7 @@ This is an example playbook that queries the Cohesity cluster for all Protection
 
         - name: "Cohesity Protection Job: Modify Job to state of started."
           include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: job
           vars:
             cohesity_server: "{{ var_cohesity_server }}"

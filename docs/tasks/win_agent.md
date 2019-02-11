@@ -68,11 +68,11 @@ This is an example playbook that installs the Cohesity agent on all `windows` ho
         var_validate_certs: False
     gather_facts: no
     roles:
-        - cohesity.ansible
+        - cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Windows Physical Server
         include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -106,11 +106,11 @@ This is an example playbook that installs the Cohesity Agent on all `windows` ho
         var_service_password: "secret"
     gather_facts: no
     roles:
-        - cohesity.ansible
+        - cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Windows Physical Server
         include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

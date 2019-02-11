@@ -11,7 +11,7 @@
 ## Synopsis
 [top](#task-cohesity-virtual-machine-restore-operation)
 
-Use this task to perform a Cohesity VM restore operation. 
+Use this task to perform a Cohesity VM restore operation.
 
 #### How It Works
 - This Ansible task starts by determining whether the named restore task exists and is not running.
@@ -79,7 +79,7 @@ This is an example playbook that creates a new Virtual Machine restore operation
         var_cohesity_password: admin
         var_validate_certs: False
         var_cohesity_restore_name: "Ansible Test File Restore"
-        var_cohesity_endpoint: 
+        var_cohesity_endpoint:
         var_cohesity_job_name:
         var_cohesity_vms:
         var_power_state: off
@@ -88,11 +88,11 @@ This is an example playbook that creates a new Virtual Machine restore operation
         var_wait_minutes: 30
         var_wait_for_job: yes
     roles:
-      - cohesity.ansible
+      - cohesity_ansible_role
     tasks:
       - name: Restore Files
         include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: restore_file
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

@@ -1,6 +1,6 @@
 # => Cohesity Agent Management for Physical environments
 # =>
-# => Role: cohesity.ansible
+# => Role: cohesity_ansible_role
 # => Version: 0.6.0
 # => Date: 2018-12-28
 # =>
@@ -21,11 +21,11 @@
     gather_facts: yes
     become: true
     roles:
-        - cohesity.ansible
+        - cohesity_ansible_role
     tasks:
       - name: Remove Cohesity Agent from each Linux Physical Server
         include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -38,7 +38,7 @@
 
       - name: Install new Cohesity Agent on each Linux Physical Server
         include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -60,11 +60,11 @@
         var_windows_reboot: True
     gather_facts: no
     roles:
-        - cohesity.ansible
+        - cohesity_ansible_role
     tasks:
       - name: Remove Cohesity Agent from each Windows Physical Server
         include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -78,7 +78,7 @@
 
       - name: Install new Cohesity Agent on each Windows Physical Server
         include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

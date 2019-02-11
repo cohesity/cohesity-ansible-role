@@ -6,15 +6,15 @@
 * Create a file called `requirements.yml` on the Ansible Control Machine and add these lines to the file:
   ```
   # Install Cohesity Ansible role from GitHub
-  - name: cohesity.ansible
+  - name: cohesity_ansible_role
     src: https://github.com/cohesity/cohesity-ansible-role
   ```
 * Install the Cohesity Ansible Role on the Ansible Control Machine using `ansible-galaxy` on the command line:
   ```
   ansible-galaxy install -r requirements.yml
   ```
-* All set! You can now reference the `cohesity.ansible` role in your plays directly, like this:
+* All set! You can now reference the `cohesity_ansible_role` role in your plays directly, like this:
   ```yaml
   roles:
-      - cohesity.ansible
+      - cohesity_ansible_role
   ```

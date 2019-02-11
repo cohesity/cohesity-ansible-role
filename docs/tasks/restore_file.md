@@ -73,15 +73,15 @@ This is an example playbook that creates a new file restore operation for a Prot
         var_cohesity_password: admin
         var_validate_certs: False
         var_cohesity_restore_name: "Ansible Test File Restore"
-        var_cohesity_endpoint: 
+        var_cohesity_endpoint:
         var_cohesity_job_name:
         var_cohesity_files:
     roles:
-      - cohesity.ansible
+      - cohesity_ansible_role
     tasks:
       - name: Restore Files
         include_role:
-            name: cohesity.ansible
+            name: cohesity_ansible_role
             tasks_from: restore_file
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
