@@ -74,7 +74,7 @@ Make sure that your [Ansible Inventory File](https://docs.ansible.com/ansible/la
 ## Using the Cohesity Ansible Role
 [top](#how-to-use)
 
-* After [installing the Cohesity Ansible Role](setup.md), you can include the `cohesity_ansible_role` role and specific tasks along with the supported variables, in your plays.
+* After [installing the Cohesity Ansible Role](setup.md), you can include the `cohesity.cohesity_ansible_role` role and specific tasks along with the supported variables, in your plays.
 
 * Below is an example playbook that uninstalls the Cohesity agent (if present), then installs the latest Cohesity agent on all the `linux` hosts in the inventory file.
 
@@ -87,7 +87,7 @@ Make sure that your [Ansible Inventory File](https://docs.ansible.com/ansible/la
   ```yaml
   # => Cohesity Agent Management
   # =>
-  # => Role: cohesity_ansible_role
+  # => Role: cohesity.cohesity_ansible_role
   # =>
 
   # => Install the Cohesity Agent on each linux host
@@ -106,11 +106,11 @@ Make sure that your [Ansible Inventory File](https://docs.ansible.com/ansible/la
     gather_facts: yes
     become: true
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Uninstall Cohesity Agent from each Linux Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -122,7 +122,7 @@ Make sure that your [Ansible Inventory File](https://docs.ansible.com/ansible/la
 
       - name: Install new Cohesity Agent on each Linux Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

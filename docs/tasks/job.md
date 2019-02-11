@@ -74,11 +74,11 @@ This is an example playbook that creates a new Protection Job for all Physical h
         var_validate_certs: False
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Create new Protection Jobs for each Physical Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -117,11 +117,11 @@ This is an example playbook that creates a new Protection Jop for the chosen vCe
         var_endpoint: myvcenter.cohesity.lab
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Create new Protection Jobs for chosen VMware Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -156,11 +156,11 @@ This is an example playbook that creates new Protection Sources for the chosen v
         var_job_name: myvcenter.cohesity.lab
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Configure Cohesity Protection Source on NFS Export
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -195,11 +195,11 @@ This is an example playbook that deletes a Protection Source from a Physical Sou
         var_delete_backups: True
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Configure Cohesity Protection Source on NFS Export
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

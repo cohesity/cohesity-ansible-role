@@ -57,7 +57,7 @@ Here is an example playbook that queries the Cohesity cluster for all Protection
 ```yaml
 # => Cohesity Protection Job cancellation for all active Jobs
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # => Version: 0.6.0
 # => Date: 2018-12-28
 # =>
@@ -74,7 +74,7 @@ Here is an example playbook that queries the Cohesity cluster for all Protection
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
         # => Gather Cohesity Facts
         - name: Gather Cohesity Cluster Details
@@ -90,7 +90,7 @@ Here is an example playbook that queries the Cohesity cluster for all Protection
 
         - name: "Cohesity Protection Job: Modify Job to state of stopped/canceled."
           include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: job
           vars:
             cohesity_server: "{{ var_cohesity_server }}"

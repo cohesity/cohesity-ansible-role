@@ -105,7 +105,7 @@ Here is an example playbook that registers an existing Protection Source as a ne
 ```yaml
 # => Cohesity Protection Jobs for Physical, VMware, and GenericNAS environments
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # => Version: 0.5.0
 # => Date: 2018-12-28
 # =>
@@ -123,12 +123,12 @@ Here is an example playbook that registers an existing Protection Source as a ne
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
         # => Manage Physical
       - name: Create new Protection Jobs for each Physical Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -144,7 +144,7 @@ Here is an example playbook that registers an existing Protection Source as a ne
 
       - name: Start On-Demand Protection Job Execution for each Physical Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -160,7 +160,7 @@ Here is an example playbook that registers an existing Protection Source as a ne
         # => Manage VMware
       - name: Create new Protection Jobs for each VMware Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -177,7 +177,7 @@ Here is an example playbook that registers an existing Protection Source as a ne
 
       - name: Start On-Demand Protection Job Execution for each VMware Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -194,7 +194,7 @@ Here is an example playbook that registers an existing Protection Source as a ne
         # => Manage Generic NAS Endpoints
       - name: Create new Protection Jobs for each NAS Endpoint
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -211,7 +211,7 @@ Here is an example playbook that registers an existing Protection Source as a ne
 
       - name: Start On-Demand Protection Job Execution for each NAS Endpoint
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -237,7 +237,7 @@ Here is an example playbook that removes an existing Protection Job and deletes 
 ```yaml
 # => Cohesity Protection Jobs for Physical, VMware, and GenericNAS environments
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # => Version: 0.5.0
 # => Date: 2018-12-28
 # =>
@@ -255,12 +255,12 @@ Here is an example playbook that removes an existing Protection Job and deletes 
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
         # => Manage Physical
       - name: Stop existing Protection Job Execution for each Physical Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -276,7 +276,7 @@ Here is an example playbook that removes an existing Protection Job and deletes 
 
       - name: Remove Protection Jobs for each Physical Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -294,7 +294,7 @@ Here is an example playbook that removes an existing Protection Job and deletes 
         # => Manage VMware
       - name: Stop existing Protection Job Execution for each VMware Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -311,7 +311,7 @@ Here is an example playbook that removes an existing Protection Job and deletes 
 
       - name: Remove Protection Jobs for each VMware Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -330,7 +330,7 @@ Here is an example playbook that removes an existing Protection Job and deletes 
         # => Manage Generic NAS Endpoints
       - name: Stop existing Protection Job Execution for each NAS Endpoint
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -347,7 +347,7 @@ Here is an example playbook that removes an existing Protection Job and deletes 
 
       - name: Remove Protection Jobs for each NAS Endpoint
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"

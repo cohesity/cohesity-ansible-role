@@ -1,6 +1,6 @@
 # => Cohesity Protection Sources for Physical, VMware, and GenericNAS environments
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # => Version: 0.6.0
 # => Date: 2018-12-28
 # =>
@@ -18,11 +18,11 @@
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
       - name: Remove registered Protection Source for each Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -37,7 +37,7 @@
 
       - name: Remove registered Protection Source for each Vmware Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -53,7 +53,7 @@
 
       - name: Remove registered Protection Source for each NAS Endpoint
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -70,7 +70,7 @@
       # => Register each Protection Source
       - name: Create new Protection Source for each Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -86,7 +86,7 @@
 
       - name: Create new Protection Source for each Vmware Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -105,7 +105,7 @@
 
       - name: Create new Protection Source for each NAS Endpoint
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

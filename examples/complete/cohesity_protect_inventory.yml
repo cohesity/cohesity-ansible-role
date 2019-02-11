@@ -1,6 +1,6 @@
 # => Cohesity Full Protection for Physical, VMware, and GenericNAS environments
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # => Version: 0.6.0
 # => Date: 2018-12-28
 # =>
@@ -21,11 +21,11 @@
     # => the machine
     gather_facts: yes
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Linux Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -46,11 +46,11 @@
         var_validate_certs: False
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Windows Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -77,11 +77,11 @@
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
       - name: Create new Protection Source for each Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -97,7 +97,7 @@
 
       - name: Create new Protection Source for each Vmware Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -116,7 +116,7 @@
 
       - name: Create new Protection Source for each NAS Endpoint
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -139,7 +139,7 @@
         # => Manage Physical
       - name: Create new Protection Jobs for each Physical Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -155,7 +155,7 @@
 
       - name: Create new Protection Jobs for each VMware Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -172,7 +172,7 @@
 
       - name: Create new Protection Jobs for each NAS Endpoint
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -191,7 +191,7 @@
 # =>
       - name: Start On-Demand Protection Job Execution for each Physical Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -206,7 +206,7 @@
 
       - name: Start On-Demand Protection Job Execution for each VMware Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -223,7 +223,7 @@
 
       - name: Start On-Demand Protection Job Execution for each NAS Endpoint
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"

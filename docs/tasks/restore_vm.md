@@ -88,11 +88,11 @@ This is an example playbook that creates a new Virtual Machine restore operation
         var_wait_minutes: 30
         var_wait_for_job: yes
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
       - name: Restore Files
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: restore_file
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

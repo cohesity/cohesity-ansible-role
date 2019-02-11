@@ -74,11 +74,11 @@ This is an example playbook that creates new Protection Sources for all Linux ho
         var_validate_certs: False
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Configure Cohesity Protection Source on each Linux Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -115,11 +115,11 @@ This is an example playbook that creates new Protection Sources for the chosen v
         var_vcenter_password: secret
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Configure Cohesity Protection Source on VMware vCenter Host
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -158,11 +158,11 @@ This is an example playbook that creates new Protection Sources for the chosen v
         var_vcenter_password: secret
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Configure Cohesity Protection Source on NFS Export
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

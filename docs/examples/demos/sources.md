@@ -105,7 +105,7 @@ Here is an example playbook that registers a new Protection Source for all hosts
 ```yaml
 # => Cohesity Protection Sources for Physical, VMware, and GenericNAS environments
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # => Version: 0.6.0
 # => Date: 2018-12-28
 # =>
@@ -123,12 +123,12 @@ Here is an example playbook that registers a new Protection Source for all hosts
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
       # => Cycle through each member of the Ansible Group [physical] and register as a Cohesity Protection Source
       - name: Create new Protection Source for each Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -145,7 +145,7 @@ Here is an example playbook that registers a new Protection Source for all hosts
       # => Cycle through each member of the Ansible Group [vmware] and register as a Cohesity Protection Source
       - name: Create new Protection Source for each Vmware Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -165,7 +165,7 @@ Here is an example playbook that registers a new Protection Source for all hosts
       # => Cycle through each member of the Ansible Group [generic_nas] and register as a Cohesity Protection Source
       - name: Create new Protection Source for each NAS Endpoint
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -194,7 +194,7 @@ Here is an example playbook that unregisters all Protection Sources for the host
 ```yaml
 # => Cohesity Protection Sources for Physical, VMware, and GenericNAS environments
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # => Version: 0.6.0
 # => Date: 2018-12-28
 # =>
@@ -212,12 +212,12 @@ Here is an example playbook that unregisters all Protection Sources for the host
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
       # => Cycle through each member of the Ansible Group [physical] and remove the Cohesity Protection Source
       - name: Remove registered Protection Source for each Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -233,7 +233,7 @@ Here is an example playbook that unregisters all Protection Sources for the host
       # => Cycle through each member of the Ansible Group [vmware] and remove the Cohesity Protection Source
       - name: Remove registered Protection Source for each Vmware Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -250,7 +250,7 @@ Here is an example playbook that unregisters all Protection Sources for the host
       # => Cycle through each member of the Ansible Group [generic_nas] and remove the Cohesity Protection Source
       - name: Remove registered Protection Source for each NAS Endpoint
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

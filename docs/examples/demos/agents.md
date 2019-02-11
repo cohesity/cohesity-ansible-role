@@ -80,7 +80,7 @@ Here is an example playbook that installs the Cohesity agent on all `linux` host
 ```yaml
 # => Cohesity Agent Management
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # =>
 
 # => Install the Cohesity Agent on each Linux host
@@ -100,11 +100,11 @@ Here is an example playbook that installs the Cohesity agent on all `linux` host
     gather_facts: yes
     become: true
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Linux Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -141,11 +141,11 @@ Here is an example playbook that installs the Cohesity agent on all `windows` ho
         var_windows_reboot: True
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Remove Cohesity Agent from each Windows Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -158,7 +158,7 @@ Here is an example playbook that installs the Cohesity agent on all `windows` ho
 
       - name: Install new Cohesity Agent on each Windows Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

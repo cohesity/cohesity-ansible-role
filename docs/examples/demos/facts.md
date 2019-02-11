@@ -55,7 +55,7 @@ The source file for this playbook is located at the root of the role in `example
 ```yaml
 # => Cohesity Facts saved to JSON file
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # => Version: 0.5.0
 # => Date: 2018-11-05
 # =>
@@ -72,7 +72,7 @@ The source file for this playbook is located at the root of the role in `example
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
         # => Gather Cohesity Facts
         - name: Gather Cohesity Cluster Details

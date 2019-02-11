@@ -68,11 +68,11 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
         var_validate_certs: False
     become: true
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Linux Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -103,11 +103,11 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
         var_validate_certs: False
     become: true
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Linux Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -143,11 +143,11 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
         var_validate_certs: False
     become: true
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Linux Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"

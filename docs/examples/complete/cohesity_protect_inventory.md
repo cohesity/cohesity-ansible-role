@@ -113,7 +113,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
 ```yaml
 # => Cohesity Full Protection for Physical, VMware, and GenericNAS environments
 # =>
-# => Role: cohesity_ansible_role
+# => Role: cohesity.cohesity_ansible_role
 # => Version: 0.6.0
 # => Date: 2018-12-28
 # =>
@@ -134,11 +134,11 @@ Here is an example playbook that queries the inventory to install Agents on all 
     # => the machine
     gather_facts: yes
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Linux Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -159,11 +159,11 @@ Here is an example playbook that queries the inventory to install Agents on all 
         var_validate_certs: False
     gather_facts: no
     roles:
-        - cohesity_ansible_role
+        - cohesity.cohesity_ansible_role
     tasks:
       - name: Install new Cohesity Agent on each Windows Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -190,11 +190,11 @@ Here is an example playbook that queries the inventory to install Agents on all 
         var_validate_certs: False
     gather_facts: no
     roles:
-      - cohesity_ansible_role
+      - cohesity.cohesity_ansible_role
     tasks:
       - name: Create new Protection Source for each Physical Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -210,7 +210,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
 
       - name: Create new Protection Source for each Vmware Server
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -229,7 +229,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
 
       - name: Create new Protection Source for each NAS Endpoint
         include_role:
-            name: cohesity_ansible_role
+            name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
@@ -252,7 +252,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
         # => Manage Physical
       - name: Create new Protection Jobs for each Physical Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -268,7 +268,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
 
       - name: Create new Protection Jobs for each VMware Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -285,7 +285,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
 
       - name: Create new Protection Jobs for each NAS Endpoint
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -304,7 +304,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
         # =>
       - name: Start On-Demand Protection Job Execution for each Physical Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -319,7 +319,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
 
       - name: Start On-Demand Protection Job Execution for each VMware Server
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
@@ -336,7 +336,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
 
       - name: Start On-Demand Protection Job Execution for each NAS Endpoint
         include_role:
-          name: cohesity_ansible_role
+          name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
