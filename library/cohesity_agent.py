@@ -134,9 +134,13 @@ def check_agent(module, results):
     if os.path.exists("/etc/init.d/cohesity-agent"):
         cmd = "/etc/init.d/cohesity-agent version"
         rc, out, err = module.run_command(cmd)
-        version = out.split("\n")[1]
-
-        if version.startswith('Version'):
+        split_out = out.split("\n")
+        version = ""
+        for v in split_out:
+            if v.startswith('Version'):
+                version = v.split(" ")[-1]
+                break
+        if version:
             # => When the agent is installed, we should be able to return
             # => the version information
             results['version'] = version
