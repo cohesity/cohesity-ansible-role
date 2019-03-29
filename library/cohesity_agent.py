@@ -160,7 +160,7 @@ def check_agent(module, results):
         results['version'] = "unknown"
         return results
     else:
-        cmd = "ps -aux | grep [c]ohesity | grep -v python | awk '{print $2}'"
+        cmd = "ps -aux | grep crux/bin/linux_agent | grep -v python | awk '{print $2}'"
         rc, out, err = module.run_command(cmd,check_rc=True,use_unsafe_shell=True)
         if out:
             orphaned_agents = out.split("\n")

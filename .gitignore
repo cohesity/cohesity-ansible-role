@@ -10,3 +10,4 @@ tmp
 ansible
 *.pyc
 */.pytest_cache
+.idea/
