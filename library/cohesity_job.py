@@ -390,6 +390,75 @@ def start_job(module, self):
         raise__cohesity_exception__handler(error, module)
 
 
+def update_job_source(module, job_details):
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = job_details['token']
+    payload = job_details.copy()
+    payload['active_only'] = True
+    payload['is_deleted'] = False
+    currently_active = get__protection_run__all__by_id(module, payload)
+    if currently_active:
+        results = dict(
+            changed=False,
+            msg="The Protection Job is currently running",
+            name=module.params.get('name')
+        )
+        module.exit_json(**results)
+    else:
+        try:
+            uri = "https://" + server + \
+                "/irisservices/api/v1/public/protectionJobs/" + str(job_details['id'])
+            headers = {"Accept": "application/json",
+                    "Authorization": "Bearer " + token}
+            payload = job_details.copy()
+            del payload['token']
+            payload['environment'] = 'k' + payload['environment']
+            data = json.dumps(payload)
+            response = open_url(url=uri, data=data, headers=headers, validate_certs=validate_certs, method="PUT")
+            if not response.getcode() == 200:
+                raise ProtectionException(
+                    msg="Something went wrong with the attempt to get protection job %s" % job_details['id'])
+
+            response = json.loads(response.read())
+            output = dict(
+                id=response['id'],
+                name=response['name'],
+                environment=response['environment'].lstrip('k'),
+                )
+            return output
+        except urllib_error.URLError as e:
+            # => Capture and report any error messages.
+            raise__cohesity_exception__handler(e.read(), module)
+        except Exception as error:
+            raise__cohesity_exception__handler(error, module)
+
+
+def get_prot_job_details(self, module):
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = self['token']
+    try:
+        uri = "https://" + server + \
+          "/irisservices/api/v1/public/protectionJobs/" + str(self['id'])
+
+        headers = {"Accept": "application/json",
+               "Authorization": "Bearer " + token}
+        response = open_url(url=uri, headers=headers,
+                        validate_certs=validate_certs)
+        if not response.getcode() == 200:
+            raise ProtectionException(
+                msg="Something went wrong with the attempt to get protection job %s" % self['id'])
+
+        output = json.loads(response.read())
+        return output
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
 def stop_job(module, self):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
@@ -562,12 +631,47 @@ def main():
         results['source_vars'] = job_details
 
         if job_exists:
-            results = dict(
-                changed=False,
-                msg="The Protection Job for this host is already registered",
-                id=job_exists,
-                name=module.params.get('name')
+            if len(module.params.get('protection_sources')) == 1 and not module.params.get('protection_sources')[0]:
+                module.fail_json(
+                    msg="Missing protection sources to add to the existing protection job",
+                    id = job_exists,
+                    name = module.params.get('name')
+                    )
+
+            job_details['id'] = job_exists
+            job_details['sourceIds'] = list()
+            prot_source = dict(
+                environment=job_details['environment'],
+                token=job_details['token']
             )
+            for source in module.params.get('protection_sources'):
+                prot_source['endpoint'] = source
+                source_id = get__prot_source_id__by_endpoint(
+                    module, prot_source)
+                if source_id:
+                    job_details['sourceIds'].append(source_id)
+            job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
+                module, job_details)
+            existing_job_details = get_prot_job_details(job_details, module)
+            already_exist_in_job = set(job_details['sourceIds']).issubset(existing_job_details['sourceIds'])
+            if already_exist_in_job:
+                results = dict(
+                    changed=False,
+                    msg="The protection sources are already being protected",
+                    id=job_exists,
+                    name=module.params.get('name')
+                    )
+            else:
+                job_details['policyId'] = existing_job_details['policyId']
+                job_details['viewBoxId'] = existing_job_details['viewBoxId']
+                job_details['timezone'] = existing_job_details['timezone']
+                job_details['sourceIds'].extend(existing_job_details['sourceIds'])
+                response = update_job_source(module, job_details)
+                results = dict(
+                    changed=True,
+                    msg="Successfully added sources to existing protection job",
+                    **response
+                    )
         else:
             check__mandatory__params(module)
 
@@ -614,18 +718,56 @@ def main():
 
     elif module.params.get('state') == "absent":
         if job_exists:
-            job_details['id'] = job_exists
-            job_details['deleteSnapshots'] = module.params.get(
-                'delete_backups')
+            if len(module.params.get('protection_sources')) == 1 and not module.params.get('protection_sources')[0]:
+                job_details['id'] = job_exists
+                job_details['deleteSnapshots'] = module.params.get(
+                    'delete_backups')
 
-            response = unregister_job(module, job_details)
+                response = unregister_job(module, job_details)
 
-            results = dict(
-                changed=True,
-                msg="Unregistration of Cohesity Protection Job Complete",
-                id=job_exists,
-                name=module.params.get('name')
-            )
+                results = dict(
+                    changed=True,
+                    msg="Unregistration of Cohesity Protection Job Complete",
+                    id=job_exists,
+                    name=module.params.get('name')
+                    )
+            else:
+                job_details['id'] = job_exists
+                job_details['sourceIds'] = list()
+                prot_source = dict(
+                    environment=job_details['environment'],
+                    token=job_details['token']
+                )
+                for source in module.params.get('protection_sources'):
+                    prot_source['endpoint'] = source
+                    source_id = get__prot_source_id__by_endpoint(
+                        module, prot_source)
+                    if source_id:
+                        job_details['sourceIds'].append(source_id)
+                job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
+                    module, job_details)
+                existing_job_details = get_prot_job_details(job_details, module)
+                sources_exiting_in_job = set(job_details['sourceIds']).intersection(existing_job_details['sourceIds'])
+                if len(sources_exiting_in_job) != 0 and len(sources_exiting_in_job) != len(existing_job_details['sourceIds']):
+                    job_details['policyId'] = existing_job_details['policyId']
+                    job_details['viewBoxId'] = existing_job_details['viewBoxId']
+                    job_details['timezone'] = existing_job_details['timezone']
+                    job_details['sourceIds'] = list(set(existing_job_details['sourceIds']).difference(job_details['sourceIds']))
+                    response = update_job_source(module, job_details)
+                    results = dict(
+                        changed=True,
+                        msg="Successfully removed the sources from existing protection job",
+                        **response
+                    )
+                elif len(sources_exiting_in_job) != 0 and len(sources_exiting_in_job) == len(existing_job_details['sourceIds']):
+                    module.fail_json(msg="Cannot remove all sources from protection job", changed=False)
+                else:
+                    results = dict(
+                        changed=False,
+                        msg="The protection job doesn't have the sources",
+                        id = job_exists,
+                        name = module.params.get('name')
+                    )
         else:
             results = dict(
                 changed=False,
