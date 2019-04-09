@@ -64,10 +64,10 @@ options:
   environment:
     description:
       - Specifies the environment type (such as VMware or SQL) of the Protection Source this Job
-      - is protecting. Supported environment types include 'Physical', 'VMware'
+      - is protecting. Supported environment types include 'PhysicalFiles', 'VMware'
     choices:
       - VMware
-      - Physical
+      - PhysicalFiles
       - GenericNas
     required: yes
   protection_sources:
@@ -124,7 +124,7 @@ EXAMPLES = '''
     password: password
     state: present
     name: myhost
-    environment: Physical
+    environment: PhysicalFiles
     protection_sources:
       - myhost.domain.lab
     protection_policy: Bronze
@@ -305,7 +305,11 @@ def register_job(module, self):
         payload.pop('token', None)
 
         payload['environment'] = "k" + self['environment']
-
+        payload['sourceSpecialParameters'] = []
+        for sourceId in payload['sourceIds']:
+            payload['sourceSpecialParameters'].append({'sourceId': sourceId,
+                                                       'physicalSpecialParameters': {'filePaths': [
+                                                           {'backupFilePath': "/", 'skipNestedVolumes': True}]}})
         data = json.dumps(payload)
         # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
@@ -394,44 +398,37 @@ def update_job_source(module, job_details):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
     token = job_details['token']
-    payload = job_details.copy()
-    payload['active_only'] = True
-    payload['is_deleted'] = False
-    currently_active = get__protection_run__all__by_id(module, payload)
-    if currently_active:
-        results = dict(
-            changed=False,
-            msg="The Protection Job is currently running",
-            name=module.params.get('name')
-        )
-        module.exit_json(**results)
-    else:
-        try:
-            uri = "https://" + server + \
-                "/irisservices/api/v1/public/protectionJobs/" + str(job_details['id'])
-            headers = {"Accept": "application/json",
-                    "Authorization": "Bearer " + token}
-            payload = job_details.copy()
-            del payload['token']
-            payload['environment'] = 'k' + payload['environment']
-            data = json.dumps(payload)
-            response = open_url(url=uri, data=data, headers=headers, validate_certs=validate_certs, method="PUT")
-            if not response.getcode() == 200:
-                raise ProtectionException(
-                    msg="Something went wrong with the attempt to get protection job %s" % job_details['id'])
+    try:
+        uri = "https://" + server + \
+            "/irisservices/api/v1/public/protectionJobs/" + str(job_details['id'])
+        headers = {"Accept": "application/json",
+                "Authorization": "Bearer " + token}
+        payload = job_details.copy()
+        del payload['token']
+        payload['environment'] = 'k' + payload['environment']
+        payload['sourceSpecialParameters'] = []
+        for sourceId in payload['sourceIds']:
+            payload['sourceSpecialParameters'].append({'sourceId': sourceId,
+                                                        'physicalSpecialParameters': {'filePaths': [
+                                                            {'backupFilePath': "/", 'skipNestedVolumes': True}]}})
+        data = json.dumps(payload)
+        response = open_url(url=uri, data=data, headers=headers, validate_certs=validate_certs, method="PUT")
+        if not response.getcode() == 200:
+            raise ProtectionException(
+                msg="Something went wrong with the attempt to get protection job %s" % job_details['id'])
 
-            response = json.loads(response.read())
-            output = dict(
-                id=response['id'],
-                name=response['name'],
-                environment=response['environment'].lstrip('k'),
-                )
-            return output
-        except urllib_error.URLError as e:
-            # => Capture and report any error messages.
-            raise__cohesity_exception__handler(e.read(), module)
-        except Exception as error:
-            raise__cohesity_exception__handler(error, module)
+        response = json.loads(response.read())
+        output = dict(
+            id=response['id'],
+            name=response['name'],
+            environment=response['environment'].lstrip('k'),
+            )
+        return output
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
 
 
 def get_prot_job_details(self, module):
@@ -565,7 +562,7 @@ def main():
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
-                choices=['VMware', 'Physical', 'GenericNas'],
+                choices=['VMware', 'PhysicalFiles', 'GenericNas'],
                 required=True
             ),
             protection_sources=dict(type='list'),
@@ -576,7 +573,8 @@ def main():
             delete_backups=dict(type='bool', default=False),
             ondemand_run_type=dict(
                 choices=['Regular', 'Full', 'Log', 'System'], default='Regular'),
-            cancel_active=dict(type='bool', default=False)
+            cancel_active=dict(type='bool', default=False),
+            validate_certs=dict(type='bool', default=False)
         )
     )
 
@@ -640,6 +638,8 @@ def main():
 
             job_details['id'] = job_exists
             job_details['sourceIds'] = list()
+            if job_details['environment'] == "PhysicalFiles":
+                job_details['environment'] = "Physical"
             prot_source = dict(
                 environment=job_details['environment'],
                 token=job_details['token']
@@ -652,16 +652,17 @@ def main():
                     job_details['sourceIds'].append(source_id)
             job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
                 module, job_details)
+            job_details['environment'] = module.params.get('environment')
             existing_job_details = get_prot_job_details(job_details, module)
             already_exist_in_job = set(job_details['sourceIds']).issubset(existing_job_details['sourceIds'])
-            if already_exist_in_job:
+            if already_exist_in_job and job_details['sourceIds'] != 0:
                 results = dict(
                     changed=False,
                     msg="The protection sources are already being protected",
                     id=job_exists,
                     name=module.params.get('name')
                     )
-            else:
+            elif (not already_exist_in_job) and job_details['sourceIds'] != 0:
                 job_details['policyId'] = existing_job_details['policyId']
                 job_details['viewBoxId'] = existing_job_details['viewBoxId']
                 job_details['timezone'] = existing_job_details['timezone']
@@ -672,10 +673,18 @@ def main():
                     msg="Successfully added sources to existing protection job",
                     **response
                     )
+            else:
+                module.fail_json(
+                    msg="Sources don't exist on the cluster",
+                    id=job_exists,
+                    name=module.params.get('name')
+                )
         else:
             check__mandatory__params(module)
 
             job_details['sourceIds'] = list()
+            if job_details['environment'] == "PhysicalFiles":
+                job_details['environment'] = "Physical"
             prot_source = dict(
                 environment=job_details['environment'],
                 token=job_details['token']
@@ -688,7 +697,7 @@ def main():
                     job_details['sourceIds'].append(source_id)
             job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
                 module, job_details)
-
+            job_details['environment'] = module.params.get('environment')
             job_details['policyId'] = get__prot_policy_id__by_name(
                 module, job_details)
 
@@ -734,6 +743,8 @@ def main():
             else:
                 job_details['id'] = job_exists
                 job_details['sourceIds'] = list()
+                if job_details['environment'] == "PhysicalFiles":
+                    job_details['environment'] = "Physical"
                 prot_source = dict(
                     environment=job_details['environment'],
                     token=job_details['token']
@@ -746,6 +757,7 @@ def main():
                         job_details['sourceIds'].append(source_id)
                 job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
                     module, job_details)
+                job_details['environment'] = module.params.get('environment')
                 existing_job_details = get_prot_job_details(job_details, module)
                 sources_exiting_in_job = set(job_details['sourceIds']).intersection(existing_job_details['sourceIds'])
                 if len(sources_exiting_in_job) != 0 and len(sources_exiting_in_job) != len(existing_job_details['sourceIds']):
