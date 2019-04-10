@@ -405,7 +405,6 @@ def update_job_source(module, job_details):
                 "Authorization": "Bearer " + token}
         payload = job_details.copy()
         del payload['token']
-        payload['environment'] = 'k' + payload['environment']
         payload['sourceSpecialParameters'] = []
         for sourceId in payload['sourceIds']:
             payload['sourceSpecialParameters'].append({'sourceId': sourceId,
@@ -663,11 +662,9 @@ def main():
                     name=module.params.get('name')
                     )
             elif (not already_exist_in_job) and job_details['sourceIds'] != 0:
-                job_details['policyId'] = existing_job_details['policyId']
-                job_details['viewBoxId'] = existing_job_details['viewBoxId']
-                job_details['timezone'] = existing_job_details['timezone']
-                job_details['sourceIds'].extend(existing_job_details['sourceIds'])
-                response = update_job_source(module, job_details)
+                existing_job_details['sourceIds'].extend(job_details['sourceIds'])
+                existing_job_details['token'] = job_details['token']
+                response = update_job_source(module, existing_job_details)
                 results = dict(
                     changed=True,
                     msg="Successfully added sources to existing protection job",
@@ -761,10 +758,9 @@ def main():
                 existing_job_details = get_prot_job_details(job_details, module)
                 sources_exiting_in_job = set(job_details['sourceIds']).intersection(existing_job_details['sourceIds'])
                 if len(sources_exiting_in_job) != 0 and len(sources_exiting_in_job) != len(existing_job_details['sourceIds']):
-                    job_details['policyId'] = existing_job_details['policyId']
-                    job_details['viewBoxId'] = existing_job_details['viewBoxId']
-                    job_details['timezone'] = existing_job_details['timezone']
-                    job_details['sourceIds'] = list(set(existing_job_details['sourceIds']).difference(job_details['sourceIds']))
+                    existing_job_details['sourceIds'] = list(
+                        set(existing_job_details['sourceIds']).difference(job_details['sourceIds']))
+                    existing_job_details['token'] = job_details['token']
                     response = update_job_source(module, job_details)
                     results = dict(
                         changed=True,
