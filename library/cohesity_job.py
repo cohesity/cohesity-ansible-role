@@ -761,7 +761,7 @@ def main():
                     existing_job_details['sourceIds'] = list(
                         set(existing_job_details['sourceIds']).difference(job_details['sourceIds']))
                     existing_job_details['token'] = job_details['token']
-                    response = update_job_source(module, job_details)
+                    response = update_job_source(module, existing_job_details)
                     results = dict(
                         changed=True,
                         msg="Successfully removed the sources from existing protection job",
