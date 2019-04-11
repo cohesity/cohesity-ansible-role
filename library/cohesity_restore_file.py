@@ -6,6 +6,8 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import json
+import time
+from datetime import datetime
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url, urllib_error
 
@@ -58,11 +60,11 @@ options:
     required: yes
   environment:
     description:
-      - Specifies the environment type (such as Physical or GenericNas) of the Protection Source this Job
-      - is protecting. Supported environment types include 'Physical', 'GenericNas'
+      - Specifies the environment type (such as PhysicalFiles or GenericNas) of the Protection Source this Job
+      - is protecting. Supported environment types include 'PhysicalFiles', 'GenericNas'
     required: yes
     choices:
-      - Physical
+      - PhysicalFiles
       - GenericNas
   job_name:
     description:
@@ -127,7 +129,7 @@ EXAMPLES = '''
     state: present
     name: Restore Single File
     job_name: myhost
-    environment: Physical
+    environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
       - C:\\data\\big_file
@@ -156,7 +158,7 @@ EXAMPLES = '''
     state: present
     name: Restore Single File
     job_name: myhost
-    environment: Physical
+    environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
       - C:\\data\\files
@@ -297,7 +299,7 @@ def get__snapshot_information__for_file(module, self):
                 clusterIncarnationId=job_data['uid']['clusterIncarnationId'],
                 id=job_data['uid']['id']
             ),
-            protectionSourceId=job_data['sourceIds'][0],
+            protectionSourceId=self['endpoint'],
             startedTimeUsecs=""
         )
         self['restore_obj'] = restore_details.copy()
@@ -317,6 +319,16 @@ def get__snapshot_information__for_file(module, self):
         # => For now, let's just grab the most recent snapshot.
         if 'jobRunId' in self:
             output = [jobRun for jobRun in output if jobRun['snapshot']['jobRunId'] == int(self['jobRunId'])]
+
+        if 'backup_timestamp' in self:
+            snapshot_timestamp = datetime.strptime(self['backup_timestamp'], '%Y-%m-%d:%H:%M').replace(second=0)
+            jobRuns = output
+            output = []
+            for jobRun in jobRuns:
+                t = datetime.strptime(time.ctime(jobRun['snapshot']['startedTimeUsecs']/1000000), '%a %b %d %H:%M:%S %Y').replace(second=0)
+                if snapshot_timestamp == t:
+                    output.append(jobRun)
+                    break
 
         # => If the file has no snapshot, then we will need to fail out this call
         if len(output) == 0:
@@ -442,8 +454,8 @@ def main():
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
-                choices=['Physical', 'GenericNas'],
-                default='Physical'
+                choices=['PhysicalFiles', 'GenericNas'],
+                default='PhysicalFiles'
             ),
             job_name=dict(type='str', required=True),
             endpoint=dict(type='str', required=True),
@@ -522,19 +534,30 @@ def main():
             environment = module.params.get('environment')
             response = []
 
-            if environment == "Physical" or environment == "GenericNas":
+            if environment == "PhysicalFiles" or environment == "GenericNas":
                 # => Gather the Source Details
                 job_details['file_names'] = module.params.get('file_names')
+                prot_source = dict(
+                    environment="Physical",
+                    token=job_details['token'],
+                    endpoint=module.params.get('endpoint')
+
+                )
+                source_id = get__prot_source_id__by_endpoint(
+                    module, prot_source)
+                if not source_id:
+                    module.fail_json(msg="Failed to find the endpoint on the cluster", changed=False)
+                job_details['endpoint'] = source_id
                 source_object_info = get__snapshot_information__for_file(module, job_details)
 
                 # => For every file to be restored, we need to ensure that Windows style names
                 # => have been converted into Unix style names else, the restore job will
                 # => fail.
                 #
-                # => However, only if this is a Physical Type
+                # => However, only if this is a PhysicalFiles Type
                 restore_file_list = []
                 for restore_file in job_details['file_names']:
-                    if environment == "Physical":
+                    if environment == "PhysicalFiles":
                         restore_file_list.append(convert__windows_file_name(restore_file))
                     elif environment == "GenericNas":
                         restore_file_list.append(strip__prefix(job_details['endpoint'], restore_file))

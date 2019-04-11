@@ -209,7 +209,7 @@ This is an example playbook that deletes a Protection Source from a Physical Sou
             cohesity_source:
                 state: absent
                 job_name: "{{ var_job_name }}"
-                environment: "Physical"
+                environment: "PhysicalFiles"
                 delete_backups: "{{ var_delete_backups }}"
         tags: [ 'cohesity', 'jobs', 'remove', 'physical' ]
 ```
@@ -229,7 +229,7 @@ The following information is copied directly from the included task in this role
     validate_certs: "{{ cohesity_validate_certs }}"
     state:  "{{ cohesity_protection.state | default('present') }}"
     name: "{{ cohesity_protection.job_name | default('') }}"
-    environment: "{{ cohesity_protection.environment | default('Physical') }}"
+    environment: "{{ cohesity_protection.environment | default('PhysicalFiles') }}"
     protection_sources:
       - "{{ cohesity_protection.endpoint | default('') }}"
     protection_policy: "{{ cohesity_protection.policy | default('Bronze') }}"

@@ -17,7 +17,7 @@
 ## Synopsis
 [top](#cohesity-protection-job)
 
-This Ansible Module registers, removes, starts, and stops the Cohesity Protection Job on a Cohesity cluster.  When executed in a playbook, the Cohesity Protection Job is validated and the appropriate state action is applied.
+This Ansible Module registers, removes, starts, and stops the Cohesity Protection Job on a Cohesity cluster. Additionally this module can be also be used to add and remove protections sources from a protection job.  When executed in a playbook, the Cohesity Protection Job is validated and the appropriate state action is applied.
 
 ### Requirements
 [top](#cohesity-protection-job)
@@ -42,7 +42,7 @@ This Ansible Module registers, removes, starts, and stops the Cohesity Protectio
     state: <state of the Protection Job>
     name: <assigned name of the Protection Job>
     description: <optional description for the job>
-    environment: <protection source environment type>
+    environment: <protection source environment type, for Physical sources this value is 'PhysicalFiles'>
     protection_sources:
       - <list of registered protection sources to include in the job>
     protection_policy: <existing protection policy name to assign to the job>
@@ -67,7 +67,7 @@ This Ansible Module registers, removes, starts, and stops the Cohesity Protectio
     password: password
     state: present
     name: myhost
-    environment: Physical
+    environment: PhysicalFiles
     protection_sources:
       - myhost.domain.lab
     protection_policy: Bronze
@@ -160,7 +160,7 @@ This Ansible Module registers, removes, starts, and stops the Cohesity Protectio
 |   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the Protection Job. |
 | X | name | String | | Name to assign to the Protection Job.  Must be unique. |
 |   | description | String | | Optional Description to assign to the Protection Job |
-| X | environment | Choice | -Physical<br>-VMware<br>-GenericNas | Specifies the environment type (such as VMware or SQL) of the Protection Source this Job is protecting. |
+| X | environment | Choice | -PhysicalFiles<br>-VMware<br>-GenericNas | Specifies the environment type (such as VMware or SQL) of the Protection Source this Job is protecting. For Physical sources this value is 'PhysicalFiles' |
 |   | protection_sources | Array |  | Valid list of endpoint names for existing Protection Sources to be included in the job. **Required** when *state=present*. |
 |   | protection_policy | String |  | Valid policy name or ID for an existing Protection Policy to be assigned to the job. **Required** when *state=present*. |
 |   | storage_domain | String | | Existing Storage Domain with which the Protection Job will be associated. Required when *state=present*. |

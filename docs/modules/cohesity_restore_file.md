@@ -38,11 +38,11 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     validate_certs: <boolean to determine if SSL certificates should be validated>
     state: <state of the restore operation>
     name: <assigned descriptor to assign to the Restore Job.  The Restore Job name will consist of the job_name:name format>
-    environment: <protection source environment type>
+    environment: <protection source environment type. For Physical sources the value is "PhysicalFiles" >
     job_name: <selected Protection Job from which the restore will be initated>
     endpoint: <identifies the source endpoint to which the the restore operation will be performed>
     backup_id: <optional Cohesity Backup Run ID for the restore operation.  If not selected, the most recent RunId will be used>
-    backup_timestamp: <not implemented>
+    backup_timestamp: <optional Cohesity Backup Run time. The formart should be YYYY-MM-DD:hh:mm. If not selected, the most recent backup time is used>
     file_names:
       - <list of files and folders to be restored by the operation>
     wait_for_job: <boolean to determine if the task should wait for the restore operation to complete prior to moving to the next operation>
@@ -66,7 +66,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     state: present
     name: Restore Single File
     job_name: myhost
-    environment: Physical
+    environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
       - C:\\data\\big_file
@@ -103,7 +103,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     state: present
     name: Restore Single File
     job_name: myhost
-    environment: Physical
+    environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
       - C:\\data\\files
@@ -124,7 +124,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
 |   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the restore operation. |
 | X | **name** | String | | Descriptor to assign to the Restore Job.  The Restore Job name will appear in the format: `job_name:name`. |
 | X | **job_name** | String | | Name of the Protection Job |
-| X | **environment** | Choice | -Physical<br>-GenericNas | Specifies the environment type (such as VMware or MS SQL) of the Protection Source this Job is protecting. |
+| X | **environment** | Choice | -PhysicalFiles<br>-GenericNas | Specifies the environment type (such as VMware or MS SQL) of the Protection Source this Job is protecting. For Physical protection source, the value is 'PhysicalFiles' |
 | X | **endpoint** | String | | Specifies the network endpoint where the Protection Source is reachable. It can be the URL, hostname, IP address, NFS mount point, or SMB Share of the Protection Source. |
 |   | backup_id | String |  | Optional Cohesity ID to use as source for the restore operation.  If not selected, the most recent `RunId` will be used. |
 | X | **file_names** | Array |  | Array of files and folders to restore |
@@ -133,6 +133,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
 |   | overwrite | Boolean | True | If `true`, the restore operation overwrites any existing files or folders. |
 |   | preserve_attributes | Boolean | False | If `true`, the restore operation maintains the original file or folder attributes |
 |   | restore_location | String |  | Alternate location to which the files will be restored |
+|   | backup_timestamp | String |  | Backup Run time for the restore operation. It should be given in YYYY:MM:DD:hh:mm formart.
 
 
 ## Outputs
