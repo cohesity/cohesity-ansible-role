@@ -6,6 +6,8 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import json
+import time
+from datetime import datetime
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url, urllib_error
 
@@ -58,11 +60,11 @@ options:
     required: yes
   environment:
     description:
-      - Specifies the environment type (such as Physical or GenericNas) of the Protection Source this Job
-      - is protecting. Supported environment types include 'Physical', 'GenericNas'
+      - Specifies the environment type (such as PhysicalFiles or GenericNas) of the Protection Source this Job
+      - is protecting. Supported environment types include 'PhysicalFiles', 'GenericNas'
     required: yes
     choices:
-      - Physical
+      - PhysicalFiles
       - GenericNas
   job_name:
     description:
@@ -127,7 +129,7 @@ EXAMPLES = '''
     state: present
     name: Restore Single File
     job_name: myhost
-    environment: Physical
+    environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
       - C:\\data\\big_file
@@ -156,7 +158,7 @@ EXAMPLES = '''
     state: present
     name: Restore Single File
     job_name: myhost
-    environment: Physical
+    environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
       - C:\\data\\files
@@ -214,7 +216,8 @@ def check__protection_restore__exists(module, self):
     restore_tasks = get__restore_job__by_type(module, payload)
 
     if restore_tasks:
-        task_list = [task for task in restore_tasks if task['name'] == self['name']]
+        task_list = [
+            task for task in restore_tasks if task['name'] == self['name']]
         for task in task_list:
             if task['status'] != 'kFinished':
                 return True
@@ -272,8 +275,7 @@ def get__job_information__for_restore(module, self):
             changed=False,
             job_name=self['job_name'],
             environment=self['environment'],
-            msg="Failed to find chosen Job name for the selected Environment Type."
-        )
+            msg="Failed to find chosen Job name for the selected Environment Type.")
         module.fail_json(**failure)
     else:
         # => Since we are filtering out any job that matches our name
@@ -297,7 +299,7 @@ def get__snapshot_information__for_file(module, self):
                 clusterIncarnationId=job_data['uid']['clusterIncarnationId'],
                 id=job_data['uid']['id']
             ),
-            protectionSourceId=job_data['sourceIds'][0],
+            protectionSourceId=self['endpoint'],
             startedTimeUsecs=""
         )
         self['restore_obj'] = restore_details.copy()
@@ -309,24 +311,44 @@ def get__snapshot_information__for_file(module, self):
                 job_name=self['job_name'],
                 filename=filename,
                 environment=self['environment'],
-                msg="Failed to find a snapshot for the file in the chosen Job name."
-            )
+                msg="Failed to find a snapshot for the file in the chosen Job name.")
             module.fail_json(**failure)
 
         # => TODO: Add support for selecting a previous backup.
         # => For now, let's just grab the most recent snapshot.
         if 'jobRunId' in self:
-            output = [jobRun for jobRun in output if jobRun['snapshot']['jobRunId'] == int(self['jobRunId'])]
+            output = [jobRun for jobRun in output if jobRun['snapshot']
+                      ['jobRunId'] == int(self['jobRunId'])]
+
+        if 'backup_timestamp' in self:
+            snapshot_timestamp = datetime.strptime(
+                self['backup_timestamp'], '%Y-%m-%d:%H:%M').replace(second=0)
+            jobRuns = output
+            output = []
+            for jobRun in jobRuns:
+                t = datetime.strptime(
+                    time.ctime(
+                        jobRun['snapshot']['startedTimeUsecs'] /
+                        1000000),
+                    '%a %b %d %H:%M:%S %Y').replace(
+                    second=0)
+                if snapshot_timestamp == t:
+                    output.append(jobRun)
+                    break
 
         # => If the file has no snapshot, then we will need to fail out this call
         if len(output) == 0:
             # failed_file = filename.replace("/","",1).replace("/","\\").replace("\\",":\\",1)
-            module.fail_json(msg="Cohesity Restore failed", error="No snapshot exists for the file " + filename)
+            module.fail_json(
+                msg="Cohesity Restore failed",
+                error="No snapshot exists for the file " +
+                filename)
         snapshot_info = output[0]
         restore_details['jobRunId'] = snapshot_info['snapshot']['jobRunId']
         restore_details['startedTimeUsecs'] = snapshot_info['snapshot']['startedTimeUsecs']
 
-        exists = [item for item in restore_objects if item['jobRunId'] == restore_details['jobRunId']]
+        exists = [item for item in restore_objects if item['jobRunId']
+                  == restore_details['jobRunId']]
         if not exists:
             restore_objects.append(restore_details)
     return restore_objects
@@ -335,7 +357,10 @@ def get__snapshot_information__for_file(module, self):
 # => Perform the Restore of a File to the selected ProtectionSource Target
 def start_restore__files(module, self):
     payload = self.copy()
-    return start_restore(module, "/irisservices/api/v1/public/restore/files", payload)
+    return start_restore(
+        module,
+        "/irisservices/api/v1/public/restore/files",
+        payload)
 
 
 def start_restore(module, uri, self):
@@ -384,13 +409,19 @@ def wait_restore_complete(module, self):
     try:
         import time
 
-        uri = "https://" + server + "/irisservices/api/v1/public/restore/tasks/" + str(self['id'])
-        headers = {"Accept": "application/json", "Authorization": "Bearer " + token}
+        uri = "https://" + server + \
+            "/irisservices/api/v1/public/restore/tasks/" + str(self['id'])
+        headers = {
+            "Accept": "application/json",
+            "Authorization": "Bearer " + token}
         attempts = 0
         # => Wait for the restore based on a predetermined number of minutes with checks every 30 seconds.
         while attempts < wait_counter:
 
-            response = open_url(url=uri, headers=headers, validate_certs=validate_certs)
+            response = open_url(
+                url=uri,
+                headers=headers,
+                validate_certs=validate_certs)
             response = json.loads(response.read())
 
             # => If the status is Finished then break out and check for errors.
@@ -411,9 +442,11 @@ def wait_restore_complete(module, self):
                 if attempts >= wait_counter:
                     wait_results['changed'] = False
                     wait_results['status'] = response['status']
-                    wait_results['error'] = "Failed to wait for the restore to complete after " + module.params.get('wait_minutes') + " minutes."
+                    wait_results['error'] = "Failed to wait for the restore to complete after " + \
+                        module.params.get('wait_minutes') + " minutes."
                     if wait_results['status'] == "kInProgress":
-                        wait_results['error'] = wait_results['error'] + " The restore is still in progress and the timeout might be too short."
+                        wait_results['error'] = wait_results['error'] + \
+                            " The restore is still in progress and the timeout might be too short."
         # => If the error key exists in the response, then something happened during the restore
         if 'error' in response:
             wait_results['status'] = "Failed"
@@ -442,8 +475,8 @@ def main():
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
-                choices=['Physical', 'GenericNas'],
-                default='Physical'
+                choices=['PhysicalFiles', 'GenericNas'],
+                default='PhysicalFiles'
             ),
             job_name=dict(type='str', required=True),
             endpoint=dict(type='str', required=True),
@@ -488,8 +521,7 @@ def main():
         check_mode_results = dict(
             changed=False,
             msg="Check Mode: Cohesity Protection Restore Job is not currently registered",
-            id=""
-        )
+            id="")
         if module.params.get('state') == "present":
             if job_exists:
                 check_mode_results[
@@ -515,53 +547,75 @@ def main():
                 changed=False,
                 msg="The Restore Job for is already registered",
                 id=job_exists,
-                name=module.params.get('job_name') + ": " + module.params.get('name')
-            )
+                name=module.params.get('job_name') +
+                ": " +
+                module.params.get('name'))
         else:
             # check__mandatory__params(module)
             environment = module.params.get('environment')
             response = []
 
-            if environment == "Physical" or environment == "GenericNas":
+            if environment == "PhysicalFiles" or environment == "GenericNas":
                 # => Gather the Source Details
                 job_details['file_names'] = module.params.get('file_names')
-                source_object_info = get__snapshot_information__for_file(module, job_details)
+                prot_source = dict(
+                    environment="Physical",
+                    token=job_details['token'],
+                    endpoint=module.params.get('endpoint')
+
+                )
+                if environment == "GenericNas":
+                    prot_source['environment'] = "GenericNas"
+                source_id = get__prot_source_id__by_endpoint(
+                    module, prot_source)
+                if not source_id:
+                    module.fail_json(
+                        msg="Failed to find the endpoint on the cluster",
+                        changed=False)
+                job_details['endpoint'] = source_id
+                source_object_info = get__snapshot_information__for_file(
+                    module, job_details)
 
                 # => For every file to be restored, we need to ensure that Windows style names
                 # => have been converted into Unix style names else, the restore job will
                 # => fail.
                 #
-                # => However, only if this is a Physical Type
+                # => However, only if this is a PhysicalFiles Type
                 restore_file_list = []
                 for restore_file in job_details['file_names']:
-                    if environment == "Physical":
-                        restore_file_list.append(convert__windows_file_name(restore_file))
+                    if environment == "PhysicalFiles":
+                        restore_file_list.append(
+                            convert__windows_file_name(restore_file))
                     elif environment == "GenericNas":
-                        restore_file_list.append(strip__prefix(job_details['endpoint'], restore_file))
+                        restore_file_list.append(strip__prefix(
+                            job_details['endpoint'], restore_file))
                     else:
                         restore_file_list = restore_file
 
                 for objectInfo in source_object_info:
                     restore_data = dict(
-                        name=module.params.get('job_name') + ": " + module.params.get('name'),
+                        name=module.params.get('job_name') +
+                        ": " +
+                        module.params.get('name'),
                         filenames=restore_file_list,
                         targetSourceId=objectInfo['protectionSourceId'],
                         sourceObjectInfo=objectInfo,
                         token=job_details['token'],
                         overwrite=module.params.get('overwrite'),
-                        preserveAttributes=module.params.get('preserve_attributes')
-                    )
+                        preserveAttributes=module.params.get('preserve_attributes'))
 
                     if module.params.get('restore_location'):
-                        restore_data['newBaseDirectory'] = module.params.get('restore_location')
+                        restore_data['newBaseDirectory'] = module.params.get(
+                            'restore_location')
 
                     response.append(start_restore__files(module, restore_data))
 
             else:
                 # => This error should never happen based on the set assigned to the parameter.
                 # => However, in case, we should raise an appropriate error.
-                module.fail_json(msg="Invalid Environment Type selected: {0}".format(
-                    module.params.get('environment')), changed=False)
+                module.fail_json(
+                    msg="Invalid Environment Type selected: {0}".format(
+                        module.params.get('environment')), changed=False)
 
             task = dict(
                 changed=False
@@ -576,9 +630,10 @@ def main():
             results = dict(
                 changed=True,
                 msg="Registration of Cohesity Restore Job Complete",
-                name=module.params.get('job_name') + ": " + module.params.get('name'),
-                restore_jobs=response
-            )
+                name=module.params.get('job_name') +
+                ": " +
+                module.params.get('name'),
+                restore_jobs=response)
             if 'file_names' in job_details:
                 results['filenames'] = job_details['file_names']
 
@@ -591,15 +646,19 @@ def main():
                 # => Set the errorCode to match the task['error'] if the key exists
                 if 'error' in task:
                     errorCode = task['error']
-                module.fail_json(msg="Cohesity Restore Job Failed to complete", error=errorCode, **results)
+                module.fail_json(
+                    msg="Cohesity Restore Job Failed to complete",
+                    error=errorCode,
+                    **results)
 
     elif module.params.get('state') == "absent":
 
         results = dict(
             changed=False,
             msg="Cohesity Restore: This feature (absent) has not be implemented yet.",
-            name=module.params.get('job_name') + ": " + module.params.get('name')
-        )
+            name=module.params.get('job_name') +
+            ": " +
+            module.params.get('name'))
     else:
         # => This error should never happen based on the set assigned to the parameter.
         # => However, in case, we should raise an appropriate error.

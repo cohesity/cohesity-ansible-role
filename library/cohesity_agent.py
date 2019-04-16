@@ -160,15 +160,16 @@ def check_agent(module, results):
         results['version'] = "unknown"
         return results
     else:
-        cmd = "ps -aux | grep [c]ohesity | grep -v python | awk '{print $2}'"
-        rc, out, err = module.run_command(cmd,check_rc=True,use_unsafe_shell=True)
+        cmd = "ps -aux | grep crux/bin/linux_agent | grep -v python | awk '{print $2}'"
+        rc, out, err = module.run_command(
+            cmd, check_rc=True, use_unsafe_shell=True)
         if out:
             orphaned_agents = out.split("\n")
             for process in orphaned_agents:
                 if process:
                     try:
                         cmd = "kill -9 {0}".format(process)
-                    except:
+                    except BaseException:
                         cmd = "kill -9 %s" % (process)
                     rc, out, err = module.run_command(cmd)
 
@@ -177,7 +178,7 @@ def check_agent(module, results):
                         if pattern in err:
                             # => Since the kill command returned 'No such process' we will just continue
                             pass
-                        else: 
+                        else:
                             results['changed'] = False
                             results['Failed'] = True
                             results['check_agent'] = dict(
@@ -185,7 +186,9 @@ def check_agent(module, results):
                                 stderr=err
                             )
                             results['process_id'] = process
-                            module.fail_json(msg="Failed to remove an orphaned Cohesity Agent service which is still running", **results)
+                            module.fail_json(
+                                msg="Failed to remove an orphaned Cohesity Agent service which is still running",
+                                **results)
                     else:
                         pass
             results['version'] = False
@@ -229,7 +232,8 @@ def download_agent(module, path):
         error_msg = json.loads(e.read())
         if 'message' in error_msg:
             module.fail_json(
-                msg="Failed to download the Cohesity Agent", reason=error_msg['message'])
+                msg="Failed to download the Cohesity Agent",
+                reason=error_msg['message'])
         else:
             raise__cohesity_exception__handler(e, module)
     except urllib_error.URLError as e:
@@ -260,7 +264,13 @@ def installation_failures(module, stdout, rc, message):
     # => Grab any Line that begins with WARNING:
     stdwarn = [k for k in stdout_lines if 'WARNING:' in k]
     stdwarn = "\n".join(stdwarn)
-    module.fail_json(changed=False, msg=message, error=stderr, output=stdout, warn=stdwarn, exitcode=rc)
+    module.fail_json(
+        changed=False,
+        msg=message,
+        error=stderr,
+        output=stdout,
+        warn=stdwarn,
+        exitcode=rc)
 
 
 def install_agent(module, installer):
@@ -271,16 +281,20 @@ def install_agent(module, installer):
     #
     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
     # => try..except will give us a clean backwards compatibility.
-    install_opts = "--create-user " + str(int(module.params.get('create_user'))) + " "
+    install_opts = "--create-user " + \
+        str(int(module.params.get('create_user'))) + " "
     if module.params.get('service_user'):
-        install_opts += "--service-user " + module.params.get('service_user') + " "
+        install_opts += "--service-user " + \
+            module.params.get('service_user') + " "
     if module.params.get('service_group'):
-        install_opts += "--service-group " + module.params.get('service_group') + " "
+        install_opts += "--service-group " + \
+            module.params.get('service_group') + " "
     if module.params.get('file_based'):
         install_opts += "--skip-lvm-check "
 
     try:
-        cmd = "{0}/setup.sh --install --yes {1}".format(installer, install_opts)
+        cmd = "{0}/setup.sh --install --yes {1}".format(
+            installer, install_opts)
     except Exception as e:
         cmd = "%s/setup.sh --install --yes %s" % (installer, install_opts)
 
@@ -356,7 +370,8 @@ def create_download_dir(module, dir_path):
             except OSError as ex:
                 import errno
                 # Possibly something else created the dir since the os.path.exists
-                # check above. As long as it's a dir, we don't need to error out.
+                # check above. As long as it's a dir, we don't need to error
+                # out.
                 if not (ex.errno == errno.EEXIST and os.path.isdir(b_curpath)):
                     raise
 

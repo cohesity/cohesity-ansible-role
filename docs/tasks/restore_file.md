@@ -47,6 +47,7 @@ cohesity_restore_file:
   overwrite: True
   preserve_attributes: True
   restore_location: ""
+  backup_timestamp: ""
 ```
 ## Customize Your Playbooks
 [top](#task-cohesity-file-restore-operation)
@@ -91,7 +92,7 @@ This is an example playbook that creates a new file restore operation for a Prot
             cohesity_restore_file:
                 name: "{{ var_cohesity_restore_name }}"
                 endpoint: "{{ var_cohesity_endpoint }}"
-                environment: "Physical"
+                environment: "PhysicalFiles"
                 job_name: "{{ var_cohesity_job_name }}"
                 files: "{{ var_cohesity_files }}"
                 wait_for_job: True
@@ -113,7 +114,7 @@ The following information is copied directly from the included task in this role
     validate_certs: "{{ cohesity_validate_certs }}"
     state:  "{{ cohesity_restore_file.state | default('present') }}"
     name: "{{ cohesity_restore_file.name | default('') }}"
-    environment: "{{ cohesity_restore_file.environment | default('Physical') }}"
+    environment: "{{ cohesity_restore_file.environment | default('PhysicalFiles') }}"
     job_name: "{{ cohesity_restore_file.job_name | default('') }}"
     endpoint: "{{ cohesity_restore_file.endpoint | default('') }}"
     backup_id: "{{ cohesity_restore_file.backup_id | default('') }}"
@@ -123,6 +124,7 @@ The following information is copied directly from the included task in this role
     overwrite: "{{ cohesity_restore_file.overwrite | default('yes') }}"
     preserve_attributes: "{{ cohesity_restore_file.preserve_attributes | default('yes') }}"
     restore_location: "{{ cohesity_restore_file.restore_location | default('') }}"
+    backup_timestamp: "{{cohesity_restore_file.backup_timestamp | default('') }}"
   tags: always
 
 ```

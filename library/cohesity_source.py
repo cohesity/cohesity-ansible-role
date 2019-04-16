@@ -286,11 +286,13 @@ def check__mandatory__params(module):
 
     if not success:
         module.fail_json(
-            msg="The following variables are mandatory for this action (" + action +
-            ") when working with environment type (" + environment + ")",
+            msg="The following variables are mandatory for this action (" +
+            action +
+            ") when working with environment type (" +
+            environment +
+            ")",
             missing=missing_params,
-            changed=False
-        )
+            changed=False)
 
 
 def get__protection_source_registration__status(module, self):
@@ -508,8 +510,7 @@ def main():
         check_mode_results = dict(
             changed=False,
             msg="Check Mode: Cohesity Protection Source is not currently registered",
-            id=""
-        )
+            id="")
         if module.params.get('state') == "present":
             if current_status:
                 check_mode_results[
@@ -556,8 +557,7 @@ def main():
                 changed=False,
                 msg="The Protection Source for this host is already registered",
                 id=current_status,
-                endpoint=module.params.get('endpoint')
-            )
+                endpoint=module.params.get('endpoint'))
         else:
 
             response = register_source(module, prot_sources)
@@ -583,8 +583,7 @@ def main():
         else:
             results = dict(
                 changed=False,
-                msg="The Protection Source for this host is currently not registered"
-            )
+                msg="The Protection Source for this host is currently not registered")
     else:
         # => This error should never happen based on the set assigned to the parameter.
         # => However, in case, we should raise an appropriate error.

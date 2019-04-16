@@ -17,12 +17,29 @@
     - cohesity_agent.state == "present"
   tags: always
 
+- name: Enable tcp port 50051 for CentOS
+  command: "firewall-cmd {{item}}"
+  with_items:
+  - --zone=public --permanent --add-port 50051/tcp
+  - --reload
+  when:
+      - ansible_distribution == "CentOS"
+      - cohesity_agent.state == "present"
+  tags: always
+
+- name: Enable tcp port 50051 for Ubuntu
+  command: ufw allow 50051/tcp
+  when:
+      - ansible_distribution == "Ubuntu"
+      - cohesity_agent.state == "present"
+  tags: always
+
 - name: "Cohesity agent: Set Agent to state of {{ cohesity_agent.state | default('present') }}"
   cohesity_agent:
     cluster: "{{ cohesity_server }}"
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
-    validate_certs: "{{ cohesity_validate_certs }}"
+    validate_certs: "{{ cohesity_validate_certs | default(False)}}"
     state: "{{ cohesity_agent.state }}"
     service_user: "{{ cohesity_agent.service_user | default('cohesityagent') }}"
     service_group: "{{ cohesity_agent.service_group | default('cohesityagent') }}"
