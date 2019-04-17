@@ -4,7 +4,7 @@
     cluster: "{{ cohesity_server }}"
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
-    validate_certs: "{{ cohesity_validate_certs | default(False)}}"
+    validate_certs: "{{ cohesity_validate_certs | default(False) }}"
     state:  "{{ cohesity_source.state | default('present') }}"
     endpoint: "{{ cohesity_source.endpoint | default('') }}"
     environment: "{{ cohesity_source.environment | default('Physical') }}"

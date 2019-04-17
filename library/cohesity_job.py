@@ -298,6 +298,35 @@ def wait__for_job_state__transition(module, self, job_runs, state='start'):
             loop_cnt=loop_cnt)
 
 
+def create_paths_parameter(module, update_source_ids):
+    sources_with_paths = []
+    for source in module.params.get('protection_sources'):
+        if (source['endpoint'] is not None) and source['endpoint'] in update_source_ids:
+            source_paths = {}
+            source_paths['sourceId'] = source['endpoint']
+            source_paths['physicalSpecialParameters'] = {}
+            if 'paths' in source:
+                source_paths['physicalSpecialParameters']['filepaths'] = []
+                for path in source['paths']:
+                    t = {}
+                    t.setdefault('backupFilePath', '/')
+                    t.setdefault('excludedFilePaths', [])
+                    t.setdefault('skipNestedVolumes', True)
+                    if 'includeFilePath' in path:
+                        t['backupFilePath'] = path['includeFilePath']
+                    if 'excludeFilePaths' in path:
+                        t['excludedFilePaths'] = path['excludeFilePaths']
+                    if 'skipNestedVolumes' in path:
+                        t['skipNestedVolumes'] = path['skipNestedVolumes']
+
+                    source_paths['physicalSpecialParameters']['filepaths'].append(t)
+            else:
+                source_paths['physicalSpecialParameters'] = {'filePaths': [
+                                                      {'backupFilePath': "/", 'skipNestedVolumes': True}]}
+            sources_with_paths.append(source_paths)
+    return sources_with_paths
+
+
 def register_job(module, self):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
@@ -312,11 +341,8 @@ def register_job(module, self):
         payload.pop('token', None)
 
         payload['environment'] = "k" + self['environment']
-        payload['sourceSpecialParameters'] = []
-        for sourceId in payload['sourceIds']:
-            payload['sourceSpecialParameters'].append({'sourceId': sourceId,
-                                                       'physicalSpecialParameters': {'filePaths': [
-                                                           {'backupFilePath': "/", 'skipNestedVolumes': True}]}})
+        if payload['environment'] == "kPhysicalFiles":
+            payload['sourceSpecialParameters'] = create_paths_parameter(module, payload['sourceIds'])
         data = json.dumps(payload)
         # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
@@ -402,7 +428,7 @@ def start_job(module, self):
         raise__cohesity_exception__handler(error, module)
 
 
-def update_job_source(module, job_details):
+def update_job_source(module, job_details, update_source_ids):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
     token = job_details['token']
@@ -413,11 +439,16 @@ def update_job_source(module, job_details):
                    "Authorization": "Bearer " + token}
         payload = job_details.copy()
         del payload['token']
-        payload['sourceSpecialParameters'] = []
-        for sourceId in payload['sourceIds']:
-            payload['sourceSpecialParameters'].append({'sourceId': sourceId,
-                                                       'physicalSpecialParameters': {'filePaths': [
-                                                           {'backupFilePath': "/", 'skipNestedVolumes': True}]}})
+        if module.params.get('state') == 'absent':
+            if 'sourceSpecialParameters' in payload:
+                i = 0
+                for parameter in payload['sourceSpecialParameters']:
+                    if parameter['sourceId'] in update_source_ids:
+                        del payload['sourceSpecialParameters'][i]
+                    i += 1
+        elif module.params.get('state') == 'present':
+            payload['sourceSpecialParameters'].extend(create_paths_parameter(module, update_source_ids))
+
         data = json.dumps(payload)
         response = open_url(
             url=uri,
@@ -648,6 +679,12 @@ def main():
         results['source_vars'] = job_details
 
         if job_exists:
+            if module.params.get('environment') != "PhysicalFiles":
+                module.fail_json(
+                    msg="The protection job already exists",
+                    id=job_exists,
+                    name=module.params.get('name')
+                )
             if len(module.params.get('protection_sources')
                    ) == 1 and not module.params.get('protection_sources')[0]:
                 module.fail_json(
@@ -663,12 +700,17 @@ def main():
                 environment=job_details['environment'],
                 token=job_details['token']
             )
+            i = 0
             for source in module.params.get('protection_sources'):
                 prot_source['endpoint'] = source
                 source_id = get__prot_source_id__by_endpoint(
                     module, prot_source)
                 if source_id:
                     job_details['sourceIds'].append(source_id)
+                    module.params.get('protection_sources')[i]['endpoint'] = source_id
+                else:
+                    module.params.get('protection_sources')[i]['endpoint'] = None
+                i += 1
             job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
                 module, job_details)
             job_details['environment'] = module.params.get('environment')
@@ -684,10 +726,11 @@ def main():
                     name=module.params.get('name')
                 )
             elif (not already_exist_in_job) and job_details['sourceIds'] != 0:
+                new_sources = list(set(job_details['sourceIds']).difference(existing_job_details['sourceIds']))
                 existing_job_details['sourceIds'].extend(
                     job_details['sourceIds'])
                 existing_job_details['token'] = job_details['token']
-                response = update_job_source(module, existing_job_details)
+                response = update_job_source(module, existing_job_details, new_sources)
                 results = dict(
                     changed=True,
                     msg="Successfully added sources to existing protection job",
@@ -708,12 +751,18 @@ def main():
                 environment=job_details['environment'],
                 token=job_details['token']
             )
+            i = 0
             for source in module.params.get('protection_sources'):
-                prot_source['endpoint'] = source
+                prot_source['endpoint'] = source['endpoint']
                 source_id = get__prot_source_id__by_endpoint(
                     module, prot_source)
                 if source_id:
                     job_details['sourceIds'].append(source_id)
+                    module.params.get('protection_sources')[i]['endpoint'] = source_id
+                else:
+                    module.params.get('protection_sources')[i]['endpoint'] = None
+                i += 1
+
             job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
                 module, job_details)
             job_details['environment'] = module.params.get('environment')
@@ -790,7 +839,7 @@ def main():
                     existing_job_details['sourceIds'] = list(
                         set(existing_job_details['sourceIds']).difference(job_details['sourceIds']))
                     existing_job_details['token'] = job_details['token']
-                    response = update_job_source(module, existing_job_details)
+                    response = update_job_source(module, existing_job_details, sources_exiting_in_job)
                     results = dict(
                         changed=True,
                         msg="Successfully removed the sources from existing protection job",
