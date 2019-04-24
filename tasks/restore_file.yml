@@ -17,4 +17,5 @@
     overwrite: "{{ cohesity_restore_file.overwrite | default('yes') }}"
     preserve_attributes: "{{ cohesity_restore_file.preserve_attributes | default('yes') }}"
     restore_location: "{{ cohesity_restore_file.restore_location | default('') }}"
+    backup_timestamp: "{{ cohesity_restore_file.backup_timestamp | default('') }}"
   tags: always

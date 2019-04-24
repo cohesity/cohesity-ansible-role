@@ -32,12 +32,12 @@ Use this task to perform a Cohesity file restore operation.
 ## Ansible Variables
 [top](#task-cohesity-file-restore-operation)
 
-The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Syntax](/modules/cohesity_job.md?id=syntax) in the Cohesity Protection Job module.
+The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Syntax](/modules/cohesity_restore_file.md?id=syntax) in the Cohesity Restore Files module.
 ```yaml
 cohesity_restore_file:
   state: "present"
   name: ""
-  environment: "Physical"
+  environment: "PhysicalFiles"
   job_name: ""
   endpoint: ""
   backup_id: ""
@@ -63,20 +63,26 @@ This is an example playbook that creates a new file restore operation for a Prot
   - This example requires that the endpoint matches an existing Protection Source. See the [Cohesity Protection Source Management](tasks/source.md) task.
   - This example requires that the Protection job exists and has been run at least once. See the [Cohesity Protection Job Management](tasks/job.md) task.
 
+You can create a file called `restore_files.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> restore_files.yml -e "username=admin password=admin"
+  ```
+
 ```yaml
 ---
   - hosts: workstation
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_server: 10.2.136.140
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
         var_cohesity_restore_name: "Ansible Test File Restore"
-        var_cohesity_endpoint:
-        var_cohesity_job_name:
+        var_cohesity_endpoint: 10.2.132.141
+        var_cohesity_job_name: "protect_physical_linux"
         var_cohesity_files:
+           - "/home/cohesity/Documents"
     roles:
       - cohesity.cohesity_ansible_role
     tasks:

@@ -42,7 +42,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     job_name: <selected Protection Job from which the restore will be initated>
     endpoint: <identifies the source endpoint to which the the restore operation will be performed>
     backup_id: <optional Cohesity Backup Run ID for the restore operation.  If not selected, the most recent RunId will be used>
-    backup_timestamp: <optional Cohesity Backup Run time. The formart should be YYYY-MM-DD:hh:mm. If not selected, the most recent backup time is used>
+    backup_timestamp: <optional Cohesity Backup Run time. The formart should be YYYY-MM-DD:hh:mm. If not selected, the most recent backup is used>
     file_names:
       - <list of files and folders to be restored by the operation>
     wait_for_job: <boolean to determine if the task should wait for the restore operation to complete prior to moving to the next operation>
@@ -69,7 +69,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
-      - C:\\data\\big_file
+      - C:/data/big_file
     wait_for_job: no
 ```
 
@@ -106,8 +106,8 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
-      - C:\\data\\files
-      - C:\\data\\large_directory
+      - C:/data/files
+      - C:/data/large_directory
     wait_for_job: yes
     wait_minutes: 10
 ```
@@ -146,7 +146,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     "changed": true, 
     "failed": false, 
     "filenames": [
-        "C:\\data\\files"
+        "C:/data/files"
     ], 
     "msg": "Registration of Cohesity Restore Job Complete", 
     "name": "mywindows: Ansible Test Multi-File Restore", 

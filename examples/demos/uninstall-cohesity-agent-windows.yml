@@ -1,0 +1,21 @@
+#uninstall cohesity agent on windows machines
+---
+- hosts: windows
+  gather_facts: yes
+  become: false
+  roles:
+      - cohesity.cohesity_ansible_role
+  tasks:
+    - name: Uninstall Cohesity Agent on each windows Server
+      include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: win_agent
+      vars:
+          cohesity_server: 10.2.145.58
+          cohesity_admin: "{{ username }}"
+          cohesity_password: "{{ password }}"
+          cohesity_validate_certs: False
+          cohesity_agent:
+              state: absent
+              reboot: True
+

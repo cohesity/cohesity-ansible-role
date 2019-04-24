@@ -1,0 +1,25 @@
+#=> restore files from windows machine, job run at a particular timestamp is used for restore operation
+---
+  - hosts: local
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Restore Files
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: restore_file
+        vars:
+            cohesity_server: 10.2.145.27
+            cohesity_admin: "{{ username }}"
+            cohesity_password: "{{ password }}"
+            cohesity_validate_certs: False
+            cohesity_restore_file:
+                name: "Ansible File Restore1"
+                environment: "PhysicalFiles"
+                job_name: "protect_vm1"
+                endpoint: "10.2.146.235"
+                files:
+                  - "C:/Docs"
+                wait_for_job: True
+                state: "present"
+                backup_timestamp: "2019-04-22:21:14"
