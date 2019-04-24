@@ -1,0 +1,23 @@
+# => Register windows machines as Cohesity protection sources
+---
+  - hosts: local
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Cycle through each member of the windows hosts and register as Cohesity Protection Source
+      - name: Create new Protection Source for each Physical linux Server
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: source
+        vars:
+            cohesity_server: "10.2.145.27"
+            cohesity_admin: "{{ username }}"
+            cohesity_password: "{{ password }}"
+            cohesity_validate_certs: False
+            cohesity_source:
+                state: present
+                endpoint: "{{item}}"
+                environment: "Physical"
+                host_type: "Windows"
+        with_items: "{{groups['windows']}}"

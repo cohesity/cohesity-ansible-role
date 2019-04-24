@@ -77,6 +77,11 @@ Here is an example playbook that installs the Cohesity agent on all `linux` host
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
   - When using the default download location, the Cohesity agent installer is placed in `/tmp/<temp-dir>`.  If your environment prevents the use of `/tmp` with a `noexec` option, then you must set an alternate download location.
 
+You can create a file called `deploy-cohesity-agent-linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> deploy-cohesity-agent-linux.yml -e "username=admin password=admin"
+  ```
+
 ```yaml
 # => Cohesity Agent Management
 # =>
@@ -92,8 +97,8 @@ Here is an example playbook that installs the Cohesity agent on all `linux` host
     # => to the Cohesity cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
     # => We need to gather facts to determine the OS type of
     # => the machine
@@ -125,6 +130,11 @@ Here is an example playbook that installs the Cohesity agent on all `windows` ho
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
   - Cohesity Agent installation on Windows supports two types of Agent install types: `filecbt` and `volcbt`.  When installing or removing the agent and selecting a `volcbt` type, you must reboot the Windows server to complete the action.
 
+You can create a file called `deploy-cohesity-agent-windows.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> deploy-cohesity-agent-windows.yml -e "username=admin password=admin"
+  ```
+  
 ```yaml
 # => Install the Cohesity Agent on each Windows host
 # => specified in the Ansible inventory
@@ -134,8 +144,8 @@ Here is an example playbook that installs the Cohesity agent on all `windows` ho
     # => to the Cohesity cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
         var_agent_install_type: volcbt
         var_windows_reboot: True

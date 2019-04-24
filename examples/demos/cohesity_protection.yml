@@ -1,0 +1,90 @@
+# => Cohesity protection. This includes tasks for installing the agents on physical linux machines,
+# => registering them on cohesity and creating a protection job with these machines and running the protection job
+# => Role: cohesity.cohesity_ansible_role
+
+---
+# => install cohesity agent on linux hosts
+- hosts: linux
+  gather_facts: yes
+  become: true
+  roles:
+      - cohesity.cohesity_ansible_role
+  tasks:
+    - name: Install new Cohesity Agent on each physical machine
+      include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: agent
+      vars:
+          cohesity_server: 10.2.145.27
+          cohesity_admin: "{{ username }}"
+          cohesity_password: "{{ password }}"
+          cohesity_validate_certs: False
+          cohesity_agent:
+              state: present
+
+- hosts: local
+    # => We need to specify these variables to connect
+    # => to the Cohesity Cluster
+  vars:
+        var_cohesity_server: 10.2.145.27
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+  gather_facts: no
+  roles:
+      - cohesity.cohesity_ansible_role
+  tasks:
+      - name: Register linux Protection Source
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_source:
+                state: present
+                endpoint: "{{item}}"
+                environment: "Physical"
+                host_type: "Linux"
+        with_items: "{{groups['linux']}}"
+
+      - name: Create new Protection Job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: present
+              job_name: "protect_vms"
+              storage_domain: "DefaultStorageDomain"
+              policy: "Bronze"
+              sources:
+                - endpoint: "{{ item }}"
+                  paths:
+                  - includeFilePath : "/home/cohesityagent"
+                    excludeFilePaths:
+                    - "/home/cohesityagent/cohesityagent"
+                    skipNestedVolumes: False
+                  - includeFilePath: "/"
+                    skipNestedVolumes: True
+        with_items: "{{groups['linux']}}"
+
+      - name: Start On-Demand Protection Job Execution
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: started
+              job_name: "protect_vms"
+              environment: "PhysicalFiles"

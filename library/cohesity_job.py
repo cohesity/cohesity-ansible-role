@@ -72,7 +72,16 @@ options:
     required: yes
   protection_sources:
     description:
-      - Valid list of endpoint names for existing Protection Sources to be included in the job. Required when I(state=present).
+      - A list of dictionaries with endpoints and paths to backup. Required when I(state=present).
+    usage:
+      protection_sources:
+        - endpoint: ""
+          paths: (valid only for physical sources)
+            - includeFilePath: (String, default "/" for linux machines, required field for windows machines)
+              excludeFilePaths: (List, defaults to empty list [], optional field)
+                 - String
+                 - String
+              skipNestedVolumes: True (Boolean, defaults to True)
   protection_policy:
     description:
       - Valid policy name or ID for andexisting Protection Policy to be assigned to the job.
@@ -298,6 +307,15 @@ def wait__for_job_state__transition(module, self, job_runs, state='start'):
             loop_cnt=loop_cnt)
 
 
+def convert_windows_file_paths(path):
+    if ':' in path:
+        path_structure = path.split(":")
+        path = "/" + path_structure[0]+ path_structure[1]
+        for char in ("\\\\", "\\"):
+            path = path.replace(char, "/")
+    return path
+
+
 def create_paths_parameter(module, update_source_ids):
     sources_with_paths = []
     for source in module.params.get('protection_sources'):
@@ -313,9 +331,12 @@ def create_paths_parameter(module, update_source_ids):
                     t.setdefault('excludedFilePaths', [])
                     t.setdefault('skipNestedVolumes', True)
                     if 'includeFilePath' in path:
-                        t['backupFilePath'] = path['includeFilePath']
+                        t['backupFilePath'] = convert_windows_file_paths(path['includeFilePath'])
                     if 'excludeFilePaths' in path:
-                        t['excludedFilePaths'] = path['excludeFilePaths']
+                        files=[]
+                        for file in path['excludeFilePaths']:
+                            files.append(convert_windows_file_paths(file))
+                        t['excludedFilePaths'] = files
                     if 'skipNestedVolumes' in path:
                         t['skipNestedVolumes'] = path['skipNestedVolumes']
 
@@ -702,7 +723,7 @@ def main():
             )
             i = 0
             for source in module.params.get('protection_sources'):
-                prot_source['endpoint'] = source
+                prot_source['endpoint'] = source['endpoint']
                 source_id = get__prot_source_id__by_endpoint(
                     module, prot_source)
                 if source_id:
@@ -718,14 +739,14 @@ def main():
             already_exist_in_job = set(
                 job_details['sourceIds']).issubset(
                 existing_job_details['sourceIds'])
-            if already_exist_in_job and job_details['sourceIds'] != 0:
+            if already_exist_in_job and len(job_details['sourceIds']) != 0:
                 results = dict(
                     changed=False,
                     msg="The protection sources are already being protected",
                     id=job_exists,
                     name=module.params.get('name')
                 )
-            elif (not already_exist_in_job) and job_details['sourceIds'] != 0:
+            elif (not already_exist_in_job) and len(job_details['sourceIds']) != 0:
                 new_sources = list(set(job_details['sourceIds']).difference(existing_job_details['sourceIds']))
                 existing_job_details['sourceIds'].extend(
                     job_details['sourceIds'])
@@ -821,7 +842,7 @@ def main():
                     token=job_details['token']
                 )
                 for source in module.params.get('protection_sources'):
-                    prot_source['endpoint'] = source
+                    prot_source['endpoint'] = source['endpoint']
                     source_id = get__prot_source_id__by_endpoint(
                         module, prot_source)
                     if source_id:

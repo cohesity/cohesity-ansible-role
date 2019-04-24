@@ -17,10 +17,10 @@
 Use this task to add and configure Cohesity Protection Sources.
 
 #### How It Works
-- The task starts by determining whether the named endpoint exists in the cluster.
-- Upon validation, the task creates a new Protection Source (*state=present*) or removes the existing Protection Source (*state=absent*) from the cluster.
+- The task starts by determining whether named protection job exists in the cluster.
+- Upon validation, the task creates a new Protection job or add physical sources to existing job (*state=present*) or removes the existing Protection job (*state=absent*) from the cluster.
 > **IMPORTANT**!<br>
-  When *state=absent*, there are no job validations or state checks to ensure that backups are not running. If jobs exist for the Source, an error is raised and the task fails.
+  When *state=absent*, there are no job validations or state checks to ensure that backups are not running. If job exist and an physical source endpoint is given, the task tries to remove source from the job 
 
 ### Requirements
 [top](#task-cohesity-protection-job-management)
@@ -42,7 +42,8 @@ The following is a list of variables and the configuration expected when leverag
 cohesity_protection:
   state: present
   job_name: ""
-  endpoint: ""
+  sources:
+     - endpoint: ""
   environment: ""
   storage_domain: DefaultIddStorageDomain
   policy: Bronze
@@ -57,10 +58,16 @@ This example shows how to include the Cohesity Ansible Role in your custom playb
 ### Create new Physical Protection Job using the Ansible Inventory
 [top](#task-cohesity-protection-job-management)
 
-This is an example playbook that creates a new Protection Job for all Physical hosts based on the registered inventory hostname. (Remember to change it to suit your environment.)
+This is an example playbook that creates a new Protection Job and adds Physical hosts to the job based on the registered inventory hostname. (Remember to change it to suit your environment.)
 > **Notes:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
-  - This example requires that the endpoint matches an existing Protection Source.  See [Task: Cohesity Protection Source Management](tasks/source.md).
+  - This example requires that the endpoints matches existing Protection Sources.  See [Task: Cohesity Protection Source Management](tasks/source.md).
+  - Make sure includeFilePath and excludeFilePaths exist on the sources
+  
+You can create a file called `protection_job_physical.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_job_physical.yml -e "username=admin password=admin"
+  ```
 
 ```yaml
 ---
@@ -69,14 +76,14 @@ This is an example playbook that creates a new Protection Job for all Physical h
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
     gather_facts: no
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create new Protection Jobs for each Physical Server
+      - name: Create new Protection Jobs for Physical Linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -87,9 +94,17 @@ This is an example playbook that creates a new Protection Job for all Physical h
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_protection:
                 state: present
-                job_name: "{{ hostvars[item]['ansible_host'] }}"
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
+                job_name: "protect_physical_linux"
+                sources:
+                    - endpoint: "{{ item }}"
+                      paths:
+                        - includeFilePath: "/home"
+                          excludeFilePaths:
+                            - "/home/cohesity/cohesityagent"
+                            - "/home/Documents"
+                          skipNestedVolumes: False
+                environment: "PhysicalFiles"   
+        with_items: "{{ groups['linux'] }}"
         tags: [ 'cohesity', 'jobs', 'register', 'physical' ]
 ```
 
@@ -107,8 +122,8 @@ This is an example playbook that creates a new Protection Jop for the chosen vCe
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
         var_vcenter_server: myvcenter.cohesity.lab
         var_vcenter_username: administrator
@@ -131,7 +146,8 @@ This is an example playbook that creates a new Protection Jop for the chosen vCe
             cohesity_protection:
                 state: present
                 job_name: "{{ var_job_name }}"
-                endpoint: "{{ var_endpoint }}"
+                sources: 
+                  - endpoint: "{{ var_endpoint }}"
                 environment: "VMware"
         tags: [ 'cohesity', 'jobs', 'register', 'vmware' ]
 ```
@@ -150,8 +166,8 @@ This is an example playbook that creates new Protection Sources for the chosen v
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
         var_job_name: myvcenter.cohesity.lab
     gather_facts: no
@@ -174,10 +190,10 @@ This is an example playbook that creates new Protection Sources for the chosen v
         tags: [ 'cohesity', 'jobs', 'start', 'vmware' ]
 ```
 
-### Delete an existing Protection Job from a Physical Source
+### Delete an existing Protection Job for Physical Sources
 [top](#task-cohesity-protection-job-management)
 
-This is an example playbook that deletes a Protection Source from a Physical Source. (Remember to change it to suit your environment.)
+This is an example playbook that deletes a Protection job. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
 
@@ -188,10 +204,10 @@ This is an example playbook that deletes a Protection Source from a Physical Sou
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: {{ username }}
+        var_cohesity_password: {{ password }}
         var_validate_certs: False
-        var_job_name: windows01.cohesity.lab
+        var_job_name: protect_physical_linux
         var_delete_backups: True
     gather_facts: no
     roles:
@@ -230,8 +246,7 @@ The following information is copied directly from the included task in this role
     state:  "{{ cohesity_protection.state | default('present') }}"
     name: "{{ cohesity_protection.job_name | default('') }}"
     environment: "{{ cohesity_protection.environment | default('PhysicalFiles') }}"
-    protection_sources:
-      - "{{ cohesity_protection.endpoint | default('') }}"
+    protection_sources: "{{ cohesity_protection.sources | default('') }}"
     protection_policy: "{{ cohesity_protection.policy | default('Bronze') }}"
     storage_domain: "{{ cohesity_protection.storage_domain | default('DefaultIddStorageDomain') }}"
     delete_backups: "{{ cohesity_protection.delete_backups | default(False) }}"

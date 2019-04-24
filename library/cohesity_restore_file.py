@@ -111,6 +111,11 @@ options:
   restore_location:
     description:
       - Alternate location to which the files will be restored
+  backup_timestamp:
+    description:
+      - protection run timestamp in YYYY-MM-DD:HH:MM format to use as source for the Restore operation. If not specified,
+        the most recent timestamp is used
+    type: String
 
 
 extends_documentation_fragment:
@@ -232,21 +237,21 @@ def convert__windows_file_name(filename):
     if '\\' in filename and ':' not in filename:
         msg = "Windows Based files must be in /Drive/path/to/file or Drive:\\path\\to\\file format."
         raise ParameterViolation(msg)
+    if ":" in filename:
+        get_file_source = filename.split(":")
+        if len(get_file_source) > 1:
+            drive_letter = "/" + get_file_source[0]
+            file_path = get_file_source[1]
+        else:
+            drive_letter = ""
+            file_path = filename
 
-    get_file_source = filename.split(":")
-    if len(get_file_source) > 1:
-        drive_letter = "/" + get_file_source[0]
-        file_path = get_file_source[1]
-    else:
-        drive_letter = ""
-        file_path = filename
+        # => Replace the back slashes with forward slashes.
+        for char in ("\\\\", "\\"):
+            file_path = file_path.replace(char, "/")
 
-    # => Replace the back slashes with forward slashes.
-    for char in ("\\\\", "\\"):
-        file_path = file_path.replace(char, "/")
-
-    # => Combine the Drive Letter and the Formmated File Path for the restore
-    filename = drive_letter + file_path
+        # => Combine the Drive Letter and the Formmated File Path for the restore
+        filename = drive_letter + file_path
     return filename
 
 
@@ -573,14 +578,7 @@ def main():
                         msg="Failed to find the endpoint on the cluster",
                         changed=False)
                 job_details['endpoint'] = source_id
-                source_object_info = get__snapshot_information__for_file(
-                    module, job_details)
 
-                # => For every file to be restored, we need to ensure that Windows style names
-                # => have been converted into Unix style names else, the restore job will
-                # => fail.
-                #
-                # => However, only if this is a PhysicalFiles Type
                 restore_file_list = []
                 for restore_file in job_details['file_names']:
                     if environment == "PhysicalFiles":
@@ -591,6 +589,10 @@ def main():
                             job_details['endpoint'], restore_file))
                     else:
                         restore_file_list = restore_file
+
+                job_details['file_names'] = restore_file_list
+                source_object_info = get__snapshot_information__for_file(
+                    module, job_details)
 
                 for objectInfo in source_object_info:
                     restore_data = dict(

@@ -18,7 +18,7 @@ This example play leverages the Ansible Inventory to dynamically remove and crea
 #### How It Works
 - The play starts by reading all environments from the Ansible Inventory and cancels any corresponding Protection Jobs if active.
 - Upon completion of the job stop, the job is deleted, **including all backups**.
-- After the job is successfully removed, each Source is registered as a new Protection Job, with the corresponding endpoint as the name of that Protection Job.
+- After the job is successfully removed, Protection job is created with sources
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
@@ -41,6 +41,7 @@ To fully leverage this Ansible Play, you must configure your Ansible Inventory f
 
 This is an example inventory file: (Remember to change it to suit your environment.)
 ```ini
+
 [linux]
 10.2.46.96
 10.2.46.97
@@ -65,6 +66,7 @@ ansible_winrm_server_cert_validation=ignore
 [physical:children]
 linux
 windows
+
 
 # => Declare the VMware environments to manage.
 [vmware]
@@ -95,12 +97,17 @@ nas_password=password
 
 The combined source file for these two playbooks is located at the root of the role in `examples/demos/jobs.yml`.
 
-### Register Protection Jobs for all hosts in the inventory
+### Register Protection Job for all linux hosts in the inventory
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
 
-Here is an example playbook that registers an existing Protection Source as a new Protection Job for all hosts in the inventory. (Remember to change it to suit your environment.)
+Here is an example playbook that registers a new Protection Jobs for all hosts in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `protection_jobs.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_jobs.yml -e "username=admin password=admin"
+  ```
 
 ```yaml
 # => Cohesity Protection Jobs for Physical, VMware, and GenericNAS environments
@@ -118,15 +125,15 @@ Here is an example playbook that registers an existing Protection Source as a ne
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
     gather_facts: no
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
         # => Manage Physical
-      - name: Create new Protection Jobs for each Physical Server
+      - name: Create new Protection Job for Physical linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -137,12 +144,39 @@ Here is an example playbook that registers an existing Protection Source as a ne
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: present
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'sources', 'register', 'physical' ]
+              job_name: "protect_physical_linux"
+              sources: 
+                 - endpoint : "{{ item }}"
+                   paths:
+                    - includeFilePath: "/"
+                      excludeFilePaths:
+                        - "/home"
+                        - "/opt"
+                      skipNestedVolumes: False
+        with_items: "{{ groups['linux'] }}"
+        
+      - name: Create new Protection Job for Physical windows Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: present
+              job_name: "protect_physical_windows"
+              sources: 
+                 - endpoint : "{{ item }}"
+                   paths:
+                    - includeFilePath: "C:\\"
+                      excludeFilePaths:
+                        - "C:\\Program Files"
+                      skipNestedVolumes: False
+        with_items: "{{ groups['windows'] }}"
 
-      - name: Start On-Demand Protection Job Execution for each Physical Server
+      - name: Start On-Demand Protection Job Execution for Physical linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -153,9 +187,21 @@ Here is an example playbook that registers an existing Protection Source as a ne
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: started
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'sources', 'started', 'physical' ]
+              job_name: "protect_physical_linux"
+    
+      - name: Start On-Demand Protection Job Execution for Physical windows Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: started
+              job_name: "protect_physical_windows"
+              
 
         # => Manage VMware
       - name: Create new Protection Jobs for each VMware Server
@@ -170,7 +216,8 @@ Here is an example playbook that registers an existing Protection Source as a ne
           cohesity_protection:
               state: present
               job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.vmware }}"
         tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
@@ -204,7 +251,8 @@ Here is an example playbook that registers an existing Protection Source as a ne
           cohesity_protection:
               state: present
               job_name: "{{ hostvars[item]['endpoint'] }}"
-              endpoint: "{{ hostvars[item]['endpoint'] }}"
+              sources: 
+                 - endpoint: "{{ hostvars[item]['endpoint'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.generic_nas }}"
         tags: [ 'cohesity', 'sources', 'register', 'generic_nas' ]
@@ -234,6 +282,11 @@ Here is an example playbook that removes an existing Protection Job and deletes 
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
 
+You can create a file called `remove_protection_jobs.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> remove_protection_jobs.yml -e "username=admin password=admin"
+  ```
+
 ```yaml
 # => Cohesity Protection Jobs for Physical, VMware, and GenericNAS environments
 # =>
@@ -250,15 +303,15 @@ Here is an example playbook that removes an existing Protection Job and deletes 
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
     gather_facts: no
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
         # => Manage Physical
-      - name: Stop existing Protection Job Execution for each Physical Server
+      - name: Stop existing Protection Job Execution for Physical linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -269,12 +322,24 @@ Here is an example playbook that removes an existing Protection Job and deletes 
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: stopped
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "protect_physical_linux"
               cancel_active: True
-        with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'sources', 'stopped', 'remove', 'physical' ]
+              
+      - name: Stop existing Protection Job Execution for Physical windows Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: stopped
+              job_name: "protect_physical_windows"
+              cancel_active: True
 
-      - name: Remove Protection Jobs for each Physical Server
+      - name: Remove Protection Job for Physical linux server
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -285,11 +350,22 @@ Here is an example playbook that removes an existing Protection Job and deletes 
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: absent
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "protect_physical_linux"
               delete_backups: True
-        with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'sources', 'remove', 'physical' ]
+              
+      - name: Remove Protection Job for Physical windows server
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: absent
+              job_name: "protect_physical_windows"
+              delete_backups: True
 
         # => Manage VMware
       - name: Stop existing Protection Job Execution for each VMware Server
@@ -364,4 +440,3 @@ Here is an example playbook that removes an existing Protection Job and deletes 
         tags: [ 'cohesity', 'sources', 'remove', 'generic_nas' ]
 
 ```
-

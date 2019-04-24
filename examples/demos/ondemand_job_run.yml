@@ -1,0 +1,19 @@
+#=> On demand protection job run
+---
+  - hosts: local
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Start On-Demand Protection Job Execution
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: 10.2.145.27
+          cohesity_admin: "{{ username }}"
+          cohesity_password: "{{ password }}"
+          cohesity_validate_certs: False
+          cohesity_protection:
+              state: started
+              job_name: "protect_vm"

@@ -42,7 +42,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     job_name: <selected Protection Job from which the restore will be initated>
     endpoint: <identifies the source endpoint to which the the restore operation will be performed>
     backup_id: <optional Cohesity Backup Run ID for the restore operation.  If not selected, the most recent RunId will be used>
-    backup_timestamp: <optional Cohesity Backup Run time. The formart should be YYYY-MM-DD:hh:mm. If not selected, the most recent backup time is used>
+    backup_timestamp: <optional Cohesity Backup Run time. The formart should be YYYY-MM-DD:hh:mm. If not selected, the most recent backup is used>
     file_names:
       - <list of files and folders to be restored by the operation>
     wait_for_job: <boolean to determine if the task should wait for the restore operation to complete prior to moving to the next operation>
@@ -118,7 +118,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentails can be configured in one of two formats.<br>- Domain\\username<br>- username@domain |
+| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentials can be configured as.<br>- Domain/username|
 | X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
 |   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the restore operation. |
@@ -146,7 +146,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     "changed": true, 
     "failed": false, 
     "filenames": [
-        "C:\\data\\files"
+        "C:/data/files"
     ], 
     "msg": "Registration of Cohesity Restore Job Complete", 
     "name": "mywindows: Ansible Test Multi-File Restore", 

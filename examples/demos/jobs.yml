@@ -13,8 +13,8 @@
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
     gather_facts: no
     roles:
@@ -49,7 +49,8 @@
           cohesity_protection:
               state: absent
               job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
               delete_backups: True
         with_items: "{{ groups.physical }}"
         tags: [ 'cohesity', 'jobs', 'remove', 'physical' ]
@@ -66,7 +67,8 @@
           cohesity_protection:
               state: present
               job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
         with_items: "{{ groups.physical }}"
         tags: [ 'cohesity', 'jobs', 'register', 'physical' ]
 
@@ -115,7 +117,8 @@
           cohesity_protection:
               state: absent
               job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
               environment: "{{ hostvars[item]['type'] }}"
               delete_backups: True
         with_items: "{{ groups.vmware }}"
@@ -133,7 +136,8 @@
           cohesity_protection:
               state: present
               job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.vmware }}"
         tags: [ 'cohesity', 'jobs', 'register', 'vmware' ]
@@ -184,7 +188,8 @@
           cohesity_protection:
               state: absent
               job_name: "{{ hostvars[item]['endpoint'] }}"
-              endpoint: "{{ hostvars[item]['endpoint'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['endpoint'] }}"
               environment: "{{ hostvars[item]['type'] }}"
               delete_backups: True
         with_items: "{{ groups.generic_nas }}"
@@ -202,7 +207,8 @@
           cohesity_protection:
               state: present
               job_name: "{{ hostvars[item]['endpoint'] }}"
-              endpoint: "{{ hostvars[item]['endpoint'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['endpoint'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.generic_nas }}"
         tags: [ 'cohesity', 'jobs', 'register', 'generic_nas' ]

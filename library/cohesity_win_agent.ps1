@@ -69,13 +69,21 @@ Function New-CohesityToken {
         ContentType = "application/json"
       }
 
-      $payload = @{
-        "username"       = $self.username
-        "password"       = $self.password
+     if ($self.username -Match "/")
+     {
+        $cred = $self.username -split '/'
+        $payload = @{
+            "username"       = $cred[1]
+            "password"       = $self.password
+            "domain"         = $cred[0]
+            }
       }
-
-      if ( $self.domain ) {
-        $payload.domain = $self.domain
+      else
+      {
+        $payload = @{
+            "username"       = $self.username
+            "password"       = $self.password
+            }
       }
 
       # => Need to convert the PowerShell hash collection into JSON

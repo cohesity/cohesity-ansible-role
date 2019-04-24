@@ -1,0 +1,20 @@
+#=> uninstall cohesity agent on linux machines
+---
+- hosts: linux
+  gather_facts: yes
+  become: true
+  roles:
+      - cohesity.cohesity_ansible_role
+  tasks:
+    - name: Uninstall Cohesity Agent on each Linux Server
+      include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: agent
+      vars:
+          cohesity_server: 10.2.145.27
+          cohesity_admin: "{{ username }}"
+          cohesity_password: "{{ password }}"
+          cohesity_validate_certs: False
+          cohesity_agent:
+              state: absent
+

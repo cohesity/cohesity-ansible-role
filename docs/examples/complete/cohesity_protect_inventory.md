@@ -262,7 +262,8 @@ Here is an example playbook that queries the inventory to install Agents on all 
           cohesity_protection:
               state: present
               job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
         with_items: "{{ groups.physical }}"
         tags: [ 'cohesity', 'jobs', 'create', 'physical' ]
 
@@ -278,7 +279,8 @@ Here is an example playbook that queries the inventory to install Agents on all 
           cohesity_protection:
               state: present
               job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.vmware }}"
         tags: [ 'cohesity', 'jobs', 'create', 'vmware' ]
@@ -295,7 +297,8 @@ Here is an example playbook that queries the inventory to install Agents on all 
           cohesity_protection:
               state: present
               job_name: "{{ hostvars[item]['endpoint'] }}"
-              endpoint: "{{ hostvars[item]['endpoint'] }}"
+              sources:
+                - endpoint: "{{ hostvars[item]['endpoint'] }}"
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.generic_nas }}"
         tags: [ 'cohesity', 'jobs', 'create', 'generic_nas' ]

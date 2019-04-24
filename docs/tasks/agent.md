@@ -16,7 +16,7 @@
 Use this task to install the required packages on Ubuntu/Debian and CentOS/RHEL servers and manage the Cohesity Agent.
 
 #### How It Works
-- The task starts by installing the required packages on the Ubuntu/Debian or CentOS/RHEL server (if *state=present*).
+- The task starts by installing the required packages on the Ubuntu/Debian or CentOS/RHEL server and enabling tcp port 50051 in firewall (if *state=present*).
 - Upon completion, the latest version of the agent is installed (*state=present*) or removed (*state=absent*) from the `linux` server.
 
 ### Requirements
@@ -56,6 +56,11 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
 
+You can create a file called `cohesity-agent-linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> cohesity-agent-linux.yml -e "username=admin password=admin"
+  ```
+
 ```yaml
 ---
   - hosts: linux
@@ -63,8 +68,8 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
     become: true
     roles:
@@ -81,7 +86,6 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_agent:
                 state: present
-        tags: [ 'cohesity', 'agent', 'install', 'physical', 'linux' ]
 ```
 
 ### Install the Cohesity Agent on Linux hosts using Root
@@ -98,8 +102,8 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
     become: true
     roles:
@@ -119,7 +123,6 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
                 service_user: "root"
                 service_group: "root"
                 create_user: False
-        tags: [ 'cohesity', 'agent', 'install', 'physical', 'linux' ]
 ```
 
 
@@ -138,8 +141,8 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
     # => to your Cohesity Cluster
     vars:
         var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: admin
-        var_cohesity_password: admin
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
         var_validate_certs: False
     become: true
     roles:
@@ -184,16 +187,33 @@ The following information is copied directly from the included task in this role
     - cohesity_agent.state == "present"
   tags: always
 
+- name: Enable tcp port 50051 for CentOS
+  command: "firewall-cmd {{ item }}"
+  with_items:
+  - --zone=public --permanent --add-port 50051/tcp
+  - --reload
+  when:
+      - ansible_distribution == "CentOS"
+      - cohesity_agent.state == "present"
+  tags: always
+
+- name: Enable tcp port 50051 for Ubuntu
+  command: ufw allow 50051/tcp
+  when:
+      - ansible_distribution == "Ubuntu"
+      - cohesity_agent.state == "present"
+  tags: always
+
 - name: "Cohesity agent: Set Agent to state of {{ cohesity_agent.state | default('present') }}"
   cohesity_agent:
     cluster: "{{ cohesity_server }}"
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
-    validate_certs: "{{ cohesity_validate_certs }}"
+    validate_certs: "{{ cohesity_validate_certs | default(False) }}"
     state: "{{ cohesity_agent.state }}"
     service_user: "{{ cohesity_agent.service_user | default('cohesityagent') }}"
     service_group: "{{ cohesity_agent.service_group | default('cohesityagent') }}"
-    create_user: "{{ cohesity_agent.create_user | default(True)}}"
+    create_user: "{{ cohesity_agent.create_user | default(True) }}"
     download_location: "{{ cohesity_agent.download_location | default() }}"
   tags: always
 ```
