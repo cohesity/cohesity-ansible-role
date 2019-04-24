@@ -67,7 +67,7 @@
               sources:
                 - endpoint: "{{ item }}"
                   paths:
-                  - includeFilePath : "/home/cohesityagent"
+                  - includeFilePath: "/home/cohesityagent"
                     excludeFilePaths:
                     - "/home/cohesityagent/cohesityagent"
                     skipNestedVolumes: False

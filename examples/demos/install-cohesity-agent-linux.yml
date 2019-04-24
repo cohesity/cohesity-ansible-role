@@ -17,4 +17,3 @@
           cohesity_validate_certs: False
           cohesity_agent:
               state: present
-

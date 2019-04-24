@@ -18,4 +18,3 @@
           cohesity_agent:
               state: present
               reboot: True
-
