@@ -124,7 +124,7 @@ You can create a file called `protection_jobs.yml`, add the contents from the sa
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.130.146
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False
@@ -170,9 +170,9 @@ You can create a file called `protection_jobs.yml`, add the contents from the sa
               sources: 
                  - endpoint : "{{ item }}"
                    paths:
-                    - includeFilePath: "C:/"
+                    - includeFilePath: "C:\\"
                       excludeFilePaths:
-                        - "C:/Program Files"
+                        - "C:\\Program Files"
                       skipNestedVolumes: False
         with_items: "{{ groups['windows'] }}"
 
@@ -302,7 +302,7 @@ You can create a file called `remove_protection_jobs.yml`, add the contents from
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.130.146
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False

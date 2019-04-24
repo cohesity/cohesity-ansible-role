@@ -159,7 +159,7 @@ This Ansible Module registers, removes, starts, and stops the Cohesity Protectio
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentails can be configured in one of two formats.<br>- Domain\\username<br>- username@domain |
+| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentials can be configured as <br>- Domain/username|
 | X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
 |   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the Protection Job. |

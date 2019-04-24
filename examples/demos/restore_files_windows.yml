@@ -19,6 +19,6 @@
                 job_name: "protect_vm1"
                 endpoint: "10.2.146.235"
                 files: 
-                  - "C:/Docs"
+                  - "C:\\Docs"
                 wait_for_job: True
                 state: "present"

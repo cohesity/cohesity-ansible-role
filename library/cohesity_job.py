@@ -311,6 +311,8 @@ def convert_windows_file_paths(path):
     if ':' in path:
         path_structure = path.split(":")
         path = "/" + path_structure[0]+ path_structure[1]
+        for char in ("\\\\", "\\"):
+            path = path.replace(char, "/")
     return path
 
 

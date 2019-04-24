@@ -137,7 +137,7 @@ EXAMPLES = '''
     environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
-      - C:/data/big_file
+      - C:\\data\\big_file
     wait_for_job: no
 
 # Restore a single file from a GenericNas NFS Backup and wait for the job to complete
@@ -166,8 +166,8 @@ EXAMPLES = '''
     environment: PhysicalFiles
     endpoint: mywindows.host.lab
     file_names:
-      - C:/data/files
-      - C:/data/large_directory
+      - C:\\data\\files
+      - C:\\data\\large_directory
     wait_for_job: yes
     wait_minutes: 10
 '''
@@ -177,7 +177,7 @@ RETURN = '''
     "changed": true,
     "failed": false,
     "filenames": [
-        "C:/data/files"
+        "C:\\data\\files"
     ],
     "msg": "Registration of Cohesity Restore Job Complete",
     "name": "mywindows: Ansible Test Multi-File Restore",

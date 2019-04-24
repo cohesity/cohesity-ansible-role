@@ -75,7 +75,7 @@ You can create a file called `protection_job_physical.yml`, add the contents fro
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.130.144
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False
@@ -121,7 +121,7 @@ This is an example playbook that creates a new Protection Jop for the chosen vCe
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.130.144
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False
@@ -165,7 +165,7 @@ This is an example playbook that creates new Protection Sources for the chosen v
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.130.144
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False
@@ -203,7 +203,7 @@ This is an example playbook that deletes a Protection job. (Remember to change i
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.130.144
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: {{ username }}
         var_cohesity_password: {{ password }}
         var_validate_certs: False

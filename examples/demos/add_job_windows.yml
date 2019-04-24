@@ -21,8 +21,8 @@
               sources:
                 - endpoint: "10.2.146.235"
                   paths:
-                    - includeFilePath: "C:/Docs"
+                    - includeFilePath: "C:\\Docs"
                       excludeFilePaths:
-                        - "C:/Docs/Doc2"
+                        - "C:\\Docs\\Doc2"
                       skipNestedVolumes: False
               environment: "PhysicalFiles"

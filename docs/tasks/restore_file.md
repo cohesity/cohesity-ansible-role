@@ -74,7 +74,7 @@ You can create a file called `restore_files.yml`, add the contents from the samp
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.136.140
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False

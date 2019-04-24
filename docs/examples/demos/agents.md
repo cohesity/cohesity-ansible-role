@@ -96,7 +96,7 @@ You can create a file called `deploy-cohesity-agent-linux.yml`, add the contents
     # => We need to specify these variables to connect
     # => to the Cohesity cluster
     vars:
-        var_cohesity_server: 10.2.134.20
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False
@@ -143,7 +143,7 @@ You can create a file called `deploy-cohesity-agent-windows.yml`, add the conten
     # => We need to specify these variables to connect
     # => to the Cohesity cluster
     vars:
-        var_cohesity_server: 10.2.134.20
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False

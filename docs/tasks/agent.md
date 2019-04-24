@@ -16,7 +16,7 @@
 Use this task to install the required packages on Ubuntu/Debian and CentOS/RHEL servers and manage the Cohesity Agent.
 
 #### How It Works
-- The task starts by installing the required packages on the Ubuntu/Debian or CentOS/RHEL server and enabling tcp port 50051 on firewall (if *state=present*).
+- The task starts by installing the required packages on the Ubuntu/Debian or CentOS/RHEL server and enabling tcp port 50051 in firewall (if *state=present*).
 - Upon completion, the latest version of the agent is installed (*state=present*) or removed (*state=absent*) from the `linux` server.
 
 ### Requirements
@@ -67,7 +67,7 @@ You can create a file called `cohesity-agent-linux.yml`, add the contents from t
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.130.14
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False
@@ -101,7 +101,7 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.130.14
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False
@@ -140,7 +140,7 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
     # => Please change these variables to connect
     # => to your Cohesity Cluster
     vars:
-        var_cohesity_server: 10.2.130.14
+        var_cohesity_server: cohesity_cluster_vip
         var_cohesity_admin: "{{ username }}"
         var_cohesity_password: "{{ password }}"
         var_validate_certs: False
