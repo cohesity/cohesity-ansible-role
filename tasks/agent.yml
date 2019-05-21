@@ -1,8 +1,7 @@
 ---
 - name: Install Prerequisite Packages for CentOS
-  yum:
-    name: "wget,rsync,lsof,lvm2,nfs-utils"
-    state: present
+  action: >
+    {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-utils" state=present
   when:
     - ansible_distribution == "CentOS"
     - cohesity_agent.state == "present"
