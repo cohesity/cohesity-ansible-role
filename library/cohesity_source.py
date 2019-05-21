@@ -316,8 +316,9 @@ def get__protection_source_registration__status(module, self):
                     if node['protectionSource']['name'] == self['endpoint']:
                         return node['protectionSource']['id']
             else:
-                if source['registrationInfo']['accessInfo']['endpoint'] == self['endpoint']:
-                    return source['protectionSource']['id']
+                for node in source:
+                    if node['registrationInfo']['accessInfo']['endpoint'] == self['endpoint']:
+                        return node['protectionSource']['id']
 
         return False
     except urllib_error.URLError as e:
