@@ -310,7 +310,7 @@ def wait__for_job_state__transition(module, self, job_runs, state='start'):
 def convert_windows_file_paths(path):
     if ':' in path:
         path_structure = path.split(":")
-        path = "/" + path_structure[0]+ path_structure[1]
+        path = "/" + path_structure[0] + path_structure[1]
         for char in ("\\\\", "\\"):
             path = path.replace(char, "/")
     return path
@@ -333,7 +333,7 @@ def create_paths_parameter(module, update_source_ids):
                     if 'includeFilePath' in path:
                         t['backupFilePath'] = convert_windows_file_paths(path['includeFilePath'])
                     if 'excludeFilePaths' in path:
-                        files=[]
+                        files = []
                         for file in path['excludeFilePaths']:
                             files.append(convert_windows_file_paths(file))
                         t['excludedFilePaths'] = files
@@ -460,14 +460,14 @@ def update_job_source(module, job_details, update_source_ids):
                    "Authorization": "Bearer " + token}
         payload = job_details.copy()
         del payload['token']
-        if module.params.get('state') == 'absent':
+        if module.params.get('state') == 'absent' and module.params.get('environment') == 'PhysicalFiles':
             if 'sourceSpecialParameters' in payload:
                 i = 0
                 for parameter in payload['sourceSpecialParameters']:
                     if parameter['sourceId'] in update_source_ids:
                         del payload['sourceSpecialParameters'][i]
                     i += 1
-        elif module.params.get('state') == 'present':
+        elif module.params.get('state') == 'present' and module.params.get('environment') == 'PhysicalFiles':
             payload['sourceSpecialParameters'].extend(create_paths_parameter(module, update_source_ids))
 
         data = json.dumps(payload)
@@ -634,7 +634,7 @@ def main():
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
-                choices=['VMware', 'PhysicalFiles', 'GenericNas'],
+                choices=['VMware', 'PhysicalFiles', 'Physical', 'GenericNas'],
                 required=True
             ),
             protection_sources=dict(type='list'),
@@ -700,7 +700,7 @@ def main():
         results['source_vars'] = job_details
 
         if job_exists:
-            if module.params.get('environment') != "PhysicalFiles":
+            if module.params.get('environment') not in ("PhysicalFiles", "Physical"):
                 module.fail_json(
                     msg="The protection job already exists",
                     id=job_exists,

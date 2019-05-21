@@ -9,9 +9,8 @@
   tags: always
 
 - name: Install Prerequisite Packages for Ubuntu
-  yum:
-    name: "wget,rsync,lsof,lvm2,nfs-common"
-    state: present
+  action: >
+    {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-common" state=present
   when:
     - ansible_distribution == "Ubuntu"
     - cohesity_agent.state == "present"
@@ -23,15 +22,15 @@
   - --zone=public --permanent --add-port 50051/tcp
   - --reload
   when:
-      - ansible_distribution == "CentOS"
-      - cohesity_agent.state == "present"
+    - ansible_distribution == "CentOS"
+    - cohesity_agent.state == "present"
   tags: always
 
 - name: Enable tcp port 50051 for Ubuntu
   command: ufw allow 50051/tcp
   when:
-      - ansible_distribution == "Ubuntu"
-      - cohesity_agent.state == "present"
+    - ansible_distribution == "Ubuntu"
+    - cohesity_agent.state == "present"
   tags: always
 
 - name: "Cohesity agent: Set Agent to state of {{ cohesity_agent.state | default('present') }}"

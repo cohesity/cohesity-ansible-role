@@ -5,7 +5,7 @@
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
     validate_certs: "{{ cohesity_validate_certs | default(False) }}"
-    state:  "{{ cohesity_restore_vm.state | default('present') }}"
+    state: "{{ cohesity_restore_vm.state | default('present') }}"
     name: "{{ cohesity_restore_vm.name | default('') }}"
     environment: "{{ cohesity_restore_vm.environment | default('Physical') }}"
     job_name: "{{ cohesity_restore_vm.job_name | default('') }}"

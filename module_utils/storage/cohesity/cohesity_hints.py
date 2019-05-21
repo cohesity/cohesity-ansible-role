@@ -84,8 +84,12 @@ def get__nodes(self):
 
 def get__prot_source__all(self):
     try:
-        uri = "https://" + self['server'] + \
-            "/irisservices/api/v1/public/protectionSources"
+        if self['environment'] == "VMware":
+            uri = "https://" + self['server'] + \
+                  "/irisservices/api/v1/public/protectionSources/rootNodes"
+        else:
+            uri = "https://" + self['server'] + \
+                "/irisservices/api/v1/public/protectionSources"
 
         if 'environment' in self:
             uri = uri + "?environments=k" + self['environment']
@@ -94,7 +98,7 @@ def get__prot_source__all(self):
         objects = open_url(url=uri, headers=headers,
                            validate_certs=self['validate_certs'])
         objects = json.loads(objects.read())
-        if len(objects):
+        if len(objects) and self['environment'] != "VMware":
             objects = objects[0]
         return objects
     except urllib_error.URLError as error:
@@ -124,7 +128,7 @@ def get__prot_policy__all(self):
             "/irisservices/api/v1/public/protectionPolicies"
 
         if 'policyId' in self:
-            uri = uri + "?names=" + self['policyId']
+            uri = uri + "?" + urllib_parse.urlencode({"names": self['policyId']})
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
         objects = open_url(url=uri, headers=headers,
@@ -165,7 +169,7 @@ def get__storage_domain_id__all(self):
                 self['type'] = 'name'
                 if isinstance(self['viewBoxId'], int):
                     self['type'] = 'id'
-            uri = uri + "?" + self['type'] + "=" + self['viewBoxId']
+            uri = uri + "?" + urllib_parse.urlencode({self['type']: self['viewBoxId']})
 
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
@@ -243,7 +247,6 @@ def get__prot_policy_id__by_name(module, self):
             policyId=self['policyId']
         )
         objects = get__prot_policy__all(source_obj)
-
         for obj in objects:
             if obj['name'] == self['policyId']:
                 return obj['id']
@@ -307,8 +310,9 @@ def get__prot_source_id__by_endpoint(module, self):
                     if node['protectionSource']['name'] == self['endpoint']:
                         return node['protectionSource']['id']
             else:
-                if source['registrationInfo']['accessInfo']['endpoint'] == self['endpoint']:
-                    return source['protectionSource']['id']
+                for node in source:
+                    if node['registrationInfo']['accessInfo']['endpoint'] == self['endpoint']:
+                        return node['protectionSource']['id']
 
         return False
     except Exception as error:

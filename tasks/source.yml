@@ -5,7 +5,7 @@
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
     validate_certs: "{{ cohesity_validate_certs | default(False) }}"
-    state:  "{{ cohesity_source.state | default('present') }}"
+    state: "{{ cohesity_source.state | default('present') }}"
     endpoint: "{{ cohesity_source.endpoint | default('') }}"
     environment: "{{ cohesity_source.environment | default('Physical') }}"
     host_type: "{{ cohesity_source.host_type | default('Linux') }}"

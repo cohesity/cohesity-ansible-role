@@ -60,11 +60,12 @@ options:
     required: yes
   environment:
     description:
-      - Specifies the environment type (such as PhysicalFiles or GenericNas) of the Protection Source this Job
-      - is protecting. Supported environment types include 'PhysicalFiles', 'GenericNas'
+      - Specifies the environment type (such as PhysicalFiles or Physical or GenericNas) of the Protection Job
+      - . Supported environment types include 'PhysicalFiles', 'GenericNas'
     required: yes
     choices:
       - PhysicalFiles
+      - Physical
       - GenericNas
   job_name:
     description:
@@ -126,7 +127,7 @@ notes:
 '''
 
 EXAMPLES = '''
-# Restore a single file from a Physical Windows Backup
+# Restore a single file from a PhysicalFiles Windows Backup
 - cohesity_restore_file:
     cluster: cohesity.lab
     username: admin
@@ -163,7 +164,7 @@ EXAMPLES = '''
     state: present
     name: Restore Single File
     job_name: myhost
-    environment: PhysicalFiles
+    environment: Physical
     endpoint: mywindows.host.lab
     file_names:
       - C:\\data\\files
@@ -480,7 +481,7 @@ def main():
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
-                choices=['PhysicalFiles', 'GenericNas'],
+                choices=['PhysicalFiles', 'GenericNas', 'Physical'],
                 default='PhysicalFiles'
             ),
             job_name=dict(type='str', required=True),
@@ -560,7 +561,7 @@ def main():
             environment = module.params.get('environment')
             response = []
 
-            if environment == "PhysicalFiles" or environment == "GenericNas":
+            if environment in ("PhysicalFiles", "GenericNas", "Physical"):
                 # => Gather the Source Details
                 job_details['file_names'] = module.params.get('file_names')
                 prot_source = dict(
@@ -581,7 +582,7 @@ def main():
 
                 restore_file_list = []
                 for restore_file in job_details['file_names']:
-                    if environment == "PhysicalFiles":
+                    if environment in ("PhysicalFiles", "Physical"):
                         restore_file_list.append(
                             convert__windows_file_name(restore_file))
                     elif environment == "GenericNas":
