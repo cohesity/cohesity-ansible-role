@@ -13,4 +13,5 @@
     storage_domain: "{{ cohesity_protection.storage_domain | default('DefaultStorageDomain') }}"
     delete_backups: "{{ cohesity_protection.delete_backups | default(False) }}"
     cancel_active: "{{ cohesity_protection.cancel_active | default(False) }}"
+    exclude_vms: "{{cohesity_protection.exclude_vms | default('') }}"
   tags: always

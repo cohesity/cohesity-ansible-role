@@ -242,9 +242,9 @@ def check__protection_job__exists(module, self):
 
         for job in job_list:
             if job['name'] == self['name']:
-                return job['id']
+                return job['id'], job
 
-        return False
+        return False, ""
     except urllib_error.URLError as e:
         # => Capture and report any error messages.
         raise__cohesity_exception__handler(e.read(), module)
@@ -591,6 +591,40 @@ def stop_job(module, self):
         raise__cohesity_exception__handler(error, module)
 
 
+def get_vmware_vm_ids(module, job_meta_data, job_details):
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = job_details['token']
+    try:
+        uri = "https://" + server + \
+              "/irisservices/api/v1/public/protectionSources/virtualMachines?vCenterId=" + str(job_meta_data['parentSourceId'])
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        response = open_url(
+            url=uri,
+            method='GET',
+            headers=headers,
+            validate_certs=validate_certs)
+
+        if not response.getcode() == 200:
+            raise ProtectionException(
+                msg="Failed to get VMware protection source details")
+        response = json.loads(response.read())
+        vm_ids = []
+        vm_names = module.params.get('exclude_vms')
+        vm_names_lowercase = [v.lower() for v in vm_names]
+        for vm in response:
+            if vm['name'].lower() in vm_names_lowercase:
+                vm_ids.append(vm['id'])
+        return vm_ids
+
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
 def unregister_job(module, self):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
@@ -646,7 +680,8 @@ def main():
             ondemand_run_type=dict(
                 choices=['Regular', 'Full', 'Log', 'System'], default='Regular'),
             cancel_active=dict(type='bool', default=False),
-            validate_certs=dict(type='bool', default=False)
+            validate_certs=dict(type='bool', default=False),
+            exclude_vms=dict(type=list)
         )
     )
 
@@ -670,7 +705,7 @@ def main():
         timezone=module.params.get('time_zone')
     )
 
-    job_exists = check__protection_job__exists(module, job_details)
+    job_exists, job_meta_data = check__protection_job__exists(module, job_details)
 
     if module.check_mode:
         check_mode_results = dict(
@@ -698,14 +733,32 @@ def main():
     elif module.params.get('state') == "present":
 
         results['source_vars'] = job_details
-
         if job_exists:
-            if module.params.get('environment') not in ("PhysicalFiles", "Physical"):
-                module.fail_json(
+            if module.params.get('environment') not in ("PhysicalFiles", "Physical", 'VMware'):
+                module.exit_json(
                     msg="The protection job already exists",
                     id=job_exists,
-                    name=module.params.get('name')
+                    name=module.params.get('name'),
+                    changed=False
                 )
+            if module.params.get('environment') == "VMware":
+                if len(module.params.get('exclude_vms')) != 0:
+                    exclude_vms_ids = get_vmware_vm_ids(module, job_meta_data, job_details)
+                    job_meta_data['excludeSourceIds'] = exclude_vms_ids
+                    job_meta_data['token'] = job_details['token']
+                    response = update_job_source(module, job_meta_data, "")
+                    results = dict(
+                        changed=True,
+                        msg="Successfully excluded the vm's from protection job",
+                        **response)
+                    module.exit_json(**results)
+                else:
+                    module.exit_json(
+                        msg="The protection job already exists",
+                        id=job_exists,
+                        name=module.params.get('name'),
+                        changed=False
+                    )
             if len(module.params.get('protection_sources')
                    ) == 1 and not module.params.get('protection_sources')[0]:
                 module.fail_json(
