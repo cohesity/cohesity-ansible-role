@@ -128,8 +128,8 @@ EXAMPLES = '''
     download_location: /software/installers
     state: present
 
-# Install the current version of the agent on Linux using native installers, the service user here should be an existing
-# user 
+# Install the current version of the agent on Linux using native installers, the service user here should be an
+# existing user
 - cohesity_agent:
     server: cohesity.lab
     cohesity_admin: admin
@@ -137,7 +137,7 @@ EXAMPLES = '''
     state: present
     service_user: cagent
     native_package: True
-  
+
 # Install the cohesity agent using native package downloaded from given uri, here cohesity cluster credentials are
 # not needed
 - cohesity_agent:
