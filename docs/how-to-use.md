@@ -39,7 +39,7 @@ Make sure that your [Ansible Inventory File](https://docs.ansible.com/ansible/la
       ansible_user=root
     ```
 
-  * Here is a more advanced example of the inventory file. This inventory is contains multiple host groups (ubuntu and centos) and one roll-up group called `linux`. This model allows for creating different configurations and settings depending on the host information.  In this case, we can perform actions on only the `centos` or `ubuntu` groups or on both groups simultaneously by referencing the `linux` group
+  * Here is a more advanced example of the inventory file. This inventory contains multiple host groups (ubuntu and centos) and one roll-up group called `linux`. This model allows for creating different configurations and settings depending on the host information.  In this case, we can perform actions on only the `centos` or `ubuntu` groups or on both groups simultaneously by referencing the `linux` group
     ```ini
       [workstation]
       control ansible_connection=local ansible_host=10.2.46.94 type=Linux

@@ -59,8 +59,26 @@ This example shows how to include the Cohesity Ansible role in your custom playb
 [top](#task-cohesity-protection-source-management)
 
 This is an example playbook that creates new Protection Sources for all Linux hosts based on the registered inventory hostname. (Remember to change it to suit your environment.)
+
+Following inventory file can be used in the ansible-playbook runs below. Copy the content to `inventory.ini` file
+```ini
+[workstation]
+127.0.0.1 ansible_connection=local
+
+[linux]
+10.21.143.240
+10.21.143.241
+
+[linux:vars]
+ansible_user=cohesity
+```
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+
+You can create a file called `protection_source_physical.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_source_physical.yml -e "username=admin password=admin"
+  ```
 
 ```yaml
 ---
@@ -87,10 +105,9 @@ This is an example playbook that creates new Protection Sources for all Linux ho
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_source:
                 state: present
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                endpoint: "{{ item }}"
                 host_type: "Linux"
-        with_items: "{{ groups.linux }}"
-        tags: [ 'cohesity', 'sources', 'register', 'linux' ]
+        with_items: "{{ groups[linux] }}"
 ```
 
 ### Create new VMware vCenter Protection Source

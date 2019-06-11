@@ -14,7 +14,7 @@
 ## Synopsis
 [top](#task-cohesity-protection-job-management)
 
-Use this task to add and configure Cohesity Protection Sources.
+Use this task to add and configure Cohesity Protection Jobs.
 
 #### How It Works
 - The task starts by determining whether named protection job exists in the cluster.
@@ -63,7 +63,19 @@ This is an example playbook that creates a new Protection Job and adds Physical 
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
   - This example requires that the endpoints matches existing Protection Sources.  See [Task: Cohesity Protection Source Management](tasks/source.md).
   - Make sure includeFilePath and excludeFilePaths exist on the sources
-  
+
+Following inventory file can be used in the ansible-playbook runs below. Copy the content to `inventory.ini` file
+```ini
+[workstation]
+127.0.0.1 ansible_connection=local
+
+[linux]
+10.21.143.240
+10.21.143.241
+
+[linux:vars]
+ansible_user=cohesity
+```
 You can create a file called `protection_job_physical.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
   ansible-playbook -i <inventory_file> protection_job_physical.yml -e "username=admin password=admin"
@@ -227,7 +239,7 @@ This is an example playbook that deletes a Protection job. (Remember to change i
                 job_name: "{{ var_job_name }}"
                 environment: "PhysicalFiles"
                 delete_backups: "{{ var_delete_backups }}"
-        tags: [ 'cohesity', 'jobs', 'remove', 'physical' ]
+
 ```
 
 
@@ -251,6 +263,7 @@ The following information is copied directly from the included task in this role
     storage_domain: "{{ cohesity_protection.storage_domain | default('DefaultIddStorageDomain') }}"
     delete_backups: "{{ cohesity_protection.delete_backups | default(False) }}"
     cancel_active: "{{ cohesity_protection.cancel_active | default(False) }}"
+    exclude_vms: "{{cohesity_protection.exclude_vms | default('') }}"
   tags: always
 
 ```

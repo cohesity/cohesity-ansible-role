@@ -5,9 +5,14 @@
 - [Ansible Variables](#ansible-variables)
 - [Ansible Inventory Configuration](#Ansible-Inventory-Configuration)
 - [Customize Your Playbooks](#Customize-Your-Playbooks)
-  - [Register Protection Jobs for all hosts in the inventory](#Register-Protection-Jobs-for-all-hosts-in-the-inventory)
-  - [Remove Protection Jobs for all hosts in the inventory](#Remove-Protection-Jobs-for-all-hosts-in-the-inventory)
-
+  - [Register Protection Job for all Linux hosts in the inventory](#Register-Protection-Job-for-all-Linux-hosts-in-the-inventory)
+  - [Register protection Job for all Windows hosts in the inventory](#Register-protection-Job-for-all-Windows-hosts-in-the-inventory)
+  - [Register protection Jobs for all VMware hosts in the inventory](#Register-protection-Jobs-for-all-VMware-hosts-in-the-inventory)
+  - [Register protection Jobs for all GenericNAS hosts in the inventory](#Register-protection-Jobs-for-all-GenericNAS-hosts-in-the-inventory)
+  - [Remove Protection Job for all Linux hosts in the inventory](#Remove-Protection-Job-for-all-Linux-hosts-in-the-inventory)
+  - [Remove Protection Job for all Windows hosts in the inventory](#Remove-Protection-Job-for-all-Windows-hosts-in-the-inventory)
+  - [Remove Protection Jobs for all VMware hosts in the inventory](#Remove-Protection-Jobs-for-all-VMware-hosts-in-the-inventory)
+  - [Remove Protection Jobs for all GenericNAS hosts in the inventory](#Remove-Protection-Jobs-for-all-GenericNAS-hosts-in-the-inventory)
 ## Synopsis
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
 
@@ -41,6 +46,8 @@ To fully leverage this Ansible Play, you must configure your Ansible Inventory f
 
 This is an example inventory file: (Remember to change it to suit your environment.)
 ```ini
+[workstation]
+127.0.0.1 ansible_connection=local
 
 [linux]
 10.2.46.96
@@ -49,6 +56,7 @@ This is an example inventory file: (Remember to change it to suit your environme
 10.2.46.99
 
 [linux:vars]
+type=Linux
 ansible_user=root
 
 [windows]
@@ -56,21 +64,16 @@ ansible_user=root
 10.2.45.89
 
 [windows:vars]
+type=Windows
 ansible_user=administrator
 ansible_password=secret
 ansible_connection=winrm
 ansible_winrm_server_cert_validation=ignore
 
-# => Group all Physical Servers.  This grouping is used by the Demos and Complete
-# => Examples to identify Physical Servers
-[physical:children]
-linux
-windows
-
 
 # => Declare the VMware environments to manage.
 [vmware]
-vcenter01 ansible_host=10.2.x.x
+10.2.x.x
 
 [vmware:vars]
 type=VMware
@@ -100,24 +103,17 @@ The combined source file for these two playbooks is located at the root of the r
 ### Register Protection Job for all linux hosts in the inventory
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
 
-Here is an example playbook that registers a new Protection Jobs for all hosts in the inventory. (Remember to change it to suit your environment.)
+Here is an example playbook that registers a new Protection Job for all Linux hosts in the inventory and starts the protection job run. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
 
-You can create a file called `protection_jobs.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+You can create a file called `protection_job_linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
-  ansible-playbook -i <inventory_file> protection_jobs.yml -e "username=admin password=admin"
+  ansible-playbook -i <inventory_file> protection_jobs_linux.yml -e "username=admin password=admin"
   ```
 
 ```yaml
-# => Cohesity Protection Jobs for Physical, VMware, and GenericNAS environments
-# =>
-# => Role: cohesity.cohesity_ansible_role
-# => Version: 0.5.0
-# => Date: 2018-12-28
-# =>
-
-# => Create a new Protection Job by Endpoint based on Ansible Inventory
+# => Create a new Protection Job for Linux hosts in inventory
 # =>
 ---
   - hosts: workstation
@@ -132,7 +128,7 @@ You can create a file called `protection_jobs.yml`, add the contents from the sa
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
-        # => Manage Physical
+        # => Manage Physical Linux hosts
       - name: Create new Protection Job for Physical linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -154,7 +150,50 @@ You can create a file called `protection_jobs.yml`, add the contents from the sa
                         - "/opt"
                       skipNestedVolumes: False
         with_items: "{{ groups['linux'] }}"
-        
+      
+      - name: Start On-Demand Protection Job Execution for Physical linux Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: started
+              job_name: "protect_physical_linux"
+```
+
+### Register Protection Job for all Windows hosts in the inventory
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that registers a new Protection Job for all Windows hosts in the inventory and starts the protection job run. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `protection_job_windows.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_jobs_windows.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Create a new Protection Job for Windows hosts in inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+        # => Manage Physical Windows hosts
       - name: Create new Protection Job for Physical windows Servers
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -176,19 +215,6 @@ You can create a file called `protection_jobs.yml`, add the contents from the sa
                       skipNestedVolumes: False
         with_items: "{{ groups['windows'] }}"
 
-      - name: Start On-Demand Protection Job Execution for Physical linux Servers
-        include_role:
-          name: cohesity.cohesity_ansible_role
-          tasks_from: job
-        vars:
-          cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_admin }}"
-          cohesity_password: "{{ var_cohesity_password }}"
-          cohesity_validate_certs: "{{ var_validate_certs }}"
-          cohesity_protection:
-              state: started
-              job_name: "protect_physical_linux"
-    
       - name: Start On-Demand Protection Job Execution for Physical windows Servers
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -201,9 +227,37 @@ You can create a file called `protection_jobs.yml`, add the contents from the sa
           cohesity_protection:
               state: started
               job_name: "protect_physical_windows"
-              
+```
 
-        # => Manage VMware
+### Register Protection Jobs for all VMware hosts in the inventory
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that registers new Protection Jobs for all VMware hosts in the inventory and starts the protection job run. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `protection_job_windows.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_jobs_VMware.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Create a new Protection Jobs for all VMware hosts in inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Manage VMware
       - name: Create new Protection Jobs for each VMware Server
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -215,11 +269,11 @@ You can create a file called `protection_jobs.yml`, add the contents from the sa
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: present
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               sources:
-                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                - endpoint: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
 
       - name: Start On-Demand Protection Job Execution for each VMware Server
@@ -233,12 +287,41 @@ You can create a file called `protection_jobs.yml`, add the contents from the sa
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: started
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'sources', 'started', 'vmware' ]
+```
 
-        # => Manage Generic NAS Endpoints
+### Register Protection Jobs for all GenericNAS hosts in the inventory
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that registers new Protection Jobs for all GenericNAS hosts in the inventory and starts the protection job run. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `protection_job_GenericNAS.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_jobs_GenericNAS.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Create a new Protection Jobs for all GenericNAS hosts in inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Manage Generic NAS Endpoints
       - name: Create new Protection Jobs for each NAS Endpoint
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -272,30 +355,22 @@ You can create a file called `protection_jobs.yml`, add the contents from the sa
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups.generic_nas }}"
         tags: [ 'cohesity', 'sources', 'started', 'generic_nas' ]
-
 ```
 
-### Remove Protection Jobs for all hosts in the inventory
+### Remove Protection Job for all Linux hosts in the inventory
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
 
-Here is an example playbook that removes an existing Protection Job and deletes the backups for all hosts in the inventory. (Remember to change it to suit your environment.)
+Here is an example playbook that stops the protection job run, removes the existing Protection Job and deletes the backups for all Linux hosts in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
 
-You can create a file called `remove_protection_jobs.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+You can create a file called `remove_protection_jobs_linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
-  ansible-playbook -i <inventory_file> remove_protection_jobs.yml -e "username=admin password=admin"
+  ansible-playbook -i <inventory_file> remove_protection_jobs_linux.yml -e "username=admin password=admin"
   ```
 
 ```yaml
-# => Cohesity Protection Jobs for Physical, VMware, and GenericNAS environments
-# =>
-# => Role: cohesity.cohesity_ansible_role
-# => Version: 0.5.0
-# => Date: 2018-12-28
-# =>
-
-# => Remove Protection Jobs by Endpoint based on Ansible Inventory
+# => Remove Protection Job for all Linux hosts in the inventory
 # =>
 ---
   - hosts: workstation
@@ -310,7 +385,7 @@ You can create a file called `remove_protection_jobs.yml`, add the contents from
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
-        # => Manage Physical
+        # => Manage Physical Linux hosts
       - name: Stop existing Protection Job Execution for Physical linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -323,20 +398,6 @@ You can create a file called `remove_protection_jobs.yml`, add the contents from
           cohesity_protection:
               state: stopped
               job_name: "protect_physical_linux"
-              cancel_active: True
-              
-      - name: Stop existing Protection Job Execution for Physical windows Servers
-        include_role:
-          name: cohesity.cohesity_ansible_role
-          tasks_from: job
-        vars:
-          cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_admin }}"
-          cohesity_password: "{{ var_cohesity_password }}"
-          cohesity_validate_certs: "{{ var_validate_certs }}"
-          cohesity_protection:
-              state: stopped
-              job_name: "protect_physical_windows"
               cancel_active: True
 
       - name: Remove Protection Job for Physical linux server
@@ -352,7 +413,51 @@ You can create a file called `remove_protection_jobs.yml`, add the contents from
               state: absent
               job_name: "protect_physical_linux"
               delete_backups: True
-              
+```
+
+### Remove Protection Job for all Windows hosts in the inventory
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that stops the protection job run, removes the existing Protection Job and deletes the backups for all Windows hosts in the inventory. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `remove_protection_jobs_windows.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> remove_protection_jobs_windows.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Remove Protection Job for all Windows hosts in the inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+        # => Manage Physical Windows hosts
+      - name: Stop existing Protection Job Execution for Physical windows Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: stopped
+              job_name: "protect_physical_windows"
+              cancel_active: True
+
       - name: Remove Protection Job for Physical windows server
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -366,8 +471,37 @@ You can create a file called `remove_protection_jobs.yml`, add the contents from
               state: absent
               job_name: "protect_physical_windows"
               delete_backups: True
+```
 
-        # => Manage VMware
+### Remove Protection Jobs for all VMware hosts in the inventory
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that stops the protection job run, removes the existing Protection Jobs and deletes the backups for all VMware hosts in the inventory. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `remove_protection_jobs_VMware.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> remove_protection_jobs_VMware.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Remove Protection Jobs for all VMware hosts in the inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Manage VMware
       - name: Stop existing Protection Job Execution for each VMware Server
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -379,10 +513,10 @@ You can create a file called `remove_protection_jobs.yml`, add the contents from
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: stopped
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
               cancel_active: True
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'sources', 'stopped', 'remove', 'vmware' ]
 
       - name: Remove Protection Jobs for each VMware Server
@@ -396,14 +530,43 @@ You can create a file called `remove_protection_jobs.yml`, add the contents from
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: absent
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-              endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
+              endpoint: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
               delete_backups: True
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'sources', 'remove', 'vmware' ]
+```
 
-        # => Manage Generic NAS Endpoints
+### Remove Protection Jobs for all GenericNAS hosts in the inventory
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that stops the protection job run, removes the existing Protection Jobs and deletes the backups for all GenericNAS hosts in the inventory. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `remove_protection_jobs_GenericNAS.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> remove_protection_jobs_GenericNAS.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Remove Protection Jobs for all GenericNAS hosts in the inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Manage Generic NAS Endpoints
       - name: Stop existing Protection Job Execution for each NAS Endpoint
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -438,5 +601,7 @@ You can create a file called `remove_protection_jobs.yml`, add the contents from
               delete_backups: True
         with_items: "{{ groups.generic_nas }}"
         tags: [ 'cohesity', 'sources', 'remove', 'generic_nas' ]
-
 ```
+
+
+

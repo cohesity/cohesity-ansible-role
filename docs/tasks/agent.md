@@ -43,11 +43,25 @@ cohesity_agent:
   service_group: "cohesityagent"
   create_user: True
   download_location: ""
+  native_package: False
 ```
 ## Customize Your Playbooks
 [top](#task-cohesity-agent-management---linux)
 
 These examples show how to include the Cohesity Ansible Role in your custom playbooks and leverage this task as part of the delivery.
+
+Following inventory file can be used for the ansible-playbook runs below. Copy the content to `inventory.ini` file
+```ini
+[workstation]
+127.0.0.1 ansible_connection=local
+
+[linux]
+10.21.143.240
+10.21.143.241
+
+[linux:vars]
+ansible_user=cohesity
+```
 
 ### Install the Cohesity Agent on Linux hosts
 [top](#task-cohesity-agent-management---linux)
@@ -160,7 +174,7 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
             cohesity_agent:
                 state: present
                 download_location: "/opt/cohesity/download/"
-        tags: [ 'cohesity', 'agent', 'install', 'physical', 'linux' ]
+
 ```
 
 ## How the Task Works
@@ -170,18 +184,16 @@ The following information is copied directly from the included task in this role
 ```yaml
 ---
 - name: Install Prerequisite Packages for CentOS
-  yum:
-    name: "wget,rsync,lsof,lvm2,nfs-utils"
-    state: present
+  action: >
+    {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-utils" state=present
   when:
     - ansible_distribution == "CentOS"
     - cohesity_agent.state == "present"
   tags: always
 
 - name: Install Prerequisite Packages for Ubuntu
-  yum:
-    name: "wget,rsync,lsof,lvm2,nfs-common"
-    state: present
+  action: >
+    {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-common" state=present
   when:
     - ansible_distribution == "Ubuntu"
     - cohesity_agent.state == "present"
@@ -193,15 +205,15 @@ The following information is copied directly from the included task in this role
   - --zone=public --permanent --add-port 50051/tcp
   - --reload
   when:
-      - ansible_distribution == "CentOS"
-      - cohesity_agent.state == "present"
+    - ansible_distribution == "CentOS"
+    - cohesity_agent.state == "present"
   tags: always
 
 - name: Enable tcp port 50051 for Ubuntu
   command: ufw allow 50051/tcp
   when:
-      - ansible_distribution == "Ubuntu"
-      - cohesity_agent.state == "present"
+    - ansible_distribution == "Ubuntu"
+    - cohesity_agent.state == "present"
   tags: always
 
 - name: "Cohesity agent: Set Agent to state of {{ cohesity_agent.state | default('present') }}"
@@ -215,5 +227,8 @@ The following information is copied directly from the included task in this role
     service_group: "{{ cohesity_agent.service_group | default('cohesityagent') }}"
     create_user: "{{ cohesity_agent.create_user | default(True) }}"
     download_location: "{{ cohesity_agent.download_location | default() }}"
+    native_package: "{{cohesity_agent.native_package | default(False)}}"
+    download_uri: "{{ cohesity_agent.download_uri | default()}}"
+    operating_system: "{{ ansible_distribution }}"
   tags: always
 ```

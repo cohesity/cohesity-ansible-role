@@ -11,6 +11,8 @@
   - [Install the current version of the agent with custom User and Group](#Install-the-current-version-of-the-agent-with-custom-User-and-Group)
   - [Remove the current installed agent from the host](#Remove-the-current-installed-agent-from-the-host)
   - [Download the agent installer to a custom location](#Download-the-agent-installer-to-a-custom-location)
+  - [Install the current version of agent on Linux using native installers](#Install-the-current-version-of-agent-on-Linux-using-native-installers)
+  - [Install the agent from custom download uri](#Install-the-agent-from-custom-download-uri)
 - [Parameters](#parameters)
 - [Outputs](#outputs)
 
@@ -46,6 +48,8 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
     create_user: <boolean to determine if the service_user and service_group should be created>
     download_location: <optional path to which the installer will be downloaded>
     file_based: <boolean to determine if the agent install will be in non-LVM mode and support only file based backups
+    native_package: <boolean to determine if a native or script based installer is used for agent installation>
+    download_uri: <uri to download the agent installer, if downloading the agent from custom location is preferred>
 ```
 
 ## Examples
@@ -122,22 +126,50 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
     state: present
 ```
 
+### Install the current version of agent on Linux using native installers
+[top](#cohesity-agent-management---linux)
+
+```yaml
+- cohesity_agent:
+    cluster: cohesity.lab
+    cohesity_admin: admin
+    cohesity_password: password
+    download_location: /software/installers
+    state: present
+    service_user: cohesity_user
+    native_package: True
+```
+
+### Install the agent from custom download uri
+[top](#cohesity-agent-management---linux)
+
+```yaml
+- cohesity_agent:
+    download_location: /software/installers
+    state: present
+    native_package: True
+    service_user: cohesity_user
+    download_uri: http://10.2.145.47/files/bin/installers/el-cohesity-agent-6.3-1.x86_64.rpm
+```
+
 
 ## Parameters
 [top](#cohesity-agent-management---linux)
 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
-| X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentials can be configured as.<br>- Domain/username |
-| X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
-|   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
+| X | **cluster** | String | | IP or FQDN for the Cohesity cluster. Not required if download_uri is given. |
+| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentials can be configured as.<br>- Domain/username. Not required if download_uri is given.|
+| X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. Not required if download_uri is given.|
+|   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. Not required if download_uri is given. |
 |   | state | Choice | -**present**<br>-absent | Determines whether the agent is *present* or *absent* from the host. |
-|   | service_user | String | cohesityagent | Username under which the Cohesity Agent is installed and run. This user must exist unless _create_user=**True**_ is also configured. |
-|   | service_group | String | cohesityagent | Group under which permissions are set for the Cohesity Agent configuration. This group must exist unless _create_user=**True**_ is also configured. |
-|   | create_user | Boolean | True | When enabled, this creates a new user and group based on the values of *service_user* and *service_group*. |
+|   | service_user | String | cohesityagent | Username under which the Cohesity Agent is installed and run. This user must exist unless _create_user=**True**_ is also configured. For native installations i.e when native_package is enabled, this is a required parameter and the user must exist on the machine|
+|   | service_group | String | cohesityagent | Group under which permissions are set for the Cohesity Agent configuration. This group must exist unless _create_user=**True**_ is also configured. This parameter does not apply when native_package is enabled i.e for native installations|
+|   | create_user | Boolean | True | When enabled, this creates a new user and group based on the values of *service_user* and *service_group*. This parameter does not apply when native_package is enabled i.e for native installations|
 |   | download_location: | String |  | Optional directory path to which the installer is downloaded. If not selected, then a temporary directory is created in the default System Temp Directory. If you choose an alternate directory, the directory and installer will not be deleted at the end of the execution. |
 |   | file_based | Boolean | False | When enabled, this installs the agent in non-LVM mode and supports only file based backups. |
+|   | native_package | Boolean | False | When enabled, native installers are used for agent installation. |
+|   | download_uri | String | | Uri to download the agent, if downloading from custom location is preferred. If specified the cluster credentials are not required. | 
 
 ## Outputs
 [top](#cohesity-agent-management---linux)

@@ -11,6 +11,7 @@
   - [Remove an existing VMware Server Protection Job and remove all Backups](#Remove-an-existing-VMware-Server-Protection-Job-and-remove-all-Backups)
   - [Start an existing VMware Server Protection Job](#Start-an-existing-VMware-Server-Protection-Job)
   - [Stop an actively running VMware Server Protection Job](#Stop-an-actively-running-VMware-Server-Protection-Job)
+  - [Exclude VMs from an existing VMware Server Protection Job](#Exclude-VMs-from-an-existing-VMware-Server-Protection-Job)
 - [Parameters](#parameters)
 - [Outputs](#outputs)
 
@@ -51,6 +52,7 @@ This Ansible Module registers, removes, starts, and stops the Cohesity Protectio
     delete_backups: <boolean to determine if backups be deleted when job removed>
     ondemand_run_type: <backup run type>
     cancel_active: <boolean to determine if an active job should be canceled>
+    exclude_vms: <list of vm's to be excluded from existing vmware protection job>
 ```
 
 ## Examples
@@ -139,7 +141,7 @@ This Ansible Module registers, removes, starts, and stops the Cohesity Protectio
 
 ```
 
-### Stop an actively running VMware Server Protection Job
+### Exclude VMs from an existing VMware Server Protection Job
 [top](#cohesity-protection-job)
 
 ```yaml
@@ -147,9 +149,13 @@ This Ansible Module registers, removes, starts, and stops the Cohesity Protectio
     cluster: cohesity.lab
     username: admin
     password: password
-    state: stopped
+    state: present
     name: myvcenter
     environment: VMware
+    exclude_vms:
+      - vm1
+      - vm2
+      - vm3
 ```
 
 
@@ -179,6 +185,7 @@ This Ansible Module registers, removes, starts, and stops the Cohesity Protectio
 |   | excludeFilePaths | Array | | List of file paths that needs to be excluded (valid for only physical sources, optional and defaults to empty list) |
 |   | skipNestedVolumes | Boolean | True | Specifies whether to skip nested mount points |
 |   | endpoint | String | | Specifies the source ip or hostname **Required** when *state=present*. |
+|   | exclude_vms | Array | | List of vm names to be excluded from existing VMware protection job. Can be used only with existing jobs and with state=present | 
 ## Outputs
 [top](#cohesity-protection-job)
 
