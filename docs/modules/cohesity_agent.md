@@ -149,7 +149,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
     state: present
     native_package: True
     service_user: cohesity_user
-    download_uri: http://10.2.145.47/files/bin/installers/el-cohesity-agent-6.3-1.x86_64.rpm
+    download_uri: http://10.2.140.47/files/bin/installers/el-cohesity-agent-6.3-1.x86_64.rpm
 ```
 
 
@@ -168,7 +168,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 |   | create_user | Boolean | True | When enabled, this creates a new user and group based on the values of *service_user* and *service_group*. This parameter does not apply when native_package is enabled i.e for native installations|
 |   | download_location: | String |  | Optional directory path to which the installer is downloaded. If not selected, then a temporary directory is created in the default System Temp Directory. If you choose an alternate directory, the directory and installer will not be deleted at the end of the execution. |
 |   | file_based | Boolean | False | When enabled, this installs the agent in non-LVM mode and supports only file based backups. |
-|   | native_package | Boolean | False | When enabled, native installers are used for agent installation. |
+|   | native_package | Boolean | False | When enabled, native installers are used for agent installation. If agent is installed using a native package, when state=absent, native_package should be True|
 |   | download_uri | String | | Uri to download the agent, if downloading from custom location is preferred. If specified the cluster credentials are not required. | 
 
 ## Outputs

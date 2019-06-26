@@ -1,4 +1,4 @@
-#=> Install cohesity agent on linux machines using script based installers
+#=> Install cohesity agent on linux machines using an installer at custom location. The playbook below is only for ubuntu machines
 ---
 - hosts: linux
   gather_facts: yes
@@ -11,9 +11,9 @@
           name: cohesity.cohesity_ansible_role
           tasks_from: agent
       vars:
-          cohesity_server: 10.2.145.27
-          cohesity_admin: "{{ username }}"
-          cohesity_password: "{{ password }}"
-          cohesity_validate_certs: False
           cohesity_agent:
               state: present
+              native_package: True
+              service_user: cohesity-user
+              download_uri: "http://10.2.22.33/files/bin/installers/cohesity-agent_6.3-1_amd64.deb"
+              

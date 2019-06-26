@@ -8,7 +8,7 @@
   - [Create new Physical Protection Job using the Ansible Inventory](#Create-new-Physical-Protection-Job-using-the-Ansible-Inventory)
   - [Create new VMware vCenter Protection Job](#Create-new-VMware-vCenter-Protection-Job)
   - [Start an On-Demand Protection Job for VMware Source](#Start-an-On-Demand-Protection-Job-for-VMware-Source)
-  - [Delete an existing Protection Job from a Physical Source](#Delete-an-existing-Protection-Job-from-a-Physical-Source)
+  - [Delete an existing Protection Job for Physical Source](#Delete-an-existing-Protection-Job-for-Physical-Source)
 - [How the Task Works](#How-the-Task-works)
 
 ## Synopsis
@@ -146,7 +146,7 @@ This is an example playbook that creates a new Protection Jop for the chosen vCe
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create new Protection Jobs for chosen VMware Server
+      - name: Create new Protection Job for chosen VMware Server
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -186,7 +186,7 @@ This is an example playbook that creates new Protection Sources for the chosen v
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Configure Cohesity Protection Source on NFS Export
+      - name: Start protection job
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: source
@@ -202,7 +202,7 @@ This is an example playbook that creates new Protection Sources for the chosen v
         tags: [ 'cohesity', 'jobs', 'start', 'vmware' ]
 ```
 
-### Delete an existing Protection Job for Physical Sources
+### Delete an existing Protection Job for Physical Source
 [top](#task-cohesity-protection-job-management)
 
 This is an example playbook that deletes a Protection job. (Remember to change it to suit your environment.)
@@ -225,7 +225,7 @@ This is an example playbook that deletes a Protection job. (Remember to change i
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Configure Cohesity Protection Source on NFS Export
+      - name: Delete protection job
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: source
@@ -264,6 +264,7 @@ The following information is copied directly from the included task in this role
     delete_backups: "{{ cohesity_protection.delete_backups | default(False) }}"
     cancel_active: "{{ cohesity_protection.cancel_active | default(False) }}"
     exclude_vms: "{{cohesity_protection.exclude_vms | default('') }}"
+    include_vms: "{{cohesity_protection.include_vms | default('') }}"
   tags: always
 
 ```

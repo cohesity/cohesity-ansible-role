@@ -1,0 +1,21 @@
+#=> Update an existing VMware protection Job to exclude a set of VMs given in the inventory
+---
+  - hosts: local
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Protection job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: 10.2.144.28
+          cohesity_admin: "{{ username }}"
+          cohesity_password: "{{ password }}"
+          cohesity_validate_certs: False
+          cohesity_protection:
+              state: present
+              job_name: protect_vcenter
+              environment: "VMware"
+              exclude_vms: "{{ groups['exclude_vms'] }}"

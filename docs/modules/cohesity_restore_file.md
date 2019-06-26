@@ -38,7 +38,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
     validate_certs: <boolean to determine if SSL certificates should be validated>
     state: <state of the restore operation>
     name: <assigned descriptor to assign to the Restore Job.  The Restore Job name will consist of the job_name:name format>
-    environment: <protection source environment type. For Physical sources the value is "PhysicalFiles" >
+    environment: <protection source environment type. For Physical sources this value can be 'Physical' or 'PhysicalFiles'>
     job_name: <selected Protection Job from which the restore will be initated>
     endpoint: <identifies the source endpoint to which the the restore operation will be performed>
     backup_id: <optional Cohesity Backup Run ID for the restore operation.  If not selected, the most recent RunId will be used>
@@ -124,7 +124,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
 |   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the restore operation. |
 | X | **name** | String | | Descriptor to assign to the Restore Job.  The Restore Job name will appear in the format: `job_name:name`. |
 | X | **job_name** | String | | Name of the Protection Job |
-| X | **environment** | Choice | -PhysicalFiles<br>-GenericNas | Specifies the environment type (such as VMware or MS SQL) of the Protection Source this Job is protecting. For Physical protection source, the value is 'PhysicalFiles' |
+| X | **environment** | Choice | -**PhysicalFiles**<br>-Physical<br>-GenericNas | Specifies the environment type (such as VMware or MS SQL) of the Protection Source this Job is protecting. For Physical protection source, this value can be 'PhysicalFiles' or 'Physical'. 'PhysicalFiles' if the protection job is file based and 'Physical' for block based protection jobs |
 | X | **endpoint** | String | | Specifies the network endpoint where the Protection Source is reachable. It can be the URL, hostname, IP address, NFS mount point, or SMB Share of the Protection Source. |
 |   | backup_id | String |  | Optional Cohesity ID to use as source for the restore operation.  If not selected, the most recent `RunId` will be used. |
 | X | **file_names** | Array |  | Array of files and folders to restore |

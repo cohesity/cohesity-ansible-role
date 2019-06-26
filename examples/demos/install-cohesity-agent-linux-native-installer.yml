@@ -1,0 +1,21 @@
+#=> Install cohesity agent on linux machines using native packages. The service user field is required and the user must exist on linux machines
+---
+- hosts: linux
+  gather_facts: yes
+  become: true
+  roles:
+      - cohesity.cohesity_ansible_role
+  tasks:
+    - name: Install new Cohesity Agent on each Linux Server
+      include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: agent
+      vars:
+         cohesity_server: "10.2.143.33"
+         cohesity_admin: "{{ username }}"
+         cohesity_password: "{{ password }}"
+         cohesity_validate_certs: False
+         cohesity_agent:
+              state: present
+              native_package: True
+              service_user: cohesity-user              

@@ -8,6 +8,10 @@
   - [Register Protection Job for all Linux hosts in the inventory](#Register-Protection-Job-for-all-Linux-hosts-in-the-inventory)
   - [Register protection Job for all Windows hosts in the inventory](#Register-protection-Job-for-all-Windows-hosts-in-the-inventory)
   - [Register protection Jobs for all VMware hosts in the inventory](#Register-protection-Jobs-for-all-VMware-hosts-in-the-inventory)
+  - [Register a VMware protection job for a set of VMs](#Register-a-VMware-protection-job-for-a-set-of-VMs)
+  - [Register a VMware protection job with VM exclusions](#Register-a-VMware-protection-job-with-VM-exclusions)
+  - [Update a VMware protection job exlcuding a set of VMs](#Update-a-VMware-protection-job-exlcuding-a-set-of-VMs)
+  - [Update a VMware protection job to protect a set of VMs](#Update-a-VMware-protection-job-to-protect-a-set-of-VMs)
   - [Register protection Jobs for all GenericNAS hosts in the inventory](#Register-protection-Jobs-for-all-GenericNAS-hosts-in-the-inventory)
   - [Remove Protection Job for all Linux hosts in the inventory](#Remove-Protection-Job-for-all-Linux-hosts-in-the-inventory)
   - [Remove Protection Job for all Windows hosts in the inventory](#Remove-Protection-Job-for-all-Windows-hosts-in-the-inventory)
@@ -80,6 +84,14 @@ type=VMware
 vmware_type=VCenter
 source_username=administrator
 source_password=password
+
+[include_vms]
+cohesity-centos1
+cohesity-centos2
+
+[exclude_vms]
+cohesity-ubuntu1
+cohesity-ubuntu2
 
 # => Declare the GenericNas endpoints to manage
 [generic_nas]
@@ -236,7 +248,7 @@ Here is an example playbook that registers new Protection Jobs for all VMware ho
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
 
-You can create a file called `protection_job_windows.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+You can create a file called `protection_job_vmware.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
   ansible-playbook -i <inventory_file> protection_jobs_VMware.yml -e "username=admin password=admin"
   ```
@@ -291,6 +303,226 @@ You can create a file called `protection_job_windows.yml`, add the contents from
               environment: "{{ hostvars[item]['type'] }}"
         with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'sources', 'started', 'vmware' ]
+```
+
+### Register a VMware protection job for a set of VMs
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that registers a new Protection Job for a set of VMs and starts the protection job run. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `protection_job_include_vms.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_jobs_include_vms.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Create a new Protection Job for a set of VMs given in the inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Manage VMware
+      - name: Create new Protection Job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: present
+              job_name: "protect_vms"
+              sources:
+                - endpoint: "vcenter_ip_or_hostname"
+              environment: "VMware"
+              include_vms: "{{ groups['include_vms'] }}"
+        tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
+
+      - name: Start On-Demand Protection Job Execution
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: started
+              job_name: "protect_vms"
+              environment: "VMware"
+        tags: [ 'cohesity', 'sources', 'started', 'vmware' ]
+```
+
+### Register a VMware protection job with VM exclusions
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that registers a new VMware Protection Job excluding a set of VMs and starts the protection job run. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `protection_job_exclude_vms.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_jobs_exclude_vms.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Create a new VMware Protection Job exclusing a set of VMs given in the inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Manage VMware
+      - name: Create new Protection Job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: present
+              job_name: "protect_vcenter1"
+              sources:
+                - endpoint: "vcenter_ip_or_hostname"
+              environment: "VMware"
+              exclude_vms: "{{ groups['exclude_vms'] }}"
+        tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
+
+      - name: Start On-Demand Protection Job Execution
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: started
+              job_name: "protect_vcenter1"
+              environment: "VMware"
+        tags: [ 'cohesity', 'sources', 'started', 'vmware' ]
+```
+
+### Update a VMware protection job exlcuding a set of VMs
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that updates an existing VMware Protection Job excluding a set of VMs. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `protection_job_exclude_vms.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_jobs_exclude_vms.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Update an existing Protection Job excluding a set of VMs given in the inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Manage VMware
+      - name: Update Protection Job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: present
+              job_name: "protect_vms"
+              environment: "VMware"
+              exclude_vms: "{{ groups['exclude_vms'] }}"
+        tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
+
+```
+
+### Update a VMware protection job to protect a set of VMs
+[top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
+
+Here is an example playbook that updates an existing VMware Protection Job to protect a set of VMs. (Remember to change it to suit your environment.)
+> **Note:**
+  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+
+You can create a file called `protection_job_include_vms.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+  ```
+  ansible-playbook -i <inventory_file> protection_jobs_include_vms.yml -e "username=admin password=admin"
+  ```
+
+```yaml
+# => Update an existing Protection Job to protect a set of VMs given in the inventory
+# =>
+---
+  - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Manage VMware
+      - name: Update Protection Job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: present
+              job_name: "protect_vms"
+              environment: "VMware"
+              include_vms: "{{ groups['include_vms'] }}"
+        tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
+
 ```
 
 ### Register Protection Jobs for all GenericNAS hosts in the inventory
