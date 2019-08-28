@@ -80,7 +80,7 @@ class Authentication(object):
                 # => Attempt to POST the data to the /public/accessTokens endpoint and get back
                 # => a valid Token that will be placed into `self.token`.
                 data = open_url(url=uri, data=data, headers=headers,
-                                validate_certs=self.ssl_validation)
+                                validate_certs=self.ssl_validation, timeout=120)
                 response = json.loads(data.read())
                 self.token = response['accessToken']
                 return self.token
@@ -116,7 +116,7 @@ class Authentication(object):
                    "Authorization": "Bearer " + self.token}
         try:
             open_url(url=check_uri, headers=headers,
-                     validate_certs=self.ssl_validation)
+                     validate_certs=self.ssl_validation, timeout=120)
             return self
         except urllib_error.HTTPError as e:
             try:

@@ -385,7 +385,7 @@ def start_restore(module, uri, self):
         data = json.dumps(payload)
 
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=120)
 
         response = json.loads(response.read())
 
@@ -427,7 +427,7 @@ def wait_restore_complete(module, self):
             response = open_url(
                 url=uri,
                 headers=headers,
-                validate_certs=validate_certs)
+                validate_certs=validate_certs, timeout=120)
             response = json.loads(response.read())
 
             # => If the status is Finished then break out and check for errors.

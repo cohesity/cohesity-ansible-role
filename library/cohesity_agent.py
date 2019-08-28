@@ -70,7 +70,7 @@ options:
   create_user:
     description:
       - When enabled, will create a new user and group based on the values of I(service_user) and I(service_group)
-      - This parameter doesn't apply to native installations
+      - This parameter does not apply for native installations
     type: bool
     default: True
   file_based:
@@ -138,8 +138,7 @@ EXAMPLES = '''
     service_user: cagent
     native_package: True
 
-# Install the cohesity agent using native package downloaded from given uri, here cohesity cluster credentials are
-# not needed
+# Install the cohesity agent using native package downloaded from given URI. Here, the Cohesity cluster credentials are not required
 - cohesity_agent:
     state: present
     service_user: cagent
@@ -242,7 +241,7 @@ def download_agent(module, path):
             token = get__cohesity_auth__token(module)
             package_type = 'kScript'
             if module.params.get('native_package'):
-                if module.params.get('operating_system') == 'CentOS':
+                if module.params.get('operating_system') in ('CentOS', 'RedHat'):
                     package_type = 'kRPM'
                 elif module.params.get('operating_system') == 'SLES':
                     package_type = 'kSuseRPM'
@@ -259,7 +258,7 @@ def download_agent(module, path):
                 "Accept": "application/octet-stream"}
 
         agent = open_url(url=uri, headers=headers,
-                         validate_certs=False)
+                         validate_certs=False, timeout=120)
         resp_headers = agent.info().dict
         if 'content-disposition' in resp_headers.keys():
             filename = resp_headers['content-disposition'].split("=")[1]
@@ -348,7 +347,7 @@ def install_agent(module, installer, native):
                 user = module.params.get('service_user')
             if module.params.get('operating_system') == "Ubuntu":
                 cmd = "sudo COHESITYUSER={0} dpkg -i {1}".format(user, installer)
-            elif module.params.get('operating_system') == "CentOS":
+            elif module.params.get('operating_system') in ("CentOS", "RedHat"):
                 cmd = "sudo COHESITYUSER={0} rpm -i {1}".format(user, installer)
             else:
                 installation_failures(
@@ -357,7 +356,7 @@ def install_agent(module, installer, native):
         except Exception as e:
             if module.params.get('operating_system') == "Ubuntu":
                 cmd = "sudo COHESITYUSER=%s dpkg -i %s" % (user, installer)
-            elif module.params.get('operating_system') == "CentOS":
+            elif module.params.get('operating_system') in ("CentOS", "RedHat"):
                 cmd = "sudo COHESITYUSER=%s  rpm -i %s" % (user, installer)
 
     rc, stdout, stderr = module.run_command(cmd, cwd=installer)
@@ -418,7 +417,7 @@ def remove_agent(module, installer, native):
             if rc:
                 installation_failures(
                     module, stdout, rc, "Failed to uninstall cohesity agent ")
-        elif module.params.get('operating_system') == "CentOS":
+        elif module.params.get('operating_system') in ("CentOS", "RedHat"):
             cmd = "sudo rpm -e cohesity-agent"
             rc, stdout, stderr = module.run_command(cmd)
             if rc:

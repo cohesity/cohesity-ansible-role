@@ -22,4 +22,4 @@
               sources:
                 - endpoint: "vcenter_ip_or_hostname"
               environment: "VMware"
-              include_vms: "{{ groups['include_vms'] }}"
+              include: "{{ groups['include_vms'] }}"

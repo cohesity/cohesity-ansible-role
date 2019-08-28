@@ -58,7 +58,7 @@ This example shows how to include the Cohesity Ansible role in your custom playb
 ### Create new Physical Protection Sources using the Ansible Inventory
 [top](#task-cohesity-protection-source-management)
 
-This is an example playbook that creates new Protection Sources for all Linux hosts based on the registered inventory hostname. (Remember to change it to suit your environment.)
+This is an example playbook that creates new Protection Sources for all Linux hosts based on the registered inventory hostnames. (Remember to change it to suit your environment.)
 
 Following inventory file can be used in the ansible-playbook runs below. Copy the content to `inventory.ini` file
 ```ini
@@ -77,7 +77,7 @@ ansible_user=cohesity
 
 You can create a file called `protection_source_physical.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
-  ansible-playbook -i <inventory_file> protection_source_physical.yml -e "username=admin password=admin"
+  ansible-playbook -i <inventory_file> protection_source_physical.yml -e "username=abc password=abc"
   ```
 
 ```yaml
@@ -94,7 +94,7 @@ You can create a file called `protection_source_physical.yml`, add the contents 
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Configure Cohesity Protection Source on each Linux Physical Server
+      - name: Configure Cohesity Protection Source for each Physical Linux Server
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: source
@@ -156,7 +156,7 @@ This is an example playbook that creates new Protection Sources for the chosen v
 ### Create new NFS Protection Source
 [top](#task-cohesity-protection-source-management)
 
-This is an example playbook that creates new Protection Sources for the chosen vCenter host. (Remember to change it to suit your environment.)
+This is an example playbook that creates new Protection Sources for NFS export. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
 

@@ -109,7 +109,7 @@ This play leverages certain data collected as part of the `cohesity_facts` modul
 
 ### Register all hosts in the Inventory to enable full protection on the selected Cohesity cluster
 
-Here is an example playbook that queries the inventory to install Agents on all Linux and Windows hosts, register each host as a Protection Source, and then create and start a protection jobs for Linux, Windows, VMware, GenericNAS hosts. The source file for this playbook is located at the root of the role in `examples/complete/cohesity_protect_inventory.yml`.  (Remember to change it to suit your environment.)
+Here is an example playbook that queries the inventory to install Agents on all Linux and Windows hosts, register each host as a Protection Source, and then create and start a protection job for Linux, Windows, VMware, GenericNAS hosts. The source file for this playbook is located at the root of the role in `examples/complete/cohesity_protect_inventory.yml`.  (Remember to change it to suit your environment.)
 
 ```yaml
 # => Cohesity Full Protection for Physical, VMware, and GenericNAS environments

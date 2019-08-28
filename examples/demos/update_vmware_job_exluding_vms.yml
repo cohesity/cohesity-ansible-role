@@ -18,4 +18,4 @@
               state: present
               job_name: protect_vcenter
               environment: "VMware"
-              exclude_vms: "{{ groups['exclude_vms'] }}"
+              exclude: "{{ groups['exclude_vms'] }}"

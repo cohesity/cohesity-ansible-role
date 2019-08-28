@@ -11,14 +11,14 @@
 ## Synopsis
 [top](#Install-and-Remove-the-Cohesity-Agent-Using-Ansible-Inventory)
 
-This example play employs the Ansible Inventory to dynamically remove and install the Cohesity Agent on the supported platforms. The source file for this playbook is located at the root of the role in `examples/demos/agents.yml`.
+These example plays employ the Ansible Inventory to dynamically uninstall and install the Cohesity Agent on the supported platforms. The example playbooks are located at the root of the role in [examples/demos/](https://github.com/cohesity/cohesity-ansible-role/tree/master/examples/demos).
 > **IMPORTANT**!<br>
-  This example play should be considered for demo purposes only.  This play uninstalls and then installs the Cohesity Agent on all Physical hosts based on the Ansible Inventory.  There are no job or source validations nor state checks to ensure that backups are not running.
+  These example plays should be considered for demo purposes only.  These plays uninstalls and then installs the Cohesity Agent on all Physical hosts based on the Ansible Inventory.  There are no job or source validations nor state checks to ensure that backups are not running.
 
 #### How It Works
 - The play starts by reading all `linux` servers from the Ansible Inventory and uninstalling the agent (if present).
 - Upon completion of agent removal, the latest version of the agent is installed on the `linux` servers.
-- The next step is to perform the uninstallation of the Agent on `windows` servers.
+- The next play is to perform the uninstallation of the Agent on `windows` servers.
   - This is followed by a mandatory reboot of the server as a part of the uninstallation (only if the agent was present).
 - Once the reboot is complete, the latest version of the agent is installed on the `windows` servers.
   - If the windows `install_type` is `volcbt`, then a reboot of the windows servers is triggered.
@@ -72,14 +72,14 @@ The combined source file for these two playbooks is located at the root of the r
 ### Create a Custom Installation Playbook for Linux Hosts
 [top](#Install-and-Remove-the-Cohesity-Agent-Using-Ansible-Inventory)
 
-Here is an example playbook that installs the Cohesity agent on all `linux` hosts. (Remember to change it to suit your environment.)
+Here is an example playbook that uninstalls and installs the Cohesity agent on all `linux` hosts. (Remember to change it to suit your environment.)
 > **Notes:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
   - When using the default download location, the Cohesity agent installer is placed in `/tmp/<temp-dir>`.  If your environment prevents the use of `/tmp` with a `noexec` option, then you must set an alternate download location.
 
 You can create a file called `deploy-cohesity-agent-linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
-  ansible-playbook -i <inventory_file> deploy-cohesity-agent-linux.yml -e "username=admin password=admin"
+  ansible-playbook -i <inventory_file> deploy-cohesity-agent-linux.yml -e "username=abc password=abc"
   ```
 
 ```yaml
@@ -107,6 +107,18 @@ You can create a file called `deploy-cohesity-agent-linux.yml`, add the contents
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
+      - name: Remove Cohesity Agent from each Linux Server
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: agent
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_agent:
+                state: absent
+              
       - name: Install new Cohesity Agent on each Linux Server
         include_role:
             name: cohesity.cohesity_ansible_role
@@ -125,7 +137,7 @@ You can create a file called `deploy-cohesity-agent-linux.yml`, add the contents
 ### Create a Custom Installation Playbook for Windows Hosts
 [top](#Install-and-Remove-the-Cohesity-Agent-Using-Ansible-Inventory)
 
-Here is an example playbook that installs the Cohesity agent on all `windows` hosts. (Remember to change it to suit your environment.)
+Here is an example playbook that uninstalls and installs the Cohesity agent on all `windows` hosts. (Remember to change it to suit your environment.)
 > **Notes:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
   - Cohesity Agent installation on Windows supports two types of Agent install types: `filecbt` and `volcbt`.  When installing or removing the agent and selecting a `volcbt` type, you must reboot the Windows server to complete the action.

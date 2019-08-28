@@ -16,13 +16,9 @@
 ## Synopsis
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
 
-This example play leverages the Ansible Inventory to dynamically remove and register Protection Sources for supported Environment Types.  The source file for this playbook is located at the root of the role in `examples/demos/sources.yml`.
+These example plays leverage the Ansible Inventory to dynamically register and remove Protection Sources for supported Environment Types.  The example playbooks are located at the root of the role in [examples/demos/](https://github.com/cohesity/cohesity-ansible-role/tree/master/examples/demos).
 > **IMPORTANT**!<br>
-  This example play should be considered for demo purposes only. This play removes and then registers all Physical, VMware, and GenericNAS Protection Sources based on the Ansible Inventory.  There are no job validations or state checks to ensure that backups are not running.  If jobs exist for the Source, an error is raised and the play fails.
-
-#### How It Works
-- The play starts by reading all hosts from the Ansible Inventory and removing the corresponding Source(s).
-- Upon completion of the removal, the endpoint is registered as a new Protection Source.
+  These example plays should be considered for demo purposes only. These plays registers and removes Physical, VMware, and GenericNAS Protection Sources based on the Ansible Inventory.  There are no job validations or state checks to ensure that backups are not running.  If jobs exist for the Source, an error is raised and the play fails.
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
@@ -42,7 +38,7 @@ This example play leverages the Ansible Inventory to dynamically remove and regi
 ## Ansible Inventory Configuration
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
 
-To fully leverage this Ansible Play, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../configuring-your-ansible-inventory.md).
+To fully leverage these Ansible Plays, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../configuring-your-ansible-inventory.md).
 
 This is an example inventory file: (Remember to change it to suit your environment.)
 ```ini
@@ -97,8 +93,6 @@ nas_password=password
 
 ## Customize Your Playbooks
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
-
-The source files for these playbooks is located at the root of the role in `examples/demos/sources.yml`.
 
 ### Register Physical Protection sources for all Linux hosts in the inventory
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
@@ -222,12 +216,12 @@ Here is an example playbook that registers a new VMware protection source using 
 ### Register a GenericNas Protection source
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
 
-Here is an example playbook that registers a GenericNas Protection source using details given in the inventory. (Remember to change it to suit your environment.)
+Here is an example playbook that registers a GenericNas Protection sources using details given in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
 
 ```yaml
-# => Cohesity Protection Sources Physical Windows hosts
+# => Cohesity Protection Sources GenericNAS hosts
 ---
   - hosts: workstation
     # => We need to specify these variables to connect
@@ -264,7 +258,7 @@ Here is an example playbook that registers a GenericNas Protection source using 
 ### Unregister Physical Protection sources for all Linux hosts in the inventory
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
 
-Here is an example playbook that unregisters Physical Protection Sources for all the Linux hosts in the inventory. (Remember to change it to suit your environment.)
+Here is an example playbook that unregister Physical Protection Sources for all the Linux hosts in the inventory. (Remember to change it to suit your environment.)
 > **Notes:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
   - The removal of a Protection Source with an existing Protection Job is unsupported at this time.
@@ -344,7 +338,7 @@ Here is an example playbook that unregisters Physical Protection Sources for all
 ### Unregister a VMware Protection source
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
 
-Here is an example playbook that unregisters a VMware protection source based on the details given in inventory. (Remember to change it to suit your environment.)
+Here is an example playbook that unregisters VMware protection sources based on the details given in inventory. (Remember to change it to suit your environment.)
 > **Notes:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
   - The removal of a Protection Source with an existing Protection Job is unsupported at this time.
@@ -385,13 +379,13 @@ Here is an example playbook that unregisters a VMware protection source based on
 ### Unregister a GenericNas Protection source
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
 
-Here is an example playbook that unregisters a VMware protection source based on the details given in inventory. (Remember to change it to suit your environment.)
+Here is an example playbook that unregisters NAS protection sources based on the details given in inventory. (Remember to change it to suit your environment.)
 > **Notes:**
   - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
   - The removal of a Protection Source with an existing Protection Job is unsupported at this time.
 
 ```yaml
-# => Unregister VMware protection sources
+# => Unregister GenericNas protection sources
 
 ---
   - hosts: workstation

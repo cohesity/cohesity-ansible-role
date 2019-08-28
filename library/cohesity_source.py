@@ -398,7 +398,7 @@ def register_source(module, self):
 
         data = json.dumps(payload)
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=120)
 
         response = json.loads(response.read())
 
@@ -441,12 +441,12 @@ def unregister_source(module, self):
     token = self['token']
     try:
         uri = "https://" + server + \
-            "/irisservices/api/v1/backupsources/" + str(self['id'])
+            "/irisservices/api/v1/public/protectionSources/" + str(self['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
 
         response = open_url(url=uri, method='DELETE', headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=120)
 
         return response
     except urllib_error.URLError as e:

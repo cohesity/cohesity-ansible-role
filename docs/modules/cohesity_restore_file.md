@@ -133,7 +133,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
 |   | overwrite | Boolean | True | If `true`, the restore operation overwrites any existing files or folders. |
 |   | preserve_attributes | Boolean | False | If `true`, the restore operation maintains the original file or folder attributes |
 |   | restore_location | String |  | Alternate location to which the files will be restored |
-|   | backup_timestamp | String |  | Backup Run time for the restore operation. It should be given in YYYY-MM-DD:hh:mm format.
+|   | backup_timestamp | String |  | Backup Run time for the restore operation. It should be given in YYYY-MM-DD:hh:mm format. If not specified, most recent backup job run is used.
 
 
 ## Outputs

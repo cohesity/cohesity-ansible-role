@@ -1,4 +1,4 @@
-# => Register protection job with windows hosts
+# => Register file based protection job with windows hosts
 ---
   - hosts: local
     gather_facts: no

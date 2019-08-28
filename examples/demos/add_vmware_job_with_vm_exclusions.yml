@@ -22,4 +22,4 @@
               sources:
                 - endpoint: "vcenter_ip_or_hostname"
               environment: "VMware"
-              exclude_vms: "{{ groups['exclude_vms'] }}"
+              exclude: "{{ groups['exclude_vms'] }}"

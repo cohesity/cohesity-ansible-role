@@ -78,7 +78,7 @@ ansible_user=cohesity
 ```
 You can create a file called `protection_job_physical.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
-  ansible-playbook -i <inventory_file> protection_job_physical.yml -e "username=admin password=admin"
+  ansible-playbook -i <inventory_file> protection_job_physical.yml -e "username=abc password=abc"
   ```
 
 ```yaml
@@ -95,7 +95,7 @@ You can create a file called `protection_job_physical.yml`, add the contents fro
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create new Protection Jobs for Physical Linux Servers
+      - name: Create new Protection Job for Physical Linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -123,7 +123,7 @@ You can create a file called `protection_job_physical.yml`, add the contents fro
 ### Create new VMware vCenter Protection Job
 [top](#task-cohesity-protection-job-management)
 
-This is an example playbook that creates a new Protection Jop for the chosen vCenter host. (Remember to change it to suit your environment.)
+This is an example playbook that creates a new Protection Job for the chosen vCenter host. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
 
@@ -167,7 +167,7 @@ This is an example playbook that creates a new Protection Jop for the chosen vCe
 ### Start an On-Demand Protection Job for VMware Source
 [top](#task-cohesity-protection-job-management)
 
-This is an example playbook that creates new Protection Sources for the chosen vCenter host. (Remember to change it to suit your environment.)
+This is an example playbook that starts an existing VMware protection job. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
 
@@ -263,8 +263,8 @@ The following information is copied directly from the included task in this role
     storage_domain: "{{ cohesity_protection.storage_domain | default('DefaultIddStorageDomain') }}"
     delete_backups: "{{ cohesity_protection.delete_backups | default(False) }}"
     cancel_active: "{{ cohesity_protection.cancel_active | default(False) }}"
-    exclude_vms: "{{cohesity_protection.exclude_vms | default('') }}"
-    include_vms: "{{cohesity_protection.include_vms | default('') }}"
+    exclude: "{{cohesity_protection.exclude | default('') }}"
+    include: "{{cohesity_protection.include | default('') }}"
   tags: always
 
 ```

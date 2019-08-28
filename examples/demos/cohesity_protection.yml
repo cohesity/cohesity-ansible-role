@@ -3,14 +3,14 @@
 # => Role: cohesity.cohesity_ansible_role
 
 ---
-# => install cohesity agent on linux hosts
+
 - hosts: linux
   gather_facts: yes
   become: true
   roles:
       - cohesity.cohesity_ansible_role
   tasks:
-    - name: Install new Cohesity Agent on each physical machine
+    - name: Install new Cohesity Agent on each physical linux machine
       include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: agent

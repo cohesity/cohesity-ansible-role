@@ -76,7 +76,7 @@ options:
     usage:
       protection_sources:
         - endpoint: ""
-          paths: (valid only for physical sources)
+          paths: (valid only for physical sources and file based protection jobs)
             - includeFilePath: (String, default "/" for linux machines, required field for windows machines)
               excludeFilePaths: (List, defaults to empty list [], optional field)
                  - String
@@ -348,6 +348,53 @@ def create_paths_parameter(module, update_source_ids):
     return sources_with_paths
 
 
+def parse_vmware_protection_sources_json(response, vm_names):
+    ids = []
+    nodes = []
+    for node in response:
+        if 'nodes' in node:
+            nodes.append(node['nodes'])
+        if ('protectionSource' in node) and (node['protectionSource']['name'] in vm_names):
+            ids.append(node['protectionSource']['id'])
+
+    while len(nodes) != 0:
+        objects = nodes.pop()
+        for node in objects:
+            if 'nodes' in node:
+                nodes.append(node['nodes'])
+            if ('protectionSource' in node) and (node['protectionSource']['name'] in vm_names):
+                ids.append(node['protectionSource']['id'])
+    return list(set(ids))
+
+
+def get_vmware_ids(module, job_meta_data, job_details, vm_names):
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = job_details['token']
+    try:
+        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + str(job_meta_data['parentSourceId'])
+
+        headers = {"Accept": "application/json", "Authorization": "Bearer " + token}
+
+        response = open_url(
+            url=uri,
+            method='GET',
+            headers=headers,
+            validate_certs=validate_certs, timeout=120)
+
+        if not response.getcode() == 200:
+            raise ProtectionException(
+                msg="Failed to get VMware protection source details")
+        response = json.loads(response.read())
+        ids = parse_vmware_protection_sources_json(response, vm_names)
+        return ids
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
 def get_vmware_vm_ids(module, job_meta_data, job_details, vm_names):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
@@ -361,7 +408,7 @@ def get_vmware_vm_ids(module, job_meta_data, job_details, vm_names):
             url=uri,
             method='GET',
             headers=headers,
-            validate_certs=validate_certs)
+            validate_certs=validate_certs, timeout=120)
 
         if not response.getcode() == 200:
             raise ProtectionException(
@@ -399,16 +446,16 @@ def register_job(module, self):
             payload['sourceSpecialParameters'] = create_paths_parameter(module, payload['sourceIds'])
         elif payload['environment'] == "kVMware":
             parent_source_id = {"parentSourceId": self['parentSourceId']}
-            if len(module.params.get('include_vms')) != 0:
-                vms = module.params.get('include_vms')
-                payload['sourceIds'] = get_vmware_vm_ids(module, parent_source_id, self, vms)
-            if len(module.params.get('exclude_vms')) != 0:
-                vms = module.params.get('exclude_vms')
-                payload['excludeSourceIds'] = get_vmware_vm_ids(module, parent_source_id, self, vms)
+            if len(module.params.get('include')) != 0:
+                vms = module.params.get('include')
+                payload['sourceIds'] = get_vmware_ids(module, parent_source_id, self, vms)
+            if len(module.params.get('exclude')) != 0:
+                vms = module.params.get('exclude')
+                payload['excludeSourceIds'] = get_vmware_ids(module, parent_source_id, self, vms)
         data = json.dumps(payload)
         # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=120)
 
         response = json.loads(response.read())
 
@@ -461,7 +508,7 @@ def start_job(module, self):
         data = json.dumps(payload)
         # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=120)
 
         # => There is no data output so if we get a 204 then we are
         # => happy.
@@ -517,7 +564,7 @@ def update_job(module, job_details, update_source_ids):
             data=data,
             headers=headers,
             validate_certs=validate_certs,
-            method="PUT")
+            method="PUT", timeout=120)
         if not response.getcode() == 200:
             raise ProtectionException(
                 msg="Something went wrong with the attempt to get protection job %s" %
@@ -548,7 +595,7 @@ def get_prot_job_details(self, module):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
         response = open_url(url=uri, headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=120)
         if not response.getcode() == 200:
             raise ProtectionException(
                 msg="Something went wrong with the attempt to get protection job %s" %
@@ -605,7 +652,7 @@ def stop_job(module, self):
             data = json.dumps(payload)
             # module.exit_json(output=data)
             response = open_url(url=uri, data=data, headers=headers,
-                                validate_certs=validate_certs)
+                                validate_certs=validate_certs, timeout=120)
 
             # => There is no data output so if we get a 204 then we are
             # => happy.
@@ -652,7 +699,7 @@ def unregister_job(module, self):
             method='DELETE',
             data=data,
             headers=headers,
-            validate_certs=validate_certs)
+            validate_certs=validate_certs, timeout=120)
 
         return response
     except urllib_error.URLError as e:
@@ -663,14 +710,14 @@ def unregister_job(module, self):
 
 
 def update_vmware_job(module, job_meta_data, job_details):
-    if len(module.params.get('exclude_vms')) != 0 or len(module.params.get('include_vms')) != 0:
-        if len(module.params.get('exclude_vms')) != 0:
-            vms = module.params.get('exclude_vms')
-            exclude_vm_ids = get_vmware_vm_ids(module, job_meta_data, job_details, vms)
+    if len(module.params.get('exclude')) != 0 or len(module.params.get('include')) != 0:
+        if len(module.params.get('exclude')) != 0:
+            vms = module.params.get('exclude')
+            exclude_vm_ids = get_vmware_ids(module, job_meta_data, job_details, vms)
             job_meta_data['excludeSourceIds'] = exclude_vm_ids
-        if len(module.params.get('include_vms')) != 0:
-            vms = module.params.get('include_vms')
-            include_vm_ids = get_vmware_vm_ids(module, job_meta_data, job_details, vms)
+        if len(module.params.get('include')) != 0:
+            vms = module.params.get('include')
+            include_vm_ids = get_vmware_ids(module, job_meta_data, job_details, vms)
             job_meta_data['sourceIds'] = include_vm_ids
         job_meta_data['token'] = job_details['token']
         response = update_job(module, job_meta_data, "")
@@ -755,7 +802,7 @@ def main():
         dict(
             state=dict(choices=['present', 'absent',
                                 'started', 'stopped'], default='present'),
-            name=dict(type='str', required=True),
+            name=dict(type='str', required=True, aliases=['job_name']),
             description=dict(type='str'),
             # => Currently, the only supported environments types are list in the choices
             # => For future enhancements, the below list should be consulted.
@@ -764,8 +811,8 @@ def main():
                 choices=['VMware', 'PhysicalFiles', 'Physical', 'GenericNas'],
                 required=True
             ),
-            protection_sources=dict(type='list'),
-            protection_policy=dict(type='str'),
+            protection_sources=dict(type='list', aliases=['sources']),
+            protection_policy=dict(type='str', aliases=['policy']),
             storage_domain=dict(type='str'),
             time_zone=dict(type='str', default='America/Los_Angeles'),
             start_time=dict(type='str'),
@@ -774,8 +821,8 @@ def main():
                 choices=['Regular', 'Full', 'Log', 'System'], default='Regular'),
             cancel_active=dict(type='bool', default=False),
             validate_certs=dict(type='bool', default=False),
-            exclude_vms=dict(type=list),
-            include_vms=dict(type=list)
+            exclude=dict(type=list),
+            include=dict(type=list)
         )
     )
 
