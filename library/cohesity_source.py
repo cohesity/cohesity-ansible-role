@@ -13,11 +13,11 @@ try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source__all
 except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source__all
 
 DOCUMENTATION = '''
@@ -398,7 +398,7 @@ def register_source(module, self):
 
         data = json.dumps(payload)
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs, timeout=120)
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         response = json.loads(response.read())
 
@@ -446,7 +446,7 @@ def unregister_source(module, self):
                    "Authorization": "Bearer " + token}
 
         response = open_url(url=uri, method='DELETE', headers=headers,
-                            validate_certs=validate_certs, timeout=120)
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         return response
     except urllib_error.URLError as e:
@@ -468,7 +468,7 @@ def main():
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
                 choices=['VMware', 'Physical', 'GenericNas'],
-                required=True
+                default='Physical'
             ),
             host_type=dict(choices=['Linux', 'Windows',
                                     'Aix'], default='Linux'),
@@ -482,11 +482,11 @@ def main():
             ],
                 default='VCenter'
             ),
-            source_username=dict(type='str'),
-            source_password=dict(type='str', no_log=True),
+            source_username=dict(type='str', default=''),
+            source_password=dict(type='str', no_log=True, default=''),
             nas_protocol=dict(choices=['NFS', 'SMB'], default='NFS'),
-            nas_username=dict(type='str'),
-            nas_password=dict(type='str', no_log=True)
+            nas_username=dict(type='str', default=''),
+            nas_password=dict(type='str', no_log=True, default='')
         )
     )
 

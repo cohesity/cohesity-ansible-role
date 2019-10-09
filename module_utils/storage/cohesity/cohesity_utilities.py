@@ -30,3 +30,7 @@ def raise__cohesity_exception__handler(error, module, message=""):
     module.fail_json(msg=message,
                      error_details=str(error),
                      error_class=type(error).__name__)
+
+
+# constants
+REQUEST_TIMEOUT = 120

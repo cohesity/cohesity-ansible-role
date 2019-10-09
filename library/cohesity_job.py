@@ -13,14 +13,14 @@ try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
         get__protection_run__all__by_id
 except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
@@ -380,7 +380,7 @@ def get_vmware_ids(module, job_meta_data, job_details, vm_names):
             url=uri,
             method='GET',
             headers=headers,
-            validate_certs=validate_certs, timeout=120)
+            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         if not response.getcode() == 200:
             raise ProtectionException(
@@ -408,7 +408,7 @@ def get_vmware_vm_ids(module, job_meta_data, job_details, vm_names):
             url=uri,
             method='GET',
             headers=headers,
-            validate_certs=validate_certs, timeout=120)
+            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         if not response.getcode() == 200:
             raise ProtectionException(
@@ -455,7 +455,7 @@ def register_job(module, self):
         data = json.dumps(payload)
         # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs, timeout=120)
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         response = json.loads(response.read())
 
@@ -508,7 +508,7 @@ def start_job(module, self):
         data = json.dumps(payload)
         # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs, timeout=120)
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         # => There is no data output so if we get a 204 then we are
         # => happy.
@@ -564,7 +564,7 @@ def update_job(module, job_details, update_source_ids):
             data=data,
             headers=headers,
             validate_certs=validate_certs,
-            method="PUT", timeout=120)
+            method="PUT", timeout=REQUEST_TIMEOUT)
         if not response.getcode() == 200:
             raise ProtectionException(
                 msg="Something went wrong with the attempt to get protection job %s" %
@@ -595,7 +595,7 @@ def get_prot_job_details(self, module):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
         response = open_url(url=uri, headers=headers,
-                            validate_certs=validate_certs, timeout=120)
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         if not response.getcode() == 200:
             raise ProtectionException(
                 msg="Something went wrong with the attempt to get protection job %s" %
@@ -652,7 +652,7 @@ def stop_job(module, self):
             data = json.dumps(payload)
             # module.exit_json(output=data)
             response = open_url(url=uri, data=data, headers=headers,
-                                validate_certs=validate_certs, timeout=120)
+                                validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
             # => There is no data output so if we get a 204 then we are
             # => happy.
@@ -699,7 +699,7 @@ def unregister_job(module, self):
             method='DELETE',
             data=data,
             headers=headers,
-            validate_certs=validate_certs, timeout=120)
+            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         return response
     except urllib_error.URLError as e:
@@ -803,26 +803,26 @@ def main():
             state=dict(choices=['present', 'absent',
                                 'started', 'stopped'], default='present'),
             name=dict(type='str', required=True, aliases=['job_name']),
-            description=dict(type='str'),
+            description=dict(type='str', default=''),
             # => Currently, the only supported environments types are list in the choices
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
                 choices=['VMware', 'PhysicalFiles', 'Physical', 'GenericNas'],
-                required=True
+                default='PhysicalFiles'
             ),
-            protection_sources=dict(type='list', aliases=['sources']),
-            protection_policy=dict(type='str', aliases=['policy']),
-            storage_domain=dict(type='str'),
+            protection_sources=dict(type='list', aliases=['sources'], default=''),
+            protection_policy=dict(type='str', aliases=['policy'], default='Bronze'),
+            storage_domain=dict(type='str', default='DefaultStorageDomain'),
             time_zone=dict(type='str', default='America/Los_Angeles'),
-            start_time=dict(type='str'),
+            start_time=dict(type='str', default=''),
             delete_backups=dict(type='bool', default=False),
             ondemand_run_type=dict(
                 choices=['Regular', 'Full', 'Log', 'System'], default='Regular'),
             cancel_active=dict(type='bool', default=False),
             validate_certs=dict(type='bool', default=False),
-            exclude=dict(type=list),
-            include=dict(type=list)
+            exclude=dict(type=list, default=''),
+            include=dict(type=list, default='')
         )
     )
 

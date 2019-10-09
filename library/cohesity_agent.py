@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2017 Ansible Project
+# Copyright (c) 2018 Cohesity Inc
 # Apache License Version 2.0
 
 from __future__ import (absolute_import, division, print_function)
@@ -17,10 +17,10 @@ try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
 except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
 
 
 ANSIBLE_METADATA = {
@@ -258,7 +258,7 @@ def download_agent(module, path):
                 "Accept": "application/octet-stream"}
 
         agent = open_url(url=uri, headers=headers,
-                         validate_certs=False, timeout=120)
+                         validate_certs=False, timeout=REQUEST_TIMEOUT)
         resp_headers = agent.info().dict
         if 'content-disposition' in resp_headers.keys():
             filename = resp_headers['content-disposition'].split("=")[1]
@@ -466,13 +466,13 @@ def main():
     argument_spec.update(
         dict(
             state=dict(choices=['present', 'absent'], default='present'),
-            download_location=dict(),
+            download_location=dict(default=''),
             service_user=dict(default='cohesityagent'),
             service_group=dict(default='cohesityagent'),
             create_user=dict(default=True, type='bool'),
             file_based=dict(default=False, type='bool'),
             native_package=dict(default=False, type='bool'),
-            download_uri=dict(),
+            download_uri=dict(defaut=''),
             operating_system=dict(defalut="", type='str')
         )
     )

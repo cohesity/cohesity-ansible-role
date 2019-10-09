@@ -33,8 +33,8 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
 ```yaml
 - cohesity_restore_file:
     cluster: <ip or hostname for cohesity cluster>
-    cohesity_admin: <username with cluster level permissions>
-    cohesity_password: <password for the selected user>
+    username: <cohesity username with cluster level permissions>
+    password: <cohesity password for the selected user>
     validate_certs: <boolean to determine if SSL certificates should be validated>
     state: <state of the restore operation>
     name: <assigned descriptor to assign to the Restore Job.  The Restore Job name will consist of the job_name:name format>
