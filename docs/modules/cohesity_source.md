@@ -157,8 +157,8 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentials can be configured as.<br>- Domain/username |
-| X | **password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
+| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as.<br>- Domain/username |
+| X | **password** | String | | Password belonging to the selected Username (password used to login to cluster from UI).  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
 |   | state | Choice | -**present**<br>-absent | Determines the state of the Protection Source. |
 | X | **endpoint** | String | | Specifies the network endpoint where the Protection Source is reachable. It can be the URL, hostname, IP address, NFS mount point, or SMB Share of the Protection Source. |

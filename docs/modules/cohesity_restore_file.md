@@ -118,8 +118,8 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentials can be configured as.<br>- Domain/username|
-| X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
+| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as.<br>- Domain/username|
+| X | **password** | String | | Password belonging to the selected Username (password used to login to cluster from UI).  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
 |   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the restore operation. |
 | X | **name** | String | | Descriptor to assign to the Restore Job.  The Restore Job name will appear in the format: `job_name:name`. |
