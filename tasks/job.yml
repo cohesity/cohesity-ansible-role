@@ -13,6 +13,6 @@
     storage_domain: "{{ cohesity_protection.storage_domain | default('DefaultStorageDomain') }}"
     delete_backups: "{{ cohesity_protection.delete_backups | default(False) }}"
     cancel_active: "{{ cohesity_protection.cancel_active | default(False) }}"
-    exclude: "{{cohesity_protection.exclude | default('') }}"
-    include: "{{cohesity_protection.include | default('') }}"
+    exclude: "{{ cohesity_protection.exclude | default('') }}"
+    include: "{{ cohesity_protection.include | default('') }}"
   tags: always

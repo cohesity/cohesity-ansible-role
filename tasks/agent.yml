@@ -62,7 +62,7 @@
     service_group: "{{ cohesity_agent.service_group | default('cohesityagent') }}"
     create_user: "{{ cohesity_agent.create_user | default(True) }}"
     download_location: "{{ cohesity_agent.download_location | default() }}"
-    native_package: "{{cohesity_agent.native_package | default(False) }}"
+    native_package: "{{ cohesity_agent.native_package | default(False) }}"
     download_uri: "{{ cohesity_agent.download_uri | default() }}"
     operating_system: "{{ ansible_distribution }}"
   tags: always
