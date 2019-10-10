@@ -1,9 +1,9 @@
 ---
-- name: Install Prerequisite Packages for CentOS
+- name: Install Prerequisite Packages for CentOS or RedHat
   action: >
     {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-utils" state=present
   when:
-    - ansible_distribution == "CentOS"
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
     - cohesity_agent.state == "present"
   tags: always
 
@@ -15,13 +15,31 @@
     - cohesity_agent.state == "present"
   tags: always
 
-- name: Enable tcp port 50051 for CentOS
+- name: Check if firewall is enabled on CentOS or RedHat
+  command: "firewall-cmd --state"
+  ignore_errors: yes
+  register: firewall_status_centos
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - cohesity_agent.state == "present"
+  tags: always
+
+- name: Enable tcp port 50051 for CentOS or RedHat
   command: "firewall-cmd {{ item }}"
   with_items:
-  - --zone=public --permanent --add-port 50051/tcp
-  - --reload
+    - --zone=public --permanent --add-port 50051/tcp
+    - --reload
   when:
-    - ansible_distribution == "CentOS"
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - cohesity_agent.state == "present"
+    - firewall_status_centos.rc == 0
+  tags: always
+
+- name: Check if firewall is enabled on Ubuntu
+  command: "ufw status"
+  register: firewall_status_ubuntu
+  when:
+    - ansible_distribution == "Ubuntu"
     - cohesity_agent.state == "present"
   tags: always
 
@@ -30,6 +48,7 @@
   when:
     - ansible_distribution == "Ubuntu"
     - cohesity_agent.state == "present"
+    - 'firewall_status_ubuntu.stdout_lines[0] == "Status: active"'
   tags: always
 
 - name: "Cohesity agent: Set Agent to state of {{ cohesity_agent.state | default('present') }}"
@@ -43,4 +62,7 @@
     service_group: "{{ cohesity_agent.service_group | default('cohesityagent') }}"
     create_user: "{{ cohesity_agent.create_user | default(True) }}"
     download_location: "{{ cohesity_agent.download_location | default() }}"
+    native_package: "{{cohesity_agent.native_package | default(False) }}"
+    download_uri: "{{ cohesity_agent.download_uri | default() }}"
+    operating_system: "{{ ansible_distribution }}"
   tags: always

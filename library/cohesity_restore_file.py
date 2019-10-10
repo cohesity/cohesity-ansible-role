@@ -15,13 +15,13 @@ try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, \
         get__prot_source_root_id__by_environment, get__restore_job__by_type
 except ImportError:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, \
         get__prot_source_root_id__by_environment, get__restore_job__by_type
@@ -385,7 +385,7 @@ def start_restore(module, uri, self):
         data = json.dumps(payload)
 
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         response = json.loads(response.read())
 
@@ -427,7 +427,7 @@ def wait_restore_complete(module, self):
             response = open_url(
                 url=uri,
                 headers=headers,
-                validate_certs=validate_certs)
+                validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
             response = json.loads(response.read())
 
             # => If the status is Finished then break out and check for errors.
@@ -486,13 +486,13 @@ def main():
             ),
             job_name=dict(type='str', required=True),
             endpoint=dict(type='str', required=True),
-            backup_id=dict(type='str'),
-            backup_timestamp=dict(type='str'),
+            backup_id=dict(type='str', default=''),
+            backup_timestamp=dict(type='str', default=''),
             file_names=dict(type='list', required=True),
             wait_for_job=dict(type='bool', default=True),
             overwrite=dict(type='bool', default=True),
             preserve_attributes=dict(type='bool', default=True),
-            restore_location=dict(type='str'),
+            restore_location=dict(type='str', default=''),
             wait_minutes=dict(type='str', default=10)
 
         )

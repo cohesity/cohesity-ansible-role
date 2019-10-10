@@ -21,7 +21,7 @@
       - cohesity.cohesity_ansible_role
     tasks:
         # => Manage Physical
-      - name: Stop existing Protection Job Execution for each Physical Server
+      - name: Stop existing Protection Job Execution for Linux Physical Server
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -32,12 +32,26 @@
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: stopped
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "protect_physical_linux"
               cancel_active: True
-        with_items: "{{ groups.physical }}"
         tags: [ 'cohesity', 'jobs', 'stopped', 'remove', 'physical' ]
 
-      - name: Remove Protection Jobs for each Physical Server
+      - name: Stop existing Protection Job Execution for Windows Physical Server
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: stopped
+              job_name: "protect_physical_windows"
+              cancel_active: True
+        tags: [ 'cohesity', 'jobs', 'stopped', 'remove', 'physical' ]
+
+      - name: Remove Protection Job for Physical linux server
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -48,14 +62,24 @@
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: absent
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-              sources:
-                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "protect_physical_linux"
               delete_backups: True
-        with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'jobs', 'remove', 'physical' ]
 
-      - name: Create new Protection Jobs for each Physical Server
+      - name: Remove Protection Job for Physical windows server
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: absent
+              job_name: "protect_physical_windows"
+              delete_backups: True
+
+      - name: Create new Protection Job for Physical linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -66,13 +90,39 @@
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: present
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-              sources:
-                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'jobs', 'register', 'physical' ]
+              job_name: "protect_physical_linux"
+              sources: 
+                 - endpoint : "{{ item }}"
+                   paths:
+                    - includeFilePath: "/"
+                      excludeFilePaths:
+                        - "/home"
+                        - "/opt"
+                      skipNestedVolumes: False
+        with_items: "{{ groups['linux'] }}"
 
-      - name: Start On-Demand Protection Job Execution for each Physical Server
+      - name: Create new Protection Job for Physical windows Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: present
+              job_name: "protect_physical_windows"
+              sources: 
+                 - endpoint : "{{ item }}"
+                   paths:
+                    - includeFilePath: "C:\\"
+                      excludeFilePaths:
+                        - "C:\\Program Files"
+                      skipNestedVolumes: False
+        with_items: "{{ groups['windows'] }}"
+
+      - name: Start On-Demand Protection Job Execution for Physical linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -83,11 +133,22 @@
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: started
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
-        tags: [ 'cohesity', 'jobs', 'started', 'physical' ]
+              job_name: "protect_physical_linux"
 
-        # => Manage VMware
+      - name: Start On-Demand Protection Job Execution for Physical windows Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: started
+              job_name: "protect_physical_windows"
+
+      # => Manage VMware
       - name: Stop existing Protection Job Execution for each VMware Server
         include_role:
           name: cohesity.cohesity_ansible_role
@@ -99,11 +160,11 @@
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: stopped
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
               cancel_active: True
-        with_items: "{{ groups.vmware }}"
-        tags: [ 'cohesity', 'jobs', 'stopped', 'remove', 'vmware' ]
+        with_items: "{{ groups['vmware'] }}"
+        tags: [ 'cohesity', 'sources', 'stopped', 'remove', 'vmware' ]
 
       - name: Remove Protection Jobs for each VMware Server
         include_role:
@@ -116,13 +177,12 @@
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: absent
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-              sources:
-                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
+              endpoint: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
               delete_backups: True
-        with_items: "{{ groups.vmware }}"
-        tags: [ 'cohesity', 'jobs', 'remove', 'vmware' ]
+        with_items: "{{ groups['vmware'] }}"
+        tags: [ 'cohesity', 'sources', 'remove', 'vmware' ]
 
       - name: Create new Protection Jobs for each VMware Server
         include_role:
@@ -135,12 +195,12 @@
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: present
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               sources:
-                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                - endpoint: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.vmware }}"
-        tags: [ 'cohesity', 'jobs', 'register', 'vmware' ]
+        with_items: "{{ groups['vmware'] }}"
+        tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
 
       - name: Start On-Demand Protection Job Execution for each VMware Server
         include_role:
@@ -153,10 +213,10 @@
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
               state: started
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.vmware }}"
-        tags: [ 'cohesity', 'jobs', 'started', 'vmware' ]
+        with_items: "{{ groups['vmware'] }}"
+        tags: [ 'cohesity', 'sources', 'started', 'vmware' ]
 
         # => Manage Generic NAS Endpoints
       - name: Stop existing Protection Job Execution for each NAS Endpoint
@@ -174,7 +234,7 @@
               environment: "{{ hostvars[item]['type'] }}"
               cancel_active: True
         with_items: "{{ groups.generic_nas }}"
-        tags: [ 'cohesity', 'jobs', 'stopped', 'remove', 'generic_nas' ]
+        tags: [ 'cohesity', 'sources', 'stopped', 'remove', 'generic_nas' ]
 
       - name: Remove Protection Jobs for each NAS Endpoint
         include_role:
@@ -188,12 +248,11 @@
           cohesity_protection:
               state: absent
               job_name: "{{ hostvars[item]['endpoint'] }}"
-              sources:
-                - endpoint: "{{ hostvars[item]['endpoint'] }}"
+              endpoint: "{{ hostvars[item]['endpoint'] }}"
               environment: "{{ hostvars[item]['type'] }}"
               delete_backups: True
         with_items: "{{ groups.generic_nas }}"
-        tags: [ 'cohesity', 'jobs', 'remove', 'generic_nas' ]
+        tags: [ 'cohesity', 'sources', 'remove', 'generic_nas' ]
 
       - name: Create new Protection Jobs for each NAS Endpoint
         include_role:

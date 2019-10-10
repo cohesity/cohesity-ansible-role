@@ -69,8 +69,8 @@ This Ansible Module collects and compiles details about a Cohesity cluster.  The
 ```yaml
 - cohesity_facts:
     cluster: <ip or hostname for cohesity cluster>
-    cohesity_admin: <username with cluster level permissions>
-    cohesity_password: <password for the selected user>
+    username: <username with cluster level permissions>
+    password: <password for the selected user>
     validate_certs: <boolean to determine if SSL certificates should be validated>
     state: <level of data collection>
     include_sources: <boolean to determine if specific information should be collected>
@@ -126,8 +126,8 @@ This Ansible Module collects and compiles details about a Cohesity cluster.  The
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **cohesity_admin** | String | | Username with which Ansible will connect to the Cohesity cluster. Domain-specific credentials can be configured as <br>- Domain/username |
-| X | **cohesity_password** | String | | Password belonging to the selected Username.  This parameter is not logged. |
+| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as <br>- Domain/username |
+| X | **password** | String | | Password belonging to the selected Username (password used to login to cluster from UI).  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
 |   | state | Choice | -**complete**<br>-minimal | Determines the level of data collection from the cluster: *complete* or *minimal*.<br>- If *complete*, all data is collected automatically regardless of any *include_X* settings, with the exception of the `include_deleted` option; if `include_deleted` is set to **False**, jobs and sources that are marked as _deleted_ are ignored.<br>- If *minimal*, only the base information about the cluster and nodes is collected. If additional *include_X* items are set to **True**, those items are also included. |
 |   | include_sources | Boolean | False | Determines whether the specified resource information is collected. |

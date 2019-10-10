@@ -1,4 +1,4 @@
-#=> Create a protection job for all linux sources
+#=> Create a file based protection job for all linux sources
 ---
   - hosts: local
     gather_facts: no
@@ -10,7 +10,7 @@
           name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
-          cohesity_server: 10.2.145.27
+          cohesity_server: 10.22.149.28
           cohesity_admin: "{{ username }}"
           cohesity_password: "{{ password }}"
           cohesity_validate_certs: False

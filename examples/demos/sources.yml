@@ -20,7 +20,7 @@
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
-      - name: Remove registered Protection Source for each Physical Server
+      - name: Remove registered Protection Source for each Linux Server
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: source
@@ -31,8 +31,23 @@
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_source:
                 state: absent
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
+                endpoint: "{{ item }}"
+        with_items: "{{ groups['linux'] }}"
+        tags: [ 'cohesity', 'sources', 'register', 'physical' ]
+      
+      - name: Remove registered Protection Source for each Windows Server
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_source:
+                state: absent
+                endpoint: "{{ item }}"
+        with_items: "{{ groups['windows'] }}"
         tags: [ 'cohesity', 'sources', 'register', 'physical' ]
 
       - name: Remove registered Protection Source for each Vmware Server
@@ -46,9 +61,9 @@
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_source:
                 state: absent
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                endpoint: "{{ item }}"
                 environment: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
 
       - name: Remove registered Protection Source for each NAS Endpoint
@@ -68,7 +83,7 @@
         tags: [ 'cohesity', 'sources', 'register', 'generic_nas' ]
 
       # => Register each Protection Source
-      - name: Create new Protection Source for each Physical Server
+      - name: Create new Protection Source for each Linux Physical Server
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: source
@@ -79,9 +94,25 @@
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_source:
                 state: present
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                endpoint: "{{ item }}"
                 host_type: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.physical }}"
+        with_items: "{{ groups['linux'] }}"
+        tags: [ 'cohesity', 'sources', 'register', 'physical' ]
+
+      - name: Create new Protection Source for each Windows Physical Server
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_source:
+                state: present
+                endpoint: "{{ item }}"
+                host_type: "{{ hostvars[item]['type'] }}"
+        with_items: "{{ groups['windows'] }}"
         tags: [ 'cohesity', 'sources', 'register', 'physical' ]
 
       - name: Create new Protection Source for each Vmware Server
@@ -95,12 +126,12 @@
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_source:
                 state: present
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                endpoint: "{{ item }}"
                 environment: "{{ hostvars[item]['type'] }}"
                 vmware_type: "{{ hostvars[item]['vmware_type'] }}"
                 source_username: "{{ hostvars[item]['source_username'] }}"
                 source_password: "{{ hostvars[item]['source_password'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
 
       - name: Create new Protection Source for each NAS Endpoint

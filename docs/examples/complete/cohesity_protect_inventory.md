@@ -19,7 +19,7 @@ This example play can help accelerate the usage of the Cohesity Ansible integrat
   - Physical
   - VMware
   - GenericNAS
-- The final step is to create a new Protection Job for each of the Protection Sources.
+- The final step is to create Protection Jobs for Linux Servers, Windows Servers, VMware and GenericNAS
 - Once all the Protection Jobs are created, an immediate, one-time execution is started.
 
 ### Requirements
@@ -50,6 +50,9 @@ To fully leverage this Ansible Play, you must configure your Ansible Inventory f
 
 Here is an example inventory file: (Remember to change it to suit your environment.)
 ```ini
+[workstation]
+127.0.0.1 ansible_connection=local
+
 [linux]
 10.2.46.96
 10.2.46.97
@@ -57,6 +60,7 @@ Here is an example inventory file: (Remember to change it to suit your environme
 10.2.46.99
 
 [linux:vars]
+type=Linux
 ansible_user=root
 
 [windows]
@@ -64,20 +68,17 @@ ansible_user=root
 10.2.45.89
 
 [windows:vars]
+type=Windows
+install_type=volcbt
+reboot_after_install=True
 ansible_user=administrator
 ansible_password=secret
 ansible_connection=winrm
 ansible_winrm_server_cert_validation=ignore
 
-# => Group all Physical Servers.  This grouping is used by the Demos and Complete
-# => Examples to identify Physical Servers
-[physical:children]
-linux
-windows
-
 # => Declare the VMware environments to manage.
 [vmware]
-vcenter01 ansible_host=10.2.x.x
+10.2.x.x
 
 [vmware:vars]
 type=VMware
@@ -108,7 +109,7 @@ This play leverages certain data collected as part of the `cohesity_facts` modul
 
 ### Register all hosts in the Inventory to enable full protection on the selected Cohesity cluster
 
-Here is an example playbook that queries the inventory to install Agents on all hosts in the Physical Group, register each Environment type member as a Protection Source, and then create and start a Protection Job for each host. The source file for this playbook is located at the root of the role in `examples/complete/cohesity_protect_inventory.yml`.  (Remember to change it to suit your environment.)
+Here is an example playbook that queries the inventory to install Agents on all Linux and Windows hosts, register each host as a Protection Source, and then create and start a protection job for Linux, Windows, VMware, GenericNAS hosts. The source file for this playbook is located at the root of the role in `examples/complete/cohesity_protect_inventory.yml`.  (Remember to change it to suit your environment.)
 
 ```yaml
 # => Cohesity Full Protection for Physical, VMware, and GenericNAS environments
@@ -177,7 +178,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
         tags: [ 'cohesity', 'agent', 'install', 'physical', 'windows' ]
 
 
-# => Register each environment as a new Cohesity Protection Source
+# => Register each host as a new Cohesity Protection Source
 # =>
 
   - hosts: workstation
@@ -192,7 +193,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create new Protection Source for each Physical Server
+      - name: Create new Protection Source for each Linux Physical Server
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: source
@@ -203,9 +204,25 @@ Here is an example playbook that queries the inventory to install Agents on all 
             cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
             cohesity_source:
                 state: present
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                endpoint: "{{ item }}"
                 host_type: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.physical }}"
+        with_items: "{{ groups['linux'] }}"
+        tags: [ 'cohesity', 'sources', 'register', 'physical' ]
+    
+      - name: Create new Protection Source for each windows Physical Server
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
+            cohesity_source:
+                state: present
+                endpoint: "{{ item }}"
+                host_type: "{{ hostvars[item]['type'] }}"
+        with_items: "{{ groups['windows'] }}"
         tags: [ 'cohesity', 'sources', 'register', 'physical' ]
 
       - name: Create new Protection Source for each Vmware Server
@@ -219,12 +236,12 @@ Here is an example playbook that queries the inventory to install Agents on all 
             cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
             cohesity_source:
                 state: present
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                endpoint: "{{ item }}"
                 environment: "{{ hostvars[item]['type'] }}"
                 vmware_type: "{{ hostvars[item]['vmware_type'] }}"
                 source_username: "{{ hostvars[item]['source_username'] }}"
                 source_password: "{{ hostvars[item]['source_password'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
 
       - name: Create new Protection Source for each NAS Endpoint
@@ -247,10 +264,10 @@ Here is an example playbook that queries the inventory to install Agents on all 
         tags: [ 'cohesity', 'sources', 'register', 'generic_nas' ]
 
 
-# => Create a new Protection Job for each identified Cohesity Protection Source
+# => Create a new Protection Job for Linux, Windows, VMware, GenericNAS hosts
 # =>
         # => Manage Physical
-      - name: Create new Protection Jobs for each Physical Server
+      - name: Create new Protection Job with all Linux Physical Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -261,10 +278,27 @@ Here is an example playbook that queries the inventory to install Agents on all 
           cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
           cohesity_protection:
               state: present
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: protect_physical_linux
               sources:
-                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
+                - endpoint: "{{ item }}"
+        with_items: "{{ groups['linux'] }}"
+        tags: [ 'cohesity', 'jobs', 'create', 'physical' ]
+      
+      - name: Create new Protection Job with all Windows Physical Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
+          cohesity_protection:
+              state: present
+              job_name: protect_physical_windows
+              sources:
+                - endpoint: "{{ item }}"
+        with_items: "{{ groups['windows'] }}"
         tags: [ 'cohesity', 'jobs', 'create', 'physical' ]
 
       - name: Create new Protection Jobs for each VMware Server
@@ -278,11 +312,11 @@ Here is an example playbook that queries the inventory to install Agents on all 
           cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
           cohesity_protection:
               state: present
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               sources:
-                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                - endpoint: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'jobs', 'create', 'vmware' ]
 
       - name: Create new Protection Jobs for each NAS Endpoint
@@ -305,7 +339,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
 
         # => Start Protection for each identified Cohesity Protection Job
         # =>
-      - name: Start On-Demand Protection Job Execution for each Physical Server
+      - name: Start On-Demand Protection Job Execution for Linux Physical Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -316,8 +350,21 @@ Here is an example playbook that queries the inventory to install Agents on all 
           cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
           cohesity_protection:
               state: started
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
+              job_name: protect_physical_linux
+        tags: [ 'cohesity', 'jobs', 'started', 'physical' ]
+      
+      - name: Start On-Demand Protection Job Execution for Windows Physical Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
+          cohesity_protection:
+              state: started
+              job_name: protect_physical_windows
         tags: [ 'cohesity', 'jobs', 'started', 'physical' ]
 
       - name: Start On-Demand Protection Job Execution for each VMware Server
@@ -331,9 +378,9 @@ Here is an example playbook that queries the inventory to install Agents on all 
           cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
           cohesity_protection:
               state: started
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'jobs', 'started', 'vmware' ]
 
 

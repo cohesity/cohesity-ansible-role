@@ -64,7 +64,7 @@
         tags: [ 'cohesity', 'agent', 'install', 'physical', 'windows' ]
 
 
-# => Register each environment as a new Cohesity Protection Source
+# => Register each host as a new Cohesity Protection Source
 # =>
 
   - hosts: workstation
@@ -79,7 +79,7 @@
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create new Protection Source for each Physical Server
+      - name: Create new Protection Source for each Linux Physical Server
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: source
@@ -90,9 +90,25 @@
             cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
             cohesity_source:
                 state: present
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                endpoint: "{{ item }}"
                 host_type: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.physical }}"
+        with_items: "{{ groups['linux'] }}"
+        tags: [ 'cohesity', 'sources', 'register', 'physical' ]
+
+      - name: Create new Protection Source for each windows Physical Server
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
+            cohesity_source:
+                state: present
+                endpoint: "{{ item }}"
+                host_type: "{{ hostvars[item]['type'] }}"
+        with_items: "{{ groups['windows'] }}"
         tags: [ 'cohesity', 'sources', 'register', 'physical' ]
 
       - name: Create new Protection Source for each Vmware Server
@@ -106,12 +122,12 @@
             cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
             cohesity_source:
                 state: present
-                endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                endpoint: "{{ item }}"
                 environment: "{{ hostvars[item]['type'] }}"
                 vmware_type: "{{ hostvars[item]['vmware_type'] }}"
                 source_username: "{{ hostvars[item]['source_username'] }}"
                 source_password: "{{ hostvars[item]['source_password'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'sources', 'register', 'vmware' ]
 
       - name: Create new Protection Source for each NAS Endpoint
@@ -134,10 +150,10 @@
         tags: [ 'cohesity', 'sources', 'register', 'generic_nas' ]
 
 
-# => Create a new Protection Job for each identified Cohesity Protection Source
+# => Create a new Protection Job for Linux, Windows, VMware, GenericNAS hosts
 # =>
         # => Manage Physical
-      - name: Create new Protection Jobs for each Physical Server
+      - name: Create new Protection Job with all Linux Physical Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -148,10 +164,27 @@
           cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
           cohesity_protection:
               state: present
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: protect_physical_linux
               sources:
-                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
+                - endpoint: "{{ item }}"
+        with_items: "{{ groups['linux'] }}"
+        tags: [ 'cohesity', 'jobs', 'create', 'physical' ]
+
+      - name: Create new Protection Job with all Windows Physical Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
+          cohesity_protection:
+              state: present
+              job_name: protect_physical_windows
+              sources:
+                - endpoint: "{{ item }}"
+        with_items: "{{ groups['windows'] }}"
         tags: [ 'cohesity', 'jobs', 'create', 'physical' ]
 
       - name: Create new Protection Jobs for each VMware Server
@@ -165,11 +198,11 @@
           cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
           cohesity_protection:
               state: present
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               sources:
-                - endpoint: "{{ hostvars[item]['ansible_host'] }}"
+                - endpoint: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'jobs', 'create', 'vmware' ]
 
       - name: Create new Protection Jobs for each NAS Endpoint
@@ -190,9 +223,9 @@
         with_items: "{{ groups.generic_nas }}"
         tags: [ 'cohesity', 'jobs', 'create', 'generic_nas' ]
 
-# => Start Protection for each identified Cohesity Protection Job
-# =>
-      - name: Start On-Demand Protection Job Execution for each Physical Server
+        # => Start Protection for each identified Cohesity Protection Job
+        # =>
+      - name: Start On-Demand Protection Job Execution for Linux Physical Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -203,8 +236,21 @@
           cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
           cohesity_protection:
               state: started
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
-        with_items: "{{ groups.physical }}"
+              job_name: protect_physical_linux
+        tags: [ 'cohesity', 'jobs', 'started', 'physical' ]
+
+      - name: Start On-Demand Protection Job Execution for Windows Physical Servers
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
+          cohesity_protection:
+              state: started
+              job_name: protect_physical_windows
         tags: [ 'cohesity', 'jobs', 'started', 'physical' ]
 
       - name: Start On-Demand Protection Job Execution for each VMware Server
@@ -218,9 +264,9 @@
           cohesity_validate_certs: "{{ var_validate_certs | default('True') }}"
           cohesity_protection:
               state: started
-              job_name: "{{ hostvars[item]['ansible_host'] }}"
+              job_name: "{{ item }}"
               environment: "{{ hostvars[item]['type'] }}"
-        with_items: "{{ groups.vmware }}"
+        with_items: "{{ groups['vmware'] }}"
         tags: [ 'cohesity', 'jobs', 'started', 'vmware' ]
 
 

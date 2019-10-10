@@ -13,14 +13,14 @@ try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
         get__protection_run__all__by_id
 except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
@@ -76,7 +76,7 @@ options:
     usage:
       protection_sources:
         - endpoint: ""
-          paths: (valid only for physical sources)
+          paths: (valid only for physical sources and file based protection jobs)
             - includeFilePath: (String, default "/" for linux machines, required field for windows machines)
               excludeFilePaths: (List, defaults to empty list [], optional field)
                  - String
@@ -242,9 +242,9 @@ def check__protection_job__exists(module, self):
 
         for job in job_list:
             if job['name'] == self['name']:
-                return job['id']
+                return job['id'], job
 
-        return False
+        return False, ""
     except urllib_error.URLError as e:
         # => Capture and report any error messages.
         raise__cohesity_exception__handler(e.read(), module)
@@ -348,6 +348,86 @@ def create_paths_parameter(module, update_source_ids):
     return sources_with_paths
 
 
+def parse_vmware_protection_sources_json(response, vm_names):
+    ids = []
+    nodes = []
+    for node in response:
+        if 'nodes' in node:
+            nodes.append(node['nodes'])
+        if ('protectionSource' in node) and (node['protectionSource']['name'] in vm_names):
+            ids.append(node['protectionSource']['id'])
+
+    while len(nodes) != 0:
+        objects = nodes.pop()
+        for node in objects:
+            if 'nodes' in node:
+                nodes.append(node['nodes'])
+            if ('protectionSource' in node) and (node['protectionSource']['name'] in vm_names):
+                ids.append(node['protectionSource']['id'])
+    return list(set(ids))
+
+
+def get_vmware_ids(module, job_meta_data, job_details, vm_names):
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = job_details['token']
+    try:
+        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + str(job_meta_data['parentSourceId'])
+
+        headers = {"Accept": "application/json", "Authorization": "Bearer " + token}
+
+        response = open_url(
+            url=uri,
+            method='GET',
+            headers=headers,
+            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
+
+        if not response.getcode() == 200:
+            raise ProtectionException(
+                msg="Failed to get VMware protection source details")
+        response = json.loads(response.read())
+        ids = parse_vmware_protection_sources_json(response, vm_names)
+        return ids
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
+def get_vmware_vm_ids(module, job_meta_data, job_details, vm_names):
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = job_details['token']
+    try:
+        uri = "https://" + server + \
+              "/irisservices/api/v1/public/protectionSources/virtualMachines?vCenterId=" + str(job_meta_data['parentSourceId'])
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        response = open_url(
+            url=uri,
+            method='GET',
+            headers=headers,
+            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
+
+        if not response.getcode() == 200:
+            raise ProtectionException(
+                msg="Failed to get VMware protection source details")
+        response = json.loads(response.read())
+        vm_ids = []
+        vm_names_lowercase = [v.lower() for v in vm_names]
+        for vm in response:
+            if vm['name'].lower() in vm_names_lowercase:
+                vm_ids.append(vm['id'])
+        return vm_ids
+
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
 def register_job(module, self):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
@@ -364,10 +444,18 @@ def register_job(module, self):
         payload['environment'] = "k" + self['environment']
         if payload['environment'] == "kPhysicalFiles":
             payload['sourceSpecialParameters'] = create_paths_parameter(module, payload['sourceIds'])
+        elif payload['environment'] == "kVMware":
+            parent_source_id = {"parentSourceId": self['parentSourceId']}
+            if len(module.params.get('include')) != 0:
+                vms = module.params.get('include')
+                payload['sourceIds'] = get_vmware_ids(module, parent_source_id, self, vms)
+            if len(module.params.get('exclude')) != 0:
+                vms = module.params.get('exclude')
+                payload['excludeSourceIds'] = get_vmware_ids(module, parent_source_id, self, vms)
         data = json.dumps(payload)
         # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         response = json.loads(response.read())
 
@@ -420,7 +508,7 @@ def start_job(module, self):
         data = json.dumps(payload)
         # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         # => There is no data output so if we get a 204 then we are
         # => happy.
@@ -449,7 +537,7 @@ def start_job(module, self):
         raise__cohesity_exception__handler(error, module)
 
 
-def update_job_source(module, job_details, update_source_ids):
+def update_job(module, job_details, update_source_ids):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
     token = job_details['token']
@@ -476,7 +564,7 @@ def update_job_source(module, job_details, update_source_ids):
             data=data,
             headers=headers,
             validate_certs=validate_certs,
-            method="PUT")
+            method="PUT", timeout=REQUEST_TIMEOUT)
         if not response.getcode() == 200:
             raise ProtectionException(
                 msg="Something went wrong with the attempt to get protection job %s" %
@@ -507,7 +595,7 @@ def get_prot_job_details(self, module):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
         response = open_url(url=uri, headers=headers,
-                            validate_certs=validate_certs)
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         if not response.getcode() == 200:
             raise ProtectionException(
                 msg="Something went wrong with the attempt to get protection job %s" %
@@ -564,7 +652,7 @@ def stop_job(module, self):
             data = json.dumps(payload)
             # module.exit_json(output=data)
             response = open_url(url=uri, data=data, headers=headers,
-                                validate_certs=validate_certs)
+                                validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
             # => There is no data output so if we get a 204 then we are
             # => happy.
@@ -611,7 +699,7 @@ def unregister_job(module, self):
             method='DELETE',
             data=data,
             headers=headers,
-            validate_certs=validate_certs)
+            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
         return response
     except urllib_error.URLError as e:
@@ -621,6 +709,92 @@ def unregister_job(module, self):
         raise__cohesity_exception__handler(error, module)
 
 
+def update_vmware_job(module, job_meta_data, job_details):
+    if len(module.params.get('exclude')) != 0 or len(module.params.get('include')) != 0:
+        if len(module.params.get('exclude')) != 0:
+            vms = module.params.get('exclude')
+            exclude_vm_ids = get_vmware_ids(module, job_meta_data, job_details, vms)
+            job_meta_data['excludeSourceIds'] = exclude_vm_ids
+        if len(module.params.get('include')) != 0:
+            vms = module.params.get('include')
+            include_vm_ids = get_vmware_ids(module, job_meta_data, job_details, vms)
+            job_meta_data['sourceIds'] = include_vm_ids
+        job_meta_data['token'] = job_details['token']
+        response = update_job(module, job_meta_data, "")
+        results = dict(
+            changed=True,
+            msg="Successfully updated the protection job",
+            **response)
+        module.exit_json(**results)
+    else:
+        module.exit_json(
+            msg="The protection job already exists",
+            id=job_meta_data['id'],
+            name=module.params.get('name'),
+            changed=False
+        )
+
+
+def update_physical_server_job(module, job_details, job_exists):
+    if len(module.params.get('protection_sources')
+           ) == 1 and not module.params.get('protection_sources')[0]:
+        module.fail_json(
+            msg="Missing protection sources to add to the existing protection job",
+            id=job_exists,
+            name=module.params.get('name'))
+
+    job_details['id'] = job_exists
+    job_details['sourceIds'] = list()
+    if job_details['environment'] == "PhysicalFiles":
+        job_details['environment'] = "Physical"
+    prot_source = dict(
+        environment=job_details['environment'],
+        token=job_details['token']
+    )
+    i = 0
+    for source in module.params.get('protection_sources'):
+        prot_source['endpoint'] = source['endpoint']
+        source_id = get__prot_source_id__by_endpoint(
+            module, prot_source)
+        if source_id:
+            job_details['sourceIds'].append(source_id)
+            module.params.get('protection_sources')[i]['endpoint'] = source_id
+        else:
+            module.params.get('protection_sources')[i]['endpoint'] = None
+        i += 1
+    job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
+        module, job_details)
+    job_details['environment'] = module.params.get('environment')
+    existing_job_details = get_prot_job_details(job_details, module)
+    already_exist_in_job = set(
+        job_details['sourceIds']).issubset(
+        existing_job_details['sourceIds'])
+    if already_exist_in_job and len(job_details['sourceIds']) != 0:
+        results = dict(
+            changed=False,
+            msg="The protection sources are already being protected",
+            id=job_exists,
+            name=module.params.get('name')
+        )
+    elif (not already_exist_in_job) and len(job_details['sourceIds']) != 0:
+        new_sources = list(set(job_details['sourceIds']).difference(existing_job_details['sourceIds']))
+        existing_job_details['sourceIds'].extend(
+            job_details['sourceIds'])
+        existing_job_details['token'] = job_details['token']
+        response = update_job(module, existing_job_details, new_sources)
+        results = dict(
+            changed=True,
+            msg="Successfully added sources to existing protection job",
+            **response)
+    else:
+        module.fail_json(
+            msg="Sources don't exist on the cluster",
+            id=job_exists,
+            name=module.params.get('name')
+        )
+    module.exit_json(**results)
+
+
 def main():
     # => Load the default arguments including those specific to the Cohesity Protection Jobs.
     argument_spec = cohesity_common_argument_spec()
@@ -628,25 +802,27 @@ def main():
         dict(
             state=dict(choices=['present', 'absent',
                                 'started', 'stopped'], default='present'),
-            name=dict(type='str', required=True),
-            description=dict(type='str'),
+            name=dict(type='str', required=True, aliases=['job_name']),
+            description=dict(type='str', default=''),
             # => Currently, the only supported environments types are list in the choices
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
                 choices=['VMware', 'PhysicalFiles', 'Physical', 'GenericNas'],
-                required=True
+                default='PhysicalFiles'
             ),
-            protection_sources=dict(type='list'),
-            protection_policy=dict(type='str'),
-            storage_domain=dict(type='str'),
+            protection_sources=dict(type='list', aliases=['sources'], default=''),
+            protection_policy=dict(type='str', aliases=['policy'], default='Bronze'),
+            storage_domain=dict(type='str', default='DefaultStorageDomain'),
             time_zone=dict(type='str', default='America/Los_Angeles'),
-            start_time=dict(type='str'),
+            start_time=dict(type='str', default=''),
             delete_backups=dict(type='bool', default=False),
             ondemand_run_type=dict(
                 choices=['Regular', 'Full', 'Log', 'System'], default='Regular'),
             cancel_active=dict(type='bool', default=False),
-            validate_certs=dict(type='bool', default=False)
+            validate_certs=dict(type='bool', default=False),
+            exclude=dict(type=list, default=''),
+            include=dict(type=list, default='')
         )
     )
 
@@ -670,7 +846,7 @@ def main():
         timezone=module.params.get('time_zone')
     )
 
-    job_exists = check__protection_job__exists(module, job_details)
+    job_exists, job_meta_data = check__protection_job__exists(module, job_details)
 
     if module.check_mode:
         check_mode_results = dict(
@@ -698,70 +874,19 @@ def main():
     elif module.params.get('state') == "present":
 
         results['source_vars'] = job_details
-
         if job_exists:
-            if module.params.get('environment') not in ("PhysicalFiles", "Physical"):
-                module.fail_json(
+            if module.params.get('environment') == "VMware":
+                update_vmware_job(module, job_meta_data, job_details)
+            if module.params.get('environment') in ("PhysicalFiles", "Physical"):
+                update_physical_server_job(module, job_details, job_exists)
+            else:
+                module.exit_json(
                     msg="The protection job already exists",
                     id=job_exists,
-                    name=module.params.get('name')
+                    name=module.params.get('name'),
+                    changed=False
                 )
-            if len(module.params.get('protection_sources')
-                   ) == 1 and not module.params.get('protection_sources')[0]:
-                module.fail_json(
-                    msg="Missing protection sources to add to the existing protection job",
-                    id=job_exists,
-                    name=module.params.get('name'))
 
-            job_details['id'] = job_exists
-            job_details['sourceIds'] = list()
-            if job_details['environment'] == "PhysicalFiles":
-                job_details['environment'] = "Physical"
-            prot_source = dict(
-                environment=job_details['environment'],
-                token=job_details['token']
-            )
-            i = 0
-            for source in module.params.get('protection_sources'):
-                prot_source['endpoint'] = source['endpoint']
-                source_id = get__prot_source_id__by_endpoint(
-                    module, prot_source)
-                if source_id:
-                    job_details['sourceIds'].append(source_id)
-                    module.params.get('protection_sources')[i]['endpoint'] = source_id
-                else:
-                    module.params.get('protection_sources')[i]['endpoint'] = None
-                i += 1
-            job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
-                module, job_details)
-            job_details['environment'] = module.params.get('environment')
-            existing_job_details = get_prot_job_details(job_details, module)
-            already_exist_in_job = set(
-                job_details['sourceIds']).issubset(
-                existing_job_details['sourceIds'])
-            if already_exist_in_job and len(job_details['sourceIds']) != 0:
-                results = dict(
-                    changed=False,
-                    msg="The protection sources are already being protected",
-                    id=job_exists,
-                    name=module.params.get('name')
-                )
-            elif (not already_exist_in_job) and len(job_details['sourceIds']) != 0:
-                new_sources = list(set(job_details['sourceIds']).difference(existing_job_details['sourceIds']))
-                existing_job_details['sourceIds'].extend(
-                    job_details['sourceIds'])
-                existing_job_details['token'] = job_details['token']
-                response = update_job_source(module, existing_job_details, new_sources)
-                results = dict(
-                    changed=True,
-                    msg="Successfully added sources to existing protection job",
-                    **response)
-            else:
-                module.fail_json(
-                    msg="Sources don't exist on the cluster",
-                    id=job_exists,
-                    name=module.params.get('name')
-                )
         else:
             check__mandatory__params(module)
 
@@ -860,7 +985,7 @@ def main():
                     existing_job_details['sourceIds'] = list(
                         set(existing_job_details['sourceIds']).difference(job_details['sourceIds']))
                     existing_job_details['token'] = job_details['token']
-                    response = update_job_source(module, existing_job_details, sources_exiting_in_job)
+                    response = update_job(module, existing_job_details, sources_exiting_in_job)
                     results = dict(
                         changed=True,
                         msg="Successfully removed the sources from existing protection job",

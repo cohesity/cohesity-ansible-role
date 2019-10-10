@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2017 Ansible Project
+# Copyright (c) 2018 Cohesity Inc
 # Apache License Version 2.0
 
 from __future__ import (absolute_import, division, print_function)
@@ -17,10 +17,10 @@ try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
 except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
 
 
 ANSIBLE_METADATA = {
@@ -59,15 +59,18 @@ options:
     description:
       - Username underwhich the Cohesity Agent will be installed and run.
       - This user must exist unless I(create_user=True) is also configured.
-    default: 'cohesityagent'
+      - This user must be an existing user for native installation.
+    default: 'cohesityagent' for script based installation
   service_group:
     description:
       - Group underwhich permissions will be configured for the Cohesity Agent configuration.
       - This group must exist unless I(create_user=True) is also configured.
-    default: 'cohesityagent'
+      - This parameter doesn't apply for native installation
+    default: 'cohesityagent' for script based installation
   create_user:
     description:
       - When enabled, will create a new user and group based on the values of I(service_user) and I(service_group)
+      - This parameter does not apply for native installations
     type: bool
     default: True
   file_based:
@@ -75,7 +78,18 @@ options:
       - When enabled, will install the agent in non-LVM mode and support only file based backups
     type: bool
     default: False
-
+  native_package:
+    description:
+      - When enabled, native installer packages are used based on the operating system
+    type: bool
+    default: False
+  download_uri:
+    description:
+      - The download uri from where the installer can be downloaded
+    default: ''
+  operating_system:
+    description:
+      - ansible_distribution from facts, this value is automatically populated. Not given by module user
 extends_documentation_fragment:
     - cohesity
 requirements: []
@@ -113,6 +127,24 @@ EXAMPLES = '''
     cohesity_password: password
     download_location: /software/installers
     state: present
+
+# Install the current version of the agent on Linux using native installers, the service user here should be an
+# existing user
+- cohesity_agent:
+    server: cohesity.lab
+    cohesity_admin: admin
+    cohesity_password: password
+    state: present
+    service_user: cagent
+    native_package: True
+
+# Install the cohesity agent using native package downloaded from given URI. Here, the Cohesity cluster credentials are not required
+- cohesity_agent:
+    state: present
+    service_user: cagent
+    native_package: True
+    download_uri: 'http://10.2.145.47/files/bin/installers/el-cohesity-agent-6.3-1.x86_64.rpm'
+
 '''
 
 RETURN = '''
@@ -202,23 +234,36 @@ def check_agent(module, results):
 
 
 def download_agent(module, path):
-
-    os_type = "Linux"
-
-    server = module.params.get('cluster')
-    validate_certs = module.params.get('validate_certs')
-    token = get__cohesity_auth__token(module)
-
     try:
-        uri = "https://" + server + \
-            "/irisservices/api/v1/public/physicalAgents/download?hostType=k" + os_type
-        headers = {
-            "Accept": "application/octet-stream",
-            "Authorization": "Bearer " + token}
+        if not module.params.get('download_uri'):
+            os_type = "Linux"
+            server = module.params.get('cluster')
+            token = get__cohesity_auth__token(module)
+            package_type = 'kScript'
+            if module.params.get('native_package'):
+                if module.params.get('operating_system') in ('CentOS', 'RedHat'):
+                    package_type = 'kRPM'
+                elif module.params.get('operating_system') == 'SLES':
+                    package_type = 'kSuseRPM'
+                elif module.params.get('operating_system') == 'Ubuntu':
+                    package_type = 'kDEB'
+            uri = "https://" + server + \
+                "/irisservices/api/v1/public/physicalAgents/download?hostType=k" + os_type + '&pkgType=' + package_type
+            headers = {
+                "Accept": "application/octet-stream",
+                "Authorization": "Bearer " + token}
+        else:
+            uri = module.params.get('download_uri')
+            headers = {
+                "Accept": "application/octet-stream"}
+
         agent = open_url(url=uri, headers=headers,
-                         validate_certs=validate_certs)
+                         validate_certs=False, timeout=REQUEST_TIMEOUT)
         resp_headers = agent.info().dict
-        filename = resp_headers['content-disposition'].split("=")[1]
+        if 'content-disposition' in resp_headers.keys():
+            filename = resp_headers['content-disposition'].split("=")[1]
+        else:
+            filename = 'cohesity-agent-installer'
         filename = path + "/" + filename
         try:
             f = open(filename, "w")
@@ -241,7 +286,6 @@ def download_agent(module, path):
         raise__cohesity_exception__handler(e.read(), module)
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
-
     return filename
 
 
@@ -273,7 +317,7 @@ def installation_failures(module, stdout, rc, message):
         exitcode=rc)
 
 
-def install_agent(module, installer):
+def install_agent(module, installer, native):
 
     # => This command will run the self-extracting installer for the agent on machine and
     # => suppress opening a new window (nox11) and not show the extraction (noprogress) results
@@ -281,25 +325,41 @@ def install_agent(module, installer):
     #
     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
     # => try..except will give us a clean backwards compatibility.
-    install_opts = "--create-user " + \
-        str(int(module.params.get('create_user'))) + " "
-    if module.params.get('service_user'):
-        install_opts += "--service-user " + \
-            module.params.get('service_user') + " "
-    if module.params.get('service_group'):
-        install_opts += "--service-group " + \
-            module.params.get('service_group') + " "
-    if module.params.get('file_based'):
-        install_opts += "--skip-lvm-check "
-
-    try:
-        cmd = "{0}/setup.sh --install --yes {1}".format(
-            installer, install_opts)
-    except Exception as e:
-        cmd = "%s/setup.sh --install --yes %s" % (installer, install_opts)
+    if not native:
+        install_opts = "--create-user " + \
+            str(int(module.params.get('create_user'))) + " "
+        if module.params.get('service_user'):
+            install_opts += "--service-user " + \
+                module.params.get('service_user') + " "
+        if module.params.get('service_group'):
+            install_opts += "--service-group " + \
+                module.params.get('service_group') + " "
+        if module.params.get('file_based'):
+            install_opts += "--skip-lvm-check "
+        try:
+            cmd = "{0}/setup.sh --install --yes {1}".format(
+                installer, install_opts)
+        except Exception as e:
+            cmd = "%s/setup.sh --install --yes %s" % (installer, install_opts)
+    else:
+        try:
+            if module.params.get('service_user'):
+                user = module.params.get('service_user')
+            if module.params.get('operating_system') == "Ubuntu":
+                cmd = "sudo COHESITYUSER={0} dpkg -i {1}".format(user, installer)
+            elif module.params.get('operating_system') in ("CentOS", "RedHat"):
+                cmd = "sudo COHESITYUSER={0} rpm -i {1}".format(user, installer)
+            else:
+                installation_failures(
+                    module, "", "",
+                    str(module.params.get('operating_system')) + " isn't supported by cohesity ansible module")
+        except Exception as e:
+            if module.params.get('operating_system') == "Ubuntu":
+                cmd = "sudo COHESITYUSER=%s dpkg -i %s" % (user, installer)
+            elif module.params.get('operating_system') in ("CentOS", "RedHat"):
+                cmd = "sudo COHESITYUSER=%s  rpm -i %s" % (user, installer)
 
     rc, stdout, stderr = module.run_command(cmd, cwd=installer)
-
     # => Any return code other than 0 is considered a failure.
     if rc:
         installation_failures(
@@ -331,7 +391,7 @@ def extract_agent(module, filename):
     return (True, "Successfully Installed the Cohesity agent", target)
 
 
-def remove_agent(module, installer):
+def remove_agent(module, installer, native):
 
     # => This command will run the self-extracting installer for the agent on machine and
     # => suppress opening a new window (nox11) and not show the extraction (noprogress) results
@@ -339,16 +399,40 @@ def remove_agent(module, installer):
     #
     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
     # => try..except will give us a clean backwards compatibility.
-    try:
-        cmd = "{0}/setup.sh --full-uninstall --yes".format(installer)
-    except Exception as e:
-        cmd = "%s/setup.sh --full-uninstall --yes" % (installer)
-    rc, out, err = module.run_command(cmd, cwd=installer)
+    if not native:
+        try:
+            cmd = "{0}/setup.sh --full-uninstall --yes".format(installer)
+        except Exception as e:
+            cmd = "%s/setup.sh --full-uninstall --yes" % (installer)
+        rc, out, err = module.run_command(cmd, cwd=installer)
 
-    # => Any return code other than 0 is considered a failure.
-    if rc:
-        installation_failures(
-            module, out, rc, "Cohesity Agent is partially installed")
+        # => Any return code other than 0 is considered a failure.
+        if rc:
+            installation_failures(
+                module, out, rc, "Cohesity Agent is partially installed")
+    else:
+        if module.params.get('operating_system') == "Ubuntu":
+            cmd = "sudo dpkg -P cohesity-agent"
+            rc, stdout, stderr = module.run_command(cmd)
+            if rc:
+                installation_failures(
+                    module, stdout, rc, "Failed to uninstall cohesity agent ")
+        elif module.params.get('operating_system') in ("CentOS", "RedHat"):
+            cmd = "sudo rpm -e cohesity-agent"
+            rc, stdout, stderr = module.run_command(cmd)
+            if rc:
+                installation_failures(
+                    module, stdout, rc, "Failed to uninstall cohesity agent")
+            cmd = "sudo rm -rf /etc/cohesity-agent"
+            rc, stdout, stderr = module.run_command(cmd)
+            if rc:
+                installation_failures(
+                    module, stdout, rc, "The cohesity agent is uninstalled but failed to remove /etc/cohesity-agent")
+        else:
+            installation_failures(
+                module, "", "",
+                str(module.params.get('operating_system')) + " is not supported by cohesity ansible module")
+
     return (True, "Successfully Removed the Cohesity agent")
 
 
@@ -382,11 +466,14 @@ def main():
     argument_spec.update(
         dict(
             state=dict(choices=['present', 'absent'], default='present'),
-            download_location=dict(),
+            download_location=dict(default=''),
             service_user=dict(default='cohesityagent'),
             service_group=dict(default='cohesityagent'),
             create_user=dict(default=True, type='bool'),
-            file_based=dict(default=False, type='bool')
+            file_based=dict(default=False, type='bool'),
+            native_package=dict(default=False, type='bool'),
+            download_uri=dict(defaut=''),
+            operating_system=dict(defalut="", type='str')
         )
     )
 
@@ -440,12 +527,17 @@ def main():
             results = check_agent(module, results)
 
             if not results['version']:
-                results['filename'] = download_agent(module, tempdir)
-                results['changed'], results['message'], results['installer'] = extract_agent(
-                    module, results['filename'])
-                results['changed'], results['message'] = install_agent(
-                    module, results['installer'])
-                results = check_agent(module, results)
+                if not module.params.get('native_package'):
+                    results['filename'] = download_agent(module, tempdir)
+                    results['changed'], results['message'], results['installer'] = extract_agent(
+                        module, results['filename'])
+                    results['changed'], results['message'] = install_agent(
+                        module, results['installer'], False)
+                    results = check_agent(module, results)
+                else:
+                    results['filename'] = download_agent(module, tempdir)
+                    results['changed'], results['message'] = install_agent(module, results['filename'], True)
+                    results = check_agent(module, results)
             elif results['version'] == "unknown":
                 # => There is a problem that we should invesitgate.
                 module.fail_json(
@@ -464,14 +556,17 @@ def main():
             # => is any output from the check so we will pop that out of the results to clean up
             # => our return data.
             if results['version']:
-                results.pop('check_agent', None)
-                # => When removing the agent, we will need to download the installer once again,
-                # => and then run the --full-uninstall command.
-                results['filename'] = download_agent(module, tempdir)
-                results['changed'], results['message'], results['installer'] = extract_agent(
-                    module, results['filename'])
-                results['changed'], results['message'] = remove_agent(
-                    module, results['installer'])
+                if not module.params.get('native_package'):
+                    results.pop('check_agent', None)
+                    # => When removing the agent, we will need to download the installer once again,
+                    # => and then run the --full-uninstall command.
+                    results['filename'] = download_agent(module, tempdir)
+                    results['changed'], results['message'], results['installer'] = extract_agent(
+                        module, results['filename'])
+                    results['changed'], results['message'] = remove_agent(
+                        module, results['installer'], False)
+                else:
+                    results['changed'], results['message'] = remove_agent(module, "", True)
         else:
             # => This error should never happen based on the set assigned to the parameter.
             # => However, in case, we should raise an appropriate error.

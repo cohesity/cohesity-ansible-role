@@ -8,13 +8,13 @@
   - [Create new Physical Protection Job using the Ansible Inventory](#Create-new-Physical-Protection-Job-using-the-Ansible-Inventory)
   - [Create new VMware vCenter Protection Job](#Create-new-VMware-vCenter-Protection-Job)
   - [Start an On-Demand Protection Job for VMware Source](#Start-an-On-Demand-Protection-Job-for-VMware-Source)
-  - [Delete an existing Protection Job from a Physical Source](#Delete-an-existing-Protection-Job-from-a-Physical-Source)
+  - [Delete an existing Protection Job for Physical Source](#Delete-an-existing-Protection-Job-for-Physical-Source)
 - [How the Task Works](#How-the-Task-works)
 
 ## Synopsis
 [top](#task-cohesity-protection-job-management)
 
-Use this task to add and configure Cohesity Protection Sources.
+Use this task to add and configure Cohesity Protection Jobs.
 
 #### How It Works
 - The task starts by determining whether named protection job exists in the cluster.
@@ -63,10 +63,22 @@ This is an example playbook that creates a new Protection Job and adds Physical 
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
   - This example requires that the endpoints matches existing Protection Sources.  See [Task: Cohesity Protection Source Management](tasks/source.md).
   - Make sure includeFilePath and excludeFilePaths exist on the sources
-  
+
+Following inventory file can be used in the ansible-playbook runs below. Copy the content to `inventory.ini` file
+```ini
+[workstation]
+127.0.0.1 ansible_connection=local
+
+[linux]
+10.21.143.240
+10.21.143.241
+
+[linux:vars]
+ansible_user=cohesity
+```
 You can create a file called `protection_job_physical.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
-  ansible-playbook -i <inventory_file> protection_job_physical.yml -e "username=admin password=admin"
+  ansible-playbook -i <inventory_file> protection_job_physical.yml -e "username=abc password=abc"
   ```
 
 ```yaml
@@ -83,7 +95,7 @@ You can create a file called `protection_job_physical.yml`, add the contents fro
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create new Protection Jobs for Physical Linux Servers
+      - name: Create new Protection Job for Physical Linux Servers
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -111,7 +123,7 @@ You can create a file called `protection_job_physical.yml`, add the contents fro
 ### Create new VMware vCenter Protection Job
 [top](#task-cohesity-protection-job-management)
 
-This is an example playbook that creates a new Protection Jop for the chosen vCenter host. (Remember to change it to suit your environment.)
+This is an example playbook that creates a new Protection Job for the chosen vCenter host. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
 
@@ -134,7 +146,7 @@ This is an example playbook that creates a new Protection Jop for the chosen vCe
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create new Protection Jobs for chosen VMware Server
+      - name: Create new Protection Job for chosen VMware Server
         include_role:
           name: cohesity.cohesity_ansible_role
           tasks_from: job
@@ -155,7 +167,7 @@ This is an example playbook that creates a new Protection Jop for the chosen vCe
 ### Start an On-Demand Protection Job for VMware Source
 [top](#task-cohesity-protection-job-management)
 
-This is an example playbook that creates new Protection Sources for the chosen vCenter host. (Remember to change it to suit your environment.)
+This is an example playbook that starts an existing VMware protection job. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
 
@@ -174,7 +186,7 @@ This is an example playbook that creates new Protection Sources for the chosen v
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Configure Cohesity Protection Source on NFS Export
+      - name: Start protection job
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: source
@@ -190,7 +202,7 @@ This is an example playbook that creates new Protection Sources for the chosen v
         tags: [ 'cohesity', 'jobs', 'start', 'vmware' ]
 ```
 
-### Delete an existing Protection Job for Physical Sources
+### Delete an existing Protection Job for Physical Source
 [top](#task-cohesity-protection-job-management)
 
 This is an example playbook that deletes a Protection job. (Remember to change it to suit your environment.)
@@ -213,7 +225,7 @@ This is an example playbook that deletes a Protection job. (Remember to change i
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Configure Cohesity Protection Source on NFS Export
+      - name: Delete protection job
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: source
@@ -227,7 +239,7 @@ This is an example playbook that deletes a Protection job. (Remember to change i
                 job_name: "{{ var_job_name }}"
                 environment: "PhysicalFiles"
                 delete_backups: "{{ var_delete_backups }}"
-        tags: [ 'cohesity', 'jobs', 'remove', 'physical' ]
+
 ```
 
 
@@ -251,6 +263,8 @@ The following information is copied directly from the included task in this role
     storage_domain: "{{ cohesity_protection.storage_domain | default('DefaultIddStorageDomain') }}"
     delete_backups: "{{ cohesity_protection.delete_backups | default(False) }}"
     cancel_active: "{{ cohesity_protection.cancel_active | default(False) }}"
+    exclude: "{{cohesity_protection.exclude | default('') }}"
+    include: "{{cohesity_protection.include | default('') }}"
   tags: always
 
 ```

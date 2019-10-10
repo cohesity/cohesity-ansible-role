@@ -1,4 +1,4 @@
-# => Register file based protection job with windows hosts
+#=> Create a new VMware protection job
 ---
   - hosts: local
     gather_facts: no
@@ -10,19 +10,15 @@
           name: cohesity.cohesity_ansible_role
           tasks_from: job
         vars:
-          cohesity_server: 10.2.145.27
+          cohesity_server: 10.2.148.33
           cohesity_admin: "{{ username }}"
           cohesity_password: "{{ password }}"
           cohesity_validate_certs: False
           cohesity_protection:
               state: present
-              job_name: "protect_vm1"
+              job_name: protect_vcenter
               storage_domain: "DefaultStorageDomain"
+              policy: "Gold"
               sources:
-                - endpoint: "10.2.146.235"
-                  paths:
-                    - includeFilePath: "C:\\Docs"
-                      excludeFilePaths:
-                        - "C:\\Docs\\Doc2"
-                      skipNestedVolumes: False
-              environment: "PhysicalFiles"
+                - endpoint: "vcenter_ip_or_hostname"
+              environment: "VMware"

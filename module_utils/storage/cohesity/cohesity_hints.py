@@ -47,7 +47,7 @@ def get__cluster(self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
         cluster = open_url(url=uri, headers=headers,
-                           validate_certs=self['validate_certs'])
+                           validate_certs=self['validate_certs'], timeout=120)
         cluster = json.loads(cluster.read())
     except urllib_error.HTTPError as e:
         try:
@@ -68,7 +68,7 @@ def get__nodes(self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
         nodes = open_url(url=uri, headers=headers,
-                         validate_certs=self['validate_certs'])
+                         validate_certs=self['validate_certs'], timeout=120)
         nodes = json.loads(nodes.read())
     except urllib_error.HTTPError as e:
         try:
@@ -96,7 +96,7 @@ def get__prot_source__all(self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
         objects = open_url(url=uri, headers=headers,
-                           validate_certs=self['validate_certs'])
+                           validate_certs=self['validate_certs'], timeout=120)
         objects = json.loads(objects.read())
         if len(objects) and self['environment'] != "VMware":
             objects = objects[0]
@@ -115,7 +115,7 @@ def get__prot_source__roots(self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
         objects = open_url(url=uri, headers=headers,
-                           validate_certs=self['validate_certs'])
+                           validate_certs=self['validate_certs'], timeout=120)
         objects = json.loads(objects.read())
         return objects
     except urllib_error.URLError as error:
@@ -132,7 +132,7 @@ def get__prot_policy__all(self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
         objects = open_url(url=uri, headers=headers,
-                           validate_certs=self['validate_certs'])
+                           validate_certs=self['validate_certs'], timeout=120)
         objects = json.loads(objects.read())
         return objects
     except urllib_error as error:
@@ -148,7 +148,7 @@ def get__prot_job__all(self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
         objects = open_url(url=uri, headers=headers,
-                           validate_certs=self['validate_certs'])
+                           validate_certs=self['validate_certs'], timeout=120)
         objects = json.loads(objects.read())
 
         if 'is_deleted' in self:
@@ -174,7 +174,7 @@ def get__storage_domain_id__all(self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
         objects = open_url(url=uri, headers=headers,
-                           validate_certs=self['validate_certs'])
+                           validate_certs=self['validate_certs'], timeout=120)
         objects = json.loads(objects.read())
         return objects
     except urllib_error.URLError as error:
@@ -191,7 +191,7 @@ def get__protection_run__all(self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + self['token']}
         objects = open_url(url=uri, headers=headers,
-                           validate_certs=self['validate_certs'])
+                           validate_certs=self['validate_certs'], timeout=120)
         objects = json.loads(objects.read())
 
         if 'is_deleted' in self:
@@ -382,7 +382,7 @@ def get__file_snapshot_information__by_filename(module, self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
         objects = open_url(url=uri, headers=headers,
-                           validate_certs=validate_certs)
+                           validate_certs=validate_certs, timeout=120)
         objects = json.loads(objects.read())
 
         # => Returns an array of snapshots that contain that file.
@@ -404,7 +404,7 @@ def get__vmware_snapshot_information__by_vmname(module, self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
         objects = open_url(url=uri, headers=headers,
-                           validate_certs=validate_certs)
+                           validate_certs=validate_certs, timeout=120)
         objects = json.loads(objects.read())
 
         # => Returns an array of snapshots that contain that file.
@@ -428,7 +428,7 @@ def get__restore_job__by_type(module, self):
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
         objects = open_url(url=uri, headers=headers,
-                           validate_certs=validate_certs)
+                           validate_certs=validate_certs, timeout=120)
         objects = json.loads(objects.read())
 
         # => Returns an array of snapshots that contain that file.

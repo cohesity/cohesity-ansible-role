@@ -18,6 +18,7 @@ Use this task to install the required packages on Ubuntu/Debian and CentOS/RHEL 
 #### How It Works
 - The task starts by installing the required packages on the Ubuntu/Debian or CentOS/RHEL server and enabling tcp port 50051 in firewall (if *state=present*).
 - Upon completion, the latest version of the agent is installed (*state=present*) or removed (*state=absent*) from the `linux` server.
+- Script based and native installation of agent is supported
 
 ### Requirements
 [top](#task-cohesity-agent-management---linux)
@@ -43,11 +44,25 @@ cohesity_agent:
   service_group: "cohesityagent"
   create_user: True
   download_location: ""
+  native_package: False
 ```
 ## Customize Your Playbooks
 [top](#task-cohesity-agent-management---linux)
 
 These examples show how to include the Cohesity Ansible Role in your custom playbooks and leverage this task as part of the delivery.
+
+Following inventory file can be used for the ansible-playbook runs below. Copy the content to `inventory.ini` file
+```ini
+[workstation]
+127.0.0.1 ansible_connection=local
+
+[linux]
+10.21.143.240
+10.21.143.241
+
+[linux:vars]
+ansible_user=cohesity
+```
 
 ### Install the Cohesity Agent on Linux hosts
 [top](#task-cohesity-agent-management---linux)
@@ -58,7 +73,7 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
 
 You can create a file called `cohesity-agent-linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
-  ansible-playbook -i <inventory_file> cohesity-agent-linux.yml -e "username=admin password=admin"
+  ansible-playbook -i <inventory_file> cohesity-agent-linux.yml -e "username=abc password=abc"
   ```
 
 ```yaml
@@ -75,7 +90,7 @@ You can create a file called `cohesity-agent-linux.yml`, add the contents from t
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Install new Cohesity Agent on each Linux Physical Server
+      - name: Install new Cohesity Agent on each Physical Linux Server
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: agent
@@ -109,7 +124,7 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Install new Cohesity Agent on each Linux Physical Server
+      - name: Install new Cohesity Agent on each Physical Linux Server
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: agent
@@ -148,7 +163,7 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Install new Cohesity Agent on each Linux Physical Server
+      - name: Install new Cohesity Agent on each Physical Linux Server
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: agent
@@ -160,7 +175,7 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
             cohesity_agent:
                 state: present
                 download_location: "/opt/cohesity/download/"
-        tags: [ 'cohesity', 'agent', 'install', 'physical', 'linux' ]
+
 ```
 
 ## How the Task Works
@@ -169,39 +184,56 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
 The following information is copied directly from the included task in this role.  The source file is located at the root of this role in `/tasks/agent.yml`.
 ```yaml
 ---
-- name: Install Prerequisite Packages for CentOS
-  yum:
-    name: "wget,rsync,lsof,lvm2,nfs-utils"
-    state: present
+- name: Install Prerequisite Packages for CentOS or RedHat
+  action: >
+    {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-utils" state=present
   when:
-    - ansible_distribution == "CentOS"
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
     - cohesity_agent.state == "present"
   tags: always
 
 - name: Install Prerequisite Packages for Ubuntu
-  yum:
-    name: "wget,rsync,lsof,lvm2,nfs-common"
-    state: present
+  action: >
+    {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-common" state=present
   when:
     - ansible_distribution == "Ubuntu"
     - cohesity_agent.state == "present"
   tags: always
 
-- name: Enable tcp port 50051 for CentOS
+- name: Check if firewall is enabled on CentOS or RedHat
+  command : "firewall-cmd --state"
+  ignore_errors: yes
+  register : firewall_status_centos
+  when:
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - cohesity_agent.state == "present"
+  tags: always
+
+- name: Enable tcp port 50051 for CentOS or RedHat
   command: "firewall-cmd {{ item }}"
   with_items:
   - --zone=public --permanent --add-port 50051/tcp
   - --reload
   when:
-      - ansible_distribution == "CentOS"
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - cohesity_agent.state == "present"
+    - firewall_status_centos.rc == 0
+  tags: always
+
+- name: Check if firewall is enabled on Ubuntu
+  command: "ufw status"
+  register: firewall_status_ubuntu
+  when:
+      - ansible_distribution == "Ubuntu"
       - cohesity_agent.state == "present"
   tags: always
 
 - name: Enable tcp port 50051 for Ubuntu
   command: ufw allow 50051/tcp
   when:
-      - ansible_distribution == "Ubuntu"
-      - cohesity_agent.state == "present"
+    - ansible_distribution == "Ubuntu"
+    - cohesity_agent.state == "present"
+    - 'firewall_status_ubuntu.stdout_lines[0] == "Status: active"'
   tags: always
 
 - name: "Cohesity agent: Set Agent to state of {{ cohesity_agent.state | default('present') }}"
@@ -215,5 +247,9 @@ The following information is copied directly from the included task in this role
     service_group: "{{ cohesity_agent.service_group | default('cohesityagent') }}"
     create_user: "{{ cohesity_agent.create_user | default(True) }}"
     download_location: "{{ cohesity_agent.download_location | default() }}"
+    native_package: "{{cohesity_agent.native_package | default(False) }}"
+    download_uri: "{{ cohesity_agent.download_uri | default() }}"
+    operating_system: "{{ ansible_distribution }}"
   tags: always
+
 ```
