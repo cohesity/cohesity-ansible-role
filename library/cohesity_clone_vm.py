@@ -1,6 +1,5 @@
-
 # !/usr/bin/python
-# Copyright (c) 2018 Cohesity Inc
+# Copyright (c) 2019 Cohesity Inc
 # Apache License Version 2.0
 
 from __future__ import (absolute_import, division, print_function)
@@ -28,12 +27,12 @@ except Exception:
 
 SLEEP_TIME_SECONDS = 90
 MICRO_SECONDS = 1000000
+cohesity_client = None
 
 
-def get_clone_task(cohesity_client, module, wait_request):
+def get_clone_task(module, wait_request):
     '''
     Get clone task details
-    :param cohesity_client: cohesity client
     :param module: object that holds parameters passed to the module
     :param wait_request: boolean to determine if request is made during wait time
     :return:
@@ -60,23 +59,22 @@ def get_clone_task(cohesity_client, module, wait_request):
             return False, ''
 
 
-def get_protection_job_details(cohesity_client, module):
+def get_protection_job_details(module):
     '''
     Get protection job details
-    :param cohesity_client: cohesity client
     :param module: object that holds parameters passed to the module
     :return:
     '''
     try:
         protection_job_name = module.params.get('job_name')
         environment = 'k' + module.params.get('environment')
-        protection_jobs = cohesity_client.protection_jobs.get_protection_jobs(
-            names=protection_job_name, environments=[environment])
+        protection_jobs = cohesity_client.\
+            protection_jobs.get_protection_jobs(names=protection_job_name, environments=[environment])
         if protection_jobs:
             return protection_jobs[0]
         else:
-            raise__cohesity_exception__handler(
-                "Failed to find the job name for the selected environment type", module)
+            raise__cohesity_exception__handler("Failed to find the job name for the selected environment type",
+                                               module)
     except APIException as ex:
         raise__cohesity_exception__handler(
             str(json.loads(ex.context.response.raw_body)), module)
@@ -84,10 +82,9 @@ def get_protection_job_details(cohesity_client, module):
         raise__cohesity_exception__handler(error, module)
 
 
-def get_snapshot_details(cohesity_client, module, timestamp, vm_name, job_id):
+def get_snapshot_details(module, timestamp, vm_name, job_id):
     '''
     function to search and get the snapshot details of a vm
-    :param cohesity_client: cohesity client
     :param module: object that holds parameters passed to the module
     :param timestamp: backup timestamp
     :param vm_name: vm to search
@@ -96,27 +93,25 @@ def get_snapshot_details(cohesity_client, module, timestamp, vm_name, job_id):
     '''
     try:
         restore_object = RestoreObjectDetails()
-        object_details = cohesity_client.restore_tasks.search_objects(
-            search=vm_name, job_ids=[job_id])
+        object_details = cohesity_client.restore_tasks.search_objects(search=vm_name, job_ids=[job_id])
         if object_details.total_count == 0:
-            raise__cohesity_exception__handler(
-                'There are no existing snapshots for ' + str(vm_name), module)
+            raise__cohesity_exception__handler('There are no existing snapshots for '
+                                               + str(vm_name), module)
         else:
             if not timestamp:
                 restore_object.job_id = job_id
-                restore_object.protection_source_id = object_details.object_snapshot_info[
-                    0].snapshotted_source.id
+                restore_object.protection_source_id = object_details.object_snapshot_info[0].\
+                    snapshotted_source.id
             else:
                 restore_object.job_id = job_id
-                restore_object.protection_source_id = object_details.object_snapshot_info[
-                    0].snapshotted_source.id
+                restore_object.protection_source_id = object_details.object_snapshot_info[0].\
+                    snapshotted_source.id
                 for snapshot in object_details.object_snapshot_info[0].versions:
                     requested_timestamp = datetime.strptime(
                         timestamp, '%Y-%m-%d:%H:%M').replace(second=0)
                     snapshot_timestamp = datetime.strptime(time.ctime(snapshot.started_time_usecs /
                                                                       MICRO_SECONDS),
-                                                           '%a %b %d %H:%M:%S %Y').replace(
-                        second=0)
+                                                           '%a %b %d %H:%M:%S %Y').replace(second=0)
                     if requested_timestamp == snapshot_timestamp:
                         restore_object.job_run_id = snapshot.job_run_id
                         restore_object.started_time_usecs = snapshot.started_time_usecs
@@ -131,10 +126,9 @@ def get_snapshot_details(cohesity_client, module, timestamp, vm_name, job_id):
         raise__cohesity_exception__handler(error, module)
 
 
-def get_resource_pool_id(cohesity_client, module, resource_pool, protection_source_id):
+def get_resource_pool_id(module, resource_pool, protection_source_id):
     '''
     function to get the resource pool id, parsing the protection source nodes tree structure
-    :param cohesity_client: cohesity client
     :param module: object that holds parameters passed to the module
     :param resource_pool: resource pool name
     :param protection_source_id: protection source id, parent source where we search for resource pool
@@ -167,18 +161,16 @@ def get_resource_pool_id(cohesity_client, module, resource_pool, protection_sour
         raise__cohesity_exception__handler(error, module)
 
 
-def wait(cohesity_client, module):
+def wait(module):
     '''
     function to wait for clone task, waits for wait minutes passed to the module
-    :param cohesity_client: cohesity client
     :param module: object that holds parameters passed to the module
     :return:
     '''
     if module.params.get('wait_for_job'):
         wait_time = module.params.get('wait_minutes')
         while wait_time > 0:
-            clone_exist, clone_details = get_clone_task(
-                cohesity_client, module, True)
+            clone_exist, clone_details = get_clone_task(module, True)
             if not clone_exist:
                 return "The clone VMs request is accepted. Failed to check clone status during wait time"
             elif clone_exist and clone_details.error:
@@ -193,22 +185,19 @@ def wait(cohesity_client, module):
         return "The clone VMs request is accepted"
 
 
-def clone_vm(cohesity_client, module):
+def clone_vm(module):
     '''
     function to clone the VMs
-    :param cohesity_client: cohesity client
     :param module: object that holds parameters passed to the module
     :return:
     '''
     try:
-        protection_job_details = get_protection_job_details(
-            cohesity_client, module)
+        protection_job_details = get_protection_job_details(module)
         objects = []
         timestamp = module.params.get('backup_timestamp')
         resource_pool = module.params.get('resource_pool')
         for vm in module.params.get('vm_names'):
-            object_details = get_snapshot_details(
-                cohesity_client, module, timestamp, vm, protection_job_details.id)
+            object_details = get_snapshot_details(module, timestamp, vm, protection_job_details.id)
             objects.append(object_details)
         clone_request = CloneTaskRequest()
         clone_request.name = module.params.get('name')
@@ -223,13 +212,13 @@ def clone_vm(cohesity_client, module):
         clone_request.vmware_parameters.powered_on = module.params.get(
             'power_on')
         clone_request.vmware_parameters.resource_pool_id = \
-            get_resource_pool_id(cohesity_client, module, resource_pool, protection_job_details.parent_source_id)
+            get_resource_pool_id(module, resource_pool, protection_job_details.parent_source_id)
         clone_request.objects = objects
-        clone_details = cohesity_client.restore_tasks.create_clone_task(
-            body=clone_request)
+        clone_details = cohesity_client.restore_tasks.\
+            create_clone_task(body=clone_request)
         if not clone_details:
             raise__cohesity_exception__handler("Failed to clone VMs", module)
-        status_message = wait(cohesity_client, module)
+        status_message = wait(module)
         result = dict(
             changed=True,
             msg=status_message,
@@ -244,17 +233,15 @@ def clone_vm(cohesity_client, module):
         raise__cohesity_exception__handler(error, module)
 
 
-def destroy_clone(cohesity_client, module, clone_id):
+def destroy_clone(module, clone_id):
     '''
     function to tear down clone
-    :param cohesity_client: cohesity client
     :param module: object that holds parameters passed to the module
     :param clone_id: clone task id
     :return:
     '''
     try:
-        cohesity_client.restore_tasks.delete_public_destroy_clone_task(
-            id=clone_id)
+        cohesity_client.restore_tasks.delete_public_destroy_clone_task(id=clone_id)
     except APIException as ex:
         if "destroyed" in json.loads(ex.context.response.raw_body)['message']:
             status = dict(
@@ -322,9 +309,9 @@ def main():
         state=module.params.get('state')
     )
 
+    global cohesity_client
     cohesity_client = get_cohesity_client(module)
-    clone_exists, clone_details = get_clone_task(
-        cohesity_client, module, False)
+    clone_exists, clone_details = get_clone_task(module, False)
 
     if module.check_mode:
         check_mode_results = dict(
@@ -334,23 +321,23 @@ def main():
         )
         if module.params.get('state') == "present":
             if clone_exists:
-                check_mode_results[
-                    'msg'] = "Check Mode: Cohesity clone task is already present. No changes"
+                check_mode_results['msg'] =\
+                    "Check Mode: Cohesity clone task is already present. No changes"
                 check_mode_results['id'] = clone_details.id
             else:
-                check_mode_results[
-                    'msg'] = "Check Mode: Cohesity clone task doesn't exist. This action would clone VMs"
+                check_mode_results['msg'] =\
+                    "Check Mode: Cohesity clone task doesn't exist. This action would clone VMs"
                 check_mode_results['changed'] = True
         else:
             if clone_exists:
-                check_mode_results[
-                    'msg'] = "Check Mode: Cohesity clone task is present." \
-                             " This action would tear down the Cohesity Clone."
+                check_mode_results['msg'] =\
+                    "Check Mode: Cohesity clone task is present." \
+                    "This action would tear down the Cohesity Clone."
                 check_mode_results['id'] = clone_details.id
                 check_mode_results['changed'] = True
             else:
-                check_mode_results[
-                    'msg'] = "Check Mode: Cohesity Clone task doesn't exist. No changes."
+                check_mode_results['msg'] =\
+                    "Check Mode: Cohesity Clone task doesn't exist. No changes."
         module.exit_json(**check_mode_results)
 
     elif module.params.get('state') == "present":
@@ -363,12 +350,12 @@ def main():
                 name=module.params.get('name')
             )
         else:
-            clone_vm(cohesity_client, module)
+            clone_vm(module)
 
     elif module.params.get('state') == "absent":
 
         if clone_exists:
-            destroy_clone(cohesity_client, module, clone_details.id)
+            destroy_clone(module, clone_details.id)
             results = dict(
                 changed=True,
                 msg="Cohesity clone is destroyed",
