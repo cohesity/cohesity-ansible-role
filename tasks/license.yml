@@ -1,0 +1,9 @@
+---
+- name: "Apply licence to Cohesity cluster"
+  cohesity_license:
+    cluster: "{{ cohesity_server }}"
+    username: "{{ cohesity_admin }}"
+    password: "{{ cohesity_password }}"
+    validate_certs: "{{ cohesity_validate_certs | default(False) }}"
+    license_key: "{{ license_key }}"
+  tags: always
