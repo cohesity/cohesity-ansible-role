@@ -27,8 +27,8 @@ except Exception:
 
 
 cohesity_client = None
-TWENTY_GB_IN_BYTES = 21474836480
-EIGHTEEN_GB_IN_BYTES = 19327352832
+TWENTY_GiB = 21474836480
+EIGHTEEN_GiB = 19327352832
 
 
 def get_view_details(module):
@@ -112,11 +112,11 @@ def set_quota(view_request, module):
         quota_policy = QuotaPolicy()
         if module.params.get('quota').get('set_logical_quota', False):
             quota_policy.hard_limit_bytes = module.params.get('quota').\
-                get('hard_limit_bytes', TWENTY_GB_IN_BYTES)
+                get('hard_limit_bytes', TWENTY_GiB)
             view_request.logical_quota = quota_policy
         if module.params.get('quota').get('set_alert_threshold', False):
             quota_policy.alert_limit_bytes = module.params.get('quota').\
-                get('alert_limit_bytes', EIGHTEEN_GB_IN_BYTES)
+                get('alert_limit_bytes', EIGHTEEN_GiB)
             view_request.logical_quota = quota_policy
         return view_request
     except Exception as error:
