@@ -27,8 +27,8 @@ except Exception:
 
 
 cohesity_client = None
-TWENTY_GiB = 21474836480
-EIGHTEEN_GiB = 19327352832
+TWENTY_GiB = 20*(1024**3)
+EIGHTEEN_GiB = 18*(1024**3)
 
 
 def get_view_details(module):
