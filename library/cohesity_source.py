@@ -333,69 +333,17 @@ def register_source(module, self):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
     token = self['token']
-
     try:
         uri = "https://" + server + "/irisservices/api/v1/public/protectionSources/register"
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
         payload = self.copy()
-
         payload['environment'] = "k" + self['environment']
         if self['environment'] == "Physical":
             payload['hostType'] = "k" + self['hostType']
             payload['physicalType'] = "k" + self['physicalType']
         elif self['environment'] == "VMware":
             payload['vmwareType'] = "k" + self['vmwareType']
-        elif self['environment'] == "GenericNas":
-            # => 2018-10-26
-            # => As of this point, the GenericNas integration into the
-            # => the public API is not complete so we will need to call
-            # => the backupsources API instead and construct the Go model
-            # => required to create the Source.
-            uri = "https://" + server + "/irisservices/api/v1/backupsources"
-            environment_type = 11  # kGenericNas
-            protocol = 1  # 1=kNfs3 and 2=kCifs1
-            entity_type = 1  # 1=kHost
-
-            payload = dict(
-                entity=dict(
-                    type=environment_type,
-                    genericNasEntity=dict(
-                        protocol=protocol,
-                        type=entity_type,
-                        path=self['endpoint']
-                    )
-                ),
-                entityInfo=dict(
-                    endpoint=self['endpoint'],
-                    type=environment_type
-                )
-            )
-            if self['nas_protocol'] == "SMB":
-                payload['entity']['genericNasEntity']['protocol'] = 2
-
-                if "\\" in self['nas_username']:
-                    user_details = self['nas_username'].split("\\")
-                    self['nas_username'] = user_details[1]
-                    domain_name = user_details[0]
-                else:
-                    domain_name = "."
-
-                cred_obj = dict(
-                    username=self['nas_username'],
-                    password=self['nas_password'],
-                    nasMountCredentials=dict(
-                        protocol=2,
-                        username=self['nas_username'],
-                        password=self['nas_password'],
-                        domainName=domain_name
-                    )
-                )
-                payload['entityInfo']['credentials'] = cred_obj
-
-        else:
-            pass
-
         data = json.dumps(payload)
         response = open_url(url=uri, data=data, headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
@@ -411,21 +359,8 @@ def register_source(module, self):
             response = dict(ProtectionSource=response[
                             'vmWareProtectionSource'])
         elif self['environment'] == 'GenericNas':
-            # => 2018-10-26
-            # => Because of the current limitations on the public API
-            # => we will need to construct our own output to standardize
-            # => information similar to what we would see from the public
-            # => API.
-            entity = response['entity']
-            response_output = dict(
-                id=entity['id'],
-                environment="kGenericNas",
-                name=entity['displayName'],
-                protocol=self['nas_protocol'],
-                path=entity['genericNasEntity']['path']
-            )
-            response = dict(ProtectionSource=response_output)
-
+            response = dict(ProtectionSource=response[
+                            'nasProtectionSource'])
         return response
     except urllib_error.URLError as e:
         # => Capture and report any error messages.
@@ -486,7 +421,9 @@ def main():
             source_password=dict(type='str', no_log=True, default=''),
             nas_protocol=dict(choices=['NFS', 'SMB'], default='NFS'),
             nas_username=dict(type='str', default=''),
-            nas_password=dict(type='str', no_log=True, default='')
+            nas_password=dict(type='str', no_log=True, default=''),
+            nas_type=dict(type='str', default='Host'),
+            skip_validation=dict(type='bool', default=False)
         )
     )
 
@@ -541,13 +478,20 @@ def main():
             prot_sources['password'] = module.params.get('source_password')
             prot_sources['vmwareType'] = module.params.get('vmware_type')
         if prot_sources['environment'] == "GenericNas":
-            prot_sources['nas_protocol'] = module.params.get(
-                'nas_protocol')
-            prot_sources['nas_username'] = module.params.get(
-                'nas_username')
-            prot_sources['nas_password'] = module.params.get(
-                'nas_password')
-
+            prot_sources['nasMountCredentials'] = dict()
+            if module.params.get('nas_protocol') == 'NFS':
+                prot_sources['nasMountCredentials']['nasProtocol'] = 'kNfs3'
+            elif module.params.get('nas_protocol') == 'SMB':
+                prot_sources['nasMountCredentials']['nasProtocol'] = 'kCifs1'
+                if "\\" in ['nas_username']:
+                    user_details = module.params.get('nas_username').split("\\")
+                    prot_sources['nasMountCredentials']['username'] = user_details[1]
+                    prot_sources['nasMountCredentials']['domain'] = user_details[0]
+                else:
+                    prot_sources['nasMountCredentials']['username'] = module.params.get('nas_username')
+                prot_sources['nasMountCredentials']['password'] = module.params.get('nas_password')
+            prot_sources['nasMountCredentials']['nasType'] = 'k' + module.params.get('nas_type')
+            prot_sources['nasMountCredentials']['skipValidation'] = module.params.get('skip_validation')
         prot_sources['forceRegister'] = module.params.get('force_register')
 
         results['changed'] = True
