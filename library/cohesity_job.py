@@ -761,7 +761,7 @@ def update_vmware_job(module, job_meta_data, job_details):
         )
 
 
-def update_physical_server_job(module, job_details, job_exists):
+def update_job_util(module, job_details, job_exists):
     if len(module.params.get('protection_sources')
            ) == 1 and not module.params.get('protection_sources')[0]:
         module.fail_json(
@@ -904,8 +904,8 @@ def main():
         if job_exists:
             if module.params.get('environment') == "VMware":
                 update_vmware_job(module, job_meta_data, job_details)
-            if module.params.get('environment') in ("PhysicalFiles", "Physical"):
-                update_physical_server_job(module, job_details, job_exists)
+            if module.params.get('environment') in ("PhysicalFiles", "Physical", "GenericNas"):
+                update_job_util(module, job_details, job_exists)
             else:
                 module.exit_json(
                     msg="The protection job already exists",
