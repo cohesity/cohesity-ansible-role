@@ -92,7 +92,7 @@
               state: present
               job_name: "protect_physical_linux"
               sources: 
-                 - endpoint : "{{ item }}"
+                 - endpoint: "{{ item }}"
                    paths:
                     - includeFilePath: "/"
                       excludeFilePaths:
@@ -114,7 +114,7 @@
               state: present
               job_name: "protect_physical_windows"
               sources: 
-                 - endpoint : "{{ item }}"
+                 - endpoint: "{{ item }}"
                    paths:
                     - includeFilePath: "C:\\"
                       excludeFilePaths:
