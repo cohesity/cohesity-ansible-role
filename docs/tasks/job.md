@@ -257,6 +257,7 @@ The following information is copied directly from the included task in this role
     validate_certs: "{{ cohesity_validate_certs }}"
     state:  "{{ cohesity_protection.state | default('present') }}"
     name: "{{ cohesity_protection.job_name | default('') }}"
+    view_name: "{{ cohesity_protection.view_name | default('') }}"
     environment: "{{ cohesity_protection.environment | default('PhysicalFiles') }}"
     protection_sources: "{{ cohesity_protection.sources | default('') }}"
     protection_policy: "{{ cohesity_protection.policy | default('Bronze') }}"

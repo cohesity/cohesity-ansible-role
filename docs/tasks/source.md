@@ -49,6 +49,9 @@ cohesity_source:
   nas_protocol: ""
   nas_username: ""
   nas_password: ""
+  skip_validation: ""
+  nas_type: ""
+
 ```
 ## Customize Your Playbooks
 [top](#task-cohesity-protection-source-management)
@@ -217,6 +220,8 @@ The following information is copied directly from the included task in this role
     nas_protocol: "{{ cohesity_source.nas_protocol | default('NFS') }}"
     nas_username: "{{ cohesity_source.nas_username | default('') }}"
     nas_password: "{{ cohesity_source.nas_password | default('') }}"
+    skip_validation: "{{ cohesity_source.skip_validation | default(False) }}"
+    nas_type: "{{ cohesity_source.nas_type | default('Host') }}"
   tags: always
 
 ```

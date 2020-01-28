@@ -13,6 +13,8 @@
   - [Start an existing VMware Server Protection Job](#Start-an-existing-VMware-Server-Protection-Job)
   - [Stop an actively running VMware Server Protection Job](#Stop-an-actively-running-VMware-Server-Protection-Job)
   - [Exclude VMs from an existing VMware Server Protection Job](#Exclude-VMs-from-an-existing-VMware-Server-Protection-Job)
+  - [Create a protection job to protect a Cohesity view](#Create-a-protection-job-to-protect-a-Cohesity-view)
+  - [Create a GenericNas protection job](#Create-a-GenericNas-protection-job)
 - [Parameters](#parameters)
 - [Outputs](#outputs)
 
@@ -43,6 +45,7 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
     validate_certs: <boolean to determine if SSL certificates should be validated>
     state: <state of the Protection Job>
     name: <assigned name of the Protection Job>
+    view_name: <name of the view to protect>
     description: <optional description for the job>
     environment: <protection source environment type, for Physical sources this value can be 'Physical' or 'PhysicalFiles'>
     protection_sources: <list of registered protection sources with optional parameters based on the environment>
@@ -195,6 +198,37 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
       - vm3
 ```
 
+### Create a protection job to protect a Cohesity view
+[top](#cohesity-protection-job)
+
+```yaml
+- cohesity_job:
+    cluster: cohesity.lab
+    username: admin
+    password: password
+    state: present
+    name: myview
+    environment: View
+    view_name: test_view
+```
+
+### Create a GenericNas protection job
+[top](#cohesity-protection-job)
+
+```yaml
+- cohesity_job:
+    cluster: cohesity.lab
+    username: admin
+    password: password
+    state: present
+    name: protect_nas
+    environment: GenericNas
+    protection_sources:
+       - endpoint: \\10.21.31.137\smb
+       - endpoint: 10.21.31.121:/nfs
+```
+
+
 
 ## Parameters
 [top](#cohesity-protection-job)
@@ -208,7 +242,7 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
 |   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the Protection Job. |
 | X | name | String | | Name to assign to the Protection Job.  Must be unique. |
 |   | description | String | | Optional Description to assign to the Protection Job |
-| X | environment | Choice | -**PhysicalFiles**<br>-Physical<br>-VMware<br>-GenericNas | Specifies the environment type (such as VMware or SQL) of the Protection Job. For Physical sources this value can be 'PhysicalFiles' or 'Physical'. 'PhysicalFiles' for file based and 'Physical' for block based protection jobs |
+| X | environment | Choice | -**PhysicalFiles**<br>-Physical<br>-VMware<br>-GenericNas<br>-View | Specifies the environment type (such as VMware or SQL) of the Protection Job. For Physical sources this value can be 'PhysicalFiles' or 'Physical'. 'PhysicalFiles' for file based and 'Physical' for block based protection jobs |
 |   | protection_sources | Array |  | Valid list of dictionaries with endpoint, paths **Required** when *state=present*. |
 |   | protection_policy | String |  | Valid policy name or ID for an existing Protection Policy to be assigned to the job. **Required** when *state=present*. |
 |   | storage_domain | String | | Existing Storage Domain with which the Protection Job will be associated. Required when *state=present*. |
@@ -224,6 +258,7 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
 |   | endpoint | String | | Specifies the source ip or hostname **Required** when *state=present*. |
 |   | exclude | Array | | List of vm's or resource pools or folders to be excluded from an existing or new VMware protection job. Can be used only when *state=present* | 
 |   | include | Array | | List of vm's or resource pools or folders to be included in an existing or new VMware protection job. Can be used only when *state=present* |
+|   | view_name | String | | Name of the view to protect. Can be used only when the **environment** is **View** |
 ## Outputs
 [top](#cohesity-protection-job)
 

@@ -26,7 +26,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 ### Requirements
 [top](#cohesity-protection-source)
 
-* Cohesity DataPlatform version 6.0 or higher
+* Cohesity DataPlatform version 6.4.1 or higher
 * Ansible version 2.6 or higher
   * The [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a system running one of the following UNIX operating systems: Linux (Red Hat, Debian, CentOS), macOS, or any of the BSDs. Windows is not supported for the Control Machine.
 * Python version 2.6 or higher
@@ -54,6 +54,8 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
     nas_protocol: <selected nas_protocol for the source>
     nas_username: <username for the NAS Source connection>
     nas_password: <password for the selected nas_username>
+    skip_validation: <flag to disable mount point validation during NAS registration process>
+    nas_type: <type of a NAS Object>
     force_register: <boolean to determine if the source should be force_registered even if connection failed>
 ```
 
@@ -172,6 +174,8 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 |   | nas_protocol | Choice | -**NFS**<br>-SMB | Specifies the type of connection for the NAS Mountpoint. SMB Share paths must be in \\\\server\\share format. **Required** when *state=present* and *environment=GenericNas* |
 |   | nas_username | String |  | Specifies username to access the target NAS Environment. Supported Format is Username or Domain\\Username. **Required** when *state=present* and *environment=GenericNas* and *nas_protocol=SMB* |
 |   | nas_password | String | | Specifies the password to access the target NAS Environment. This parameter is not logged. Required when *state=present* and *environment=GenericNas* and *nas_protocol=SMB* |
+|   | nas_type | Choice | -**Host**<br>-**Group** | Specifies the type of a NAS Object|
+|   | skip_validation | Boolean | False | Specifies the flag to disable mount point validation during registration process|
 
 ## Outputs
 [top](#cohesity-protection-source)
