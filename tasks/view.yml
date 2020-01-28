@@ -12,7 +12,7 @@
     protocol: "{{ cohesity_view.protocol | default('All') }}"
     case_insensitive: "{{ cohesity_view.case_insensitive | default(True) }}"
     object_key_pattern: "{{ cohesity_view.object_key_pattern | default('') }}"
-    inline_dedupe_compression : "{{ cohesity_view.inline_dedupe_compression | default(False) }}"
+    inline_dedupe_compression: "{{ cohesity_view.inline_dedupe_compression | default(False) }}"
     security: "{{ cohesity_view.security | default('') }}"
     quota: "{{ cohesity_view.quota | default('') }}"
     nfs_options: "{{ cohesity_view.nfs_options | default('') }}"

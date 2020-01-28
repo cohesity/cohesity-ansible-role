@@ -5,7 +5,7 @@
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
     validate_certs: "{{ cohesity_validate_certs | default(False) }}"
-    state:  "{{ cohesity_clone_vm.state | default('present') }}"
+    state: "{{ cohesity_clone_vm.state | default('present') }}"
     name: "{{ cohesity_clone_vm.name }}"
     environment: "{{ cohesity_clone_vm.environment | default('VMware') }}"
     job_name: "{{ cohesity_clone_vm.job_name }}"

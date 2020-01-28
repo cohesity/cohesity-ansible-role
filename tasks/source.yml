@@ -15,6 +15,6 @@
     nas_protocol: "{{ cohesity_source.nas_protocol | default('NFS') }}"
     nas_username: "{{ cohesity_source.nas_username | default('') }}"
     nas_password: "{{ cohesity_source.nas_password | default('') }}"
-    skip_validation: "{{ cohesity_source.skip_validation | default(True) }}"
+    skip_validation: "{{ cohesity_source.skip_validation | default(False) }}"
     nas_type: "{{ cohesity_source.nas_type | default('Host') }}"
   tags: always
