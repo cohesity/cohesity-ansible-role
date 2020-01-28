@@ -16,8 +16,8 @@
 Use this task to create, update and delete a Cohesity view.
 
 #### How It Works
-- The task checks if a view with given name already exists, if it exists it updates the existing view when state is **present** and deletes the view when the state is **absent**
-- The task creates a view when the state is **present** and a view with given name doesn't exist.
+- The task checks if a view with given name already exists. If it exists, it updates the existing view when state is **present** and deletes the view when the state is **absent**
+- The task creates a view if the state is **present** and a view with the given name doesn't exist.
 
 ### Requirements
 [top](#task-cohesity-view-management)
@@ -60,7 +60,7 @@ This example shows how to include the Cohesity Ansible role in your custom playb
 
 This is an example playbook that creates a Cohesity view. (Remember to change it to suit your environment.)
 
-Following inventory file can be used in the ansible-playbook runs below. Copy the content to `inventory.ini` file
+Following inventory file can be used for the ansible-playbook runs below. Copy the content to `inventory.ini` file
 ```ini
 [workstation]
 127.0.0.1 ansible_connection=local
@@ -214,7 +214,7 @@ This is an example playbook that deletes a Cohesity view. (Remember to change it
 ## How the Task Works
 [top](#task-cohesity-view-management)
 
-The following information is copied directly from the included task in this role.  The source file is located at the root of this role in `/tasks/view.yml`.
+The following information is copied directly from the included task in this role. The source file is located at the root of this role in `/tasks/view.yml`.
 ```yaml
 ---
 - name: "Cohesity view: Set {{ cohesity_view.name | default('view_name') }} to state of {{ cohesity_view.state | default('present') }}"

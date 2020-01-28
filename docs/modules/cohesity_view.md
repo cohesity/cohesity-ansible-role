@@ -163,12 +163,12 @@ The Ansible Module can be used to create, update and delete a view.
 | X | **storage_domain** |  |  | Specifies the storage domain.|
 |   | protocol | Choice | -**All**<br>-NFSOnly<br>-SMBOnly<br>-S3Only | Specifies the supported protocols for the view. |
 |   | qos_policy| Choice | -**Backup Target Low**<br>-Backup Target High<br>-Backup Target SSD<br>-Backup Target CommVault<br>-**TestAndDev Low**<br>-TestAndDev High| Specifies the name of the QoS policy used for the view|
-| X | case_insensitive | Boolean | | Specifies whether to support case insensitive file or folder names. This parameter can only be set during view creation and cannot be changed later|
-|  | object_key_pattern | Choice | -Random<br>-Short<br>-Long<br>-Hierarchical | Specifies the type of S3 key mapping config. Applicable and required only when protocol is **S3Only** |
-|  | inline_dedupe_compression | Boolean | False | If **false**, the inline deduplication and compression settings inherited from the storage domain apply to this view. If **true**, both inline deduplication and compression are disabled for this view. This can only be set to **true** if inline deduplication is set for the storage domain.|
+| X | case_insensitive | Boolean | | Specifies whether to support case insensitive files or folder names. This parameter can only be set during view creation and cannot be changed later|
+|  | object_key_pattern | Choice | -Random<br>-Short<br>-Long<br>-Hierarchical | Specifies the type of S3 key mapping configuration. Applicable and required only when protocol is **S3Only** |
+|  | inline_dedupe_compression | Boolean | False | If **false**, the inline deduplication and compression settings inherited from the storage domain applies to this view. If **true**, both inline deduplication and compression are disabled for this view. This can only be set to **true** if inline deduplication is set for the storage domain.|
 |   | security | Dictionary | | A dictionary with **security_mode**, **override_global_whitelist**, **whitelist** keys. The keys are described below |
 |   | security_mode | Choice | -**NativeMode**<br>-UnifiedMode<br>-NtfsMode | Specifies the security mode used for this view. Applicable only when protocol is **All** . This is a key in **security** parameter|
-|   | override_global_whitelist | Boolean | | When this parameter is set (True or False), an array of subnet whitelist is expected. When **True** view level client subnet whitelist overrides cluster and global setting. When **False** view level client subnet whitelist extends cluster and global setting. This is a key in **security** parameter| 
+|   | override_global_whitelist | Boolean | | When this parameter is set (True or False), an array of subnet whitelist is expected. When set to **True** view level client subnet whitelist overrides cluster and global settings. When set to **False** view level client subnet whitelist extends cluster and global settings. This is a key in **security** parameter| 
 |   | whitelist | Array | | Specifies a list of dictionaries with subnet details. This is a key in **security** parameter. The dictionary has **subnet_ip**, **subnet_mask**, **nfs_permission**, **smb_permission**, **nfs_root_squash**, **description** keys. The keys are described below |
 |   | subnet_ip | String | | Specifies either an IPv6 address or an IPv4 address. **Required** when whitelist is set. This is a key in the **whitelist** element |
 |   | subnet_mask | String | | Specifies the netmask using an IP4 address. The netmask can only be set using netmaskIp4 if the IP address is an IPv4 address. **Required** when whitelist is set.  This is a key in the **whitelist** element |
@@ -187,7 +187,7 @@ The Ansible Module can be used to create, update and delete a view.
 |   | group_id | Integer | 0 | Unix GID for the root of the file system. This is a key in **nfs_options** parameter |
 |   | smb_options | Dictionary | | Specifies NFS related settings. It expects **view_discovery**, **access_based_enumeration** keys. The keys are described below.|
 |   | view_discovery | Boolean | True | If set, it enables discovery of view for SMB. This is a key in **smb_options** parameter.|
-|   | access_based_enumeration | Boolean | False | 	Specifies if access-based enumeration should be enabled. If **true**, only files and folders that the user has permissions to access are visible on the SMB share for that user. This is a key in **smb_options** parameter.|
+|   | access_based_enumeration | Boolean | False | Specifies if access-based enumeration should be enabled. If **true**, only files and folders that the user has permissions to access are visible on the SMB share for that user. This is a key in **smb_options** parameter.|
 
 ## Outputs
 [top](#cohesity-view)
