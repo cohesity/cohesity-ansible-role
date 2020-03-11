@@ -30,6 +30,85 @@ MICRO_SECONDS = 1000000
 cohesity_client = None
 
 
+DOCUMENTATION = '''
+module: cohesity_clone
+short_description: Clone VMs using Dev/Test workflow
+description:
+    - Ansible Module used to Clone VMs on Cohesity using Dev/Test workflow.
+version_added: '2.6.5'
+author:
+  - Jeremy Goodrum (github.com/exospheredata)
+  - Cohesity, Inc
+options:
+  name:
+    description:
+      - Name of the Clone Task
+  state:
+    description:
+      - Determines if the Clone Task should be present or absent from the host
+    choices:
+      - present
+      - absent
+    default: 'present'
+  job_name:
+    description:
+      - Protection Group/Job name from where VM will be cloned
+    type: string
+  view_name:
+    description:
+      - View name which will be cloned along with the VM
+    type: string
+  backup_timestamp:
+    description:
+      - Specify point in time snapshot using this option
+    type: string
+  environment:
+    description:
+      - Select the source environment for cloning. 
+    choices:
+      - VMware
+    default: 'VMware'
+  vm_names:
+    description:
+      - Name of the VMs that will be cloned
+    type: list
+  wait_for_job:
+    description:
+      - ASK_TEAM
+    type: bool
+    default: True
+  prefix:
+    description:
+      - Add prefix to cloned VM name 
+    type: string
+    default: ''
+  suffix:
+    description:
+      - Add suffix to cloned VM name 
+    type: string
+    default: ''
+  power_on:
+    description:
+      - Specify if you want cloned VM powered on or off
+    type: bool
+    default: True
+  network_connected:
+    description:
+      - Specify if you want cloned VM connected to network or a detached network
+    type: bool
+    default: True  
+  wait_minutes:
+    description:
+      - ASK_TEAM
+    type: int
+    default: 30
+  resource_pool:
+    description:
+      - ASK_TEAM
+    type: string
+requirements: []
+'''
+
 def get_clone_task(module, wait_request):
     '''
     Get clone task details
