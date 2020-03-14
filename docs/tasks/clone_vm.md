@@ -5,25 +5,24 @@
 - [Requirements](#requirements)
 - [Ansible Variables](#Ansible-Variables)
 - [Customize Your Playbooks](#Customize-your-playbooks)
-  - [Install the Cohesity Agent on Linux hosts](#Install-the-Cohesity-Agent-on-Linux-hosts)
-  - [Install the Cohesity Agent on Linux hosts using Root](#Install-the-Cohesity-Agent-on-Linux-hosts-using-Root)
-  - [Install the Cohesity Agent on Linux hosts using a custom download path](#Install-the-Cohesity-Agent-on-Linux-hosts-using-a-custom-download-path)
+  - [Create a VMware VM clone](#Create-a-VMware-VM-clone)
+  - [Destroy a VMware VM clone](#Destroy-a-VMware-VM-clone)
 - [How the Task Works](#How-the-Task-works)
 
 ## Synopsis
-[top](#Cohesity-clone-vm)
+[top](#task-Cohesity-clone-vm)
 
-Use this task to clone a VM using Test/Dev workflow
+Use this task to clone a VM using VMWare workflow
 
 #### How It Works
 - The tasks collects all the information (required and optional) and starts a clone task (if *state=present*).
-- The task can also destory a clone (*state=absent*) that was cloned using Test/Dev workflow.
+- The task can also destory a clone (*state=absent*) that was cloned using VMWare workflow.
 
 
 ### Requirements
-[top](#Cohesity-clone-vm)
+[top](#task-Cohesity-clone-vm)
 
-* Cohesity DataPlatform running version 6.0 or higher
+* Cohesity DataPlatform running version 6.3 or higher
 * Ansible version 2.6 or higher
   * The [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a system running one of the following UNIX operating systems: Linux (Red Hat, Debian, CentOS), macOS, or any of the BSDs. Windows is not supported for the Control Machine.
 * Python version 2.6 or higher
@@ -33,7 +32,7 @@ Use this task to clone a VM using Test/Dev workflow
   - Before using this task, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
 
 ## Ansible Variables
-[top](#Cohesity-clone-vm)
+[top](#task-Cohesity-clone-vm)
 
 The following is a list of variables and the configuration expected when using this task in your playbook.  For more information on these variables, see [Cohesity Clone VM](../modules/cohesity_clone.md?id=syntax).
 ```yaml
@@ -52,7 +51,7 @@ The following is a list of variables and the configuration expected when using t
 ```
 
 ## Customize Your Playbooks
-[top](#Cohesity-clone-vm)
+[top](#task-Cohesity-clone-vm)
 
 These examples show how to include the Cohesity Ansible Role in your custom playbooks and leverage this task as part of the delivery.
 
@@ -65,10 +64,10 @@ Following inventory file can be used for the ansible-playbook runs below. Copy t
 10.21.143.240
 ```
 
-### Clone a VM using Test/Dev workflow on the Cohesity Cluster
-[top](#Cohesity-clone-vm)
+### Create a VMware VM clone
+[top](#task-Cohesity-clone-vm)
 
-This is an example playbook that creates a Clone VM job using the Test/Dev workflow on the `Cohesity` hosts. (Remember to change it to suit your environment.)
+This is an example playbook that creates a Clone VM job using the VMWare workflow on the `Cohesity` hosts. (Remember to change it to suit your environment.)
 > **Note:**
   - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
 
@@ -91,7 +90,7 @@ You can create a file called `cohesity-clone.yml`, add the contents from the sam
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create a Clone VM task using Test/Dev Workflow
+      - name: Create a Clone VM task using VMWare Workflow
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: clone_vm
@@ -111,8 +110,8 @@ You can create a file called `cohesity-clone.yml`, add the contents from the sam
                 state: present
 ```
 
-### Destroy the Clone VM task
-[top](#Cohesity-clone-vm)
+### Destroy a VMware VM clone
+[top](#task-Cohesity-clone-vm)
 
 This is an example playbook that destroys the clone VM task and deletes the VM on all `cohesity` hosts. (Remember to change it to suit your environment.)
 > **Note:**
@@ -152,7 +151,7 @@ This is an example playbook that destroys the clone VM task and deletes the VM o
 ```
 
 ## How the Task Works
-[top](#Cohesity-clone-vm)
+[top](#task-Cohesity-clone-vm)
 
 The following information is copied directly from the included task in this role.  The source file is located at the root of this role in `/tasks/clone_vm.yml`.
 ```yaml

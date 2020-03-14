@@ -7,7 +7,6 @@
 - [Customize Your Playbooks](#Customize-your-playbooks)
  - Policy Management
     - [Create a Protection Policy](#Create-a-Protection-Policy)
-    - [Modify a Protection Policy](#Modify-a-Protection-Policy)
     - [Delete a Protection Policy](#Delete-a-Protection-Policy)
 - [How the Task Works](#How-the-Task-works)
 
@@ -24,7 +23,7 @@ Use this task to clone a VM using Test/Dev workflow
 ### Requirements
 [top](#Cohesity-policy-management)
 
-* Cohesity DataPlatform running version 6.0 or higher
+* Cohesity DataPlatform running version 6.3 or higher
 * Ansible version 2.6 or higher
   * The [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a system running one of the following UNIX operating systems: Linux (Red Hat, Debian, CentOS), macOS, or any of the BSDs. Windows is not supported for the Control Machine.
 * Python version 2.6 or higher
@@ -40,7 +39,10 @@ The following is a list of variables and the configuration expected when using t
 ```yaml
 - cohesity_policy:
     name: POLICY_NAME
-    incremental_backup_schedule: ASK_TEAM
+    incremental_backup_schedule: 
+      periodicity:
+        Daily:
+          days: Monday
     cluster: cohesity.lab
     username: admin
     password: password
@@ -98,51 +100,10 @@ You can create a file called `cohesity-policy.yml`, add the contents from the sa
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_policy:
                 name: POLICY_NAME
-                incremental_backup_schedule: ASK_TEAM
-                cluster: cohesity.lab
-                username: admin
-                password: password
-                state: present
-```
-
-### Modify a Protection Policy
-[top](#Cohesity-policy-management)
-
-This is an example playbook that modify a Protection Policy on the `Cohesity` hosts. (Remember to change it to suit your environment.)
-> **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
-
-You can create a file called `cohesity-policy.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
-  ```
-  ansible-playbook -i <inventory_file> cohesity-policy.yml -e "username=abc password=abc"
-  ```
-
-```yaml
----
-  - hosts: cohesity
-    # => Please change these variables to connect
-    # => to your Cohesity Cluster
-    vars:
-        var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: "{{ username }}"
-        var_cohesity_password: "{{ password }}"
-        var_validate_certs: False
-    become: true
-    roles:
-        - cohesity.cohesity_ansible_role
-    tasks:
-      - name: Create a Clone VM task using Test/Dev Workflow
-        include_role:
-            name: cohesity.cohesity_ansible_role
-            tasks_from: policy
-        vars:
-            cohesity_server: "{{ var_cohesity_server }}"
-            cohesity_admin: "{{ var_cohesity_admin }}"
-            cohesity_password: "{{ var_cohesity_password }}"
-            cohesity_validate_certs: "{{ var_validate_certs }}"
-            cohesity_policy:
-                name: POLICY_NAME
-                incremental_backup_schedule: ASK_TEAM
+                incremental_backup_schedule: 
+                  periodicity:
+                    Daily:
+                      days: Monday
                 cluster: cohesity.lab
                 username: admin
                 password: password
@@ -181,7 +142,10 @@ This is an example playbook that deletes the Protection Policy on all `cohesity`
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_policy:
                 name: POLICY_NAME
-                incremental_backup_schedule: ASK_TEAM
+                incremental_backup_schedule: 
+                  periodicity:
+                    Daily:
+                      days: Monday
                 cluster: cohesity.lab
                 username: admin
                 password: password
