@@ -225,8 +225,11 @@ def get__prot_source_root_id__by_environment(module, self):
         root_nodes = get__prot_source__roots(source_obj)
 
         for node in root_nodes:
-            if node['protectionSource']['environment'] == ("k" + self['environment']):
+            if node['protectionSource']['environment'] == ("k" + self['environment']) and\
+                    node['protectionSource']['environment'] != 'kVMware':
                 return node['protectionSource']['id']
+            elif node['protectionSource']['environment'] == 'kVMware':
+                return module.params['protection_sources'][0]['endpoint']
 
         raise ProtectionException(
             "There was a very serious situation where the chosen environment did not return a valid Root Node ID")
