@@ -217,7 +217,7 @@ Function Install-CohesityAgent {
         }
         Fail-Json $results "Error: Must provide a password when setting the Cohesity Agent username"
       }
-      $arguments += "/username=" + $self.args.username + " /password=" + $self.args.password
+      $arguments += " /username=" + $self.args.service_user + " /password=" + $self.args.service_password
     }
 
     try {
@@ -237,15 +237,24 @@ Function Install-CohesityAgent {
       # => Remove the downloaded file and temporary directory.
       Remove-Item $tmpdir -Confirm:$False -Force -Recurse
     }
+    $agent = Get-CohesityAgent
 
-    $results = @{
-      changed = $True
-      version = (Get-CohesityAgent).DisplayVersion
-      msg = "Successfully Installed Cohesity Agent from Host"
+    if ($agent.DisplayVersion -ne $null)
+    {
+      $results = @{
+        changed = $True
+        version = $agent.DisplayVersion
+        msg = "Successfully Installed Cohesity Agent on Host"
+      } 
+    } 
+    else
+    {
+      $results = @{
+        changed = $False
+        msg = "Failed to install Cohesity Agent"
+      }
     }
     Exit-Json $results
-
-
 }
 
 Function Remove-CohesityAgent {
@@ -275,15 +284,24 @@ Function Remove-CohesityAgent {
       Fail-Json $errors $_.Exception.Message
 
     }
+    $agent = Get-CohesityAgent
 
-    $results = @{
-      changed = $True
-      version = ""
-      msg     = "Uninstalled Cohesity Agent from Host"
+    if ($agent.DisplayVersion -eq $null){
+      $results = @{
+        changed = $True
+        version = $agent.DisplayVersion
+        msg     = "Uninstalled Cohesity Agent from Host"
+      }
+    }
+    else
+    {
+      $results = @{
+        changed = $False
+        version = $agent.DisplayVersion
+        msg     = "Failed to uninstall Cohesity Agent from Host"
+      }
     }
     Exit-Json $results
-
-
 }
 
 $results = @{
@@ -306,7 +324,7 @@ $module.validate_certs = Get-AnsibleParam -obj $params -name "validate_certs" -t
 # => Agent Specific Parameters
 $module.service_user     = Get-AnsibleParam -obj $params -name "service_user" -type "str"
 $module.service_password = Get-AnsibleParam -obj $params -name "service_password" -type "str"
-$module.install_type     = Get-AnsibleParam -obj $params -name "type" -type "str" -default "volcbt" -validateset "volcbt","fscbt","allcbt","onlyagent"
+$module.install_type     = Get-AnsibleParam -obj $params -name "install_type" -type "str" -default "volcbt" -validateset "volcbt","fscbt","allcbt","onlyagent"
 $module.preservesettings = Get-AnsibleParam -obj $params -name "preservesettings" -type "bool" -default $False
 $module.state            = Get-AnsibleParam -obj $params -name "state" -type "str" -default "present" -validateset "present","absent"
 
