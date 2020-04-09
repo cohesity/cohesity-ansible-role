@@ -259,14 +259,14 @@ def download_agent(module, path):
 
         agent = open_url(url=uri, headers=headers,
                          validate_certs=False, timeout=REQUEST_TIMEOUT)
-        resp_headers = agent.info().dict
+        resp_headers = agent.headers
         if 'content-disposition' in resp_headers.keys():
             filename = resp_headers['content-disposition'].split("=")[1]
         else:
             filename = 'cohesity-agent-installer'
         filename = path + "/" + filename
         try:
-            f = open(filename, "w")
+            f = open(filename, "wb")
             f.write(agent.read())
             os.chmod(filename, 0o755)
         except Exception as e:
