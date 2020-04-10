@@ -10,8 +10,6 @@
         var_cohesity_restore_name: "NAS Test File Restore-nested-2"
         var_cohesity_job_name: "protect_nas"
         var_export_path: "chandu-ve-01-vip.pm.cohesity.com:/Insight-View01"
-        var_cohesity_files:
-           - startServices.sh
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
