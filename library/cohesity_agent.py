@@ -5,9 +5,11 @@
 from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
+import json
 import os
 import shutil
-import json
+import time
+
 from tempfile import mkstemp, mkdtemp
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url, urllib_error
@@ -150,6 +152,7 @@ EXAMPLES = '''
 RETURN = '''
 '''
 
+SLEEP_TIME_SECONDS = 120
 
 class InstallError(Exception):
     pass
@@ -259,14 +262,15 @@ def download_agent(module, path):
 
         agent = open_url(url=uri, headers=headers,
                          validate_certs=False, timeout=REQUEST_TIMEOUT)
-        resp_headers = agent.info().dict
+        
+        resp_headers = agent.headers
         if 'content-disposition' in resp_headers.keys():
             filename = resp_headers['content-disposition'].split("=")[1]
         else:
             filename = 'cohesity-agent-installer'
         filename = path + "/" + filename
         try:
-            f = open(filename, "w")
+            f = open(filename, "wb")
             f.write(agent.read())
             os.chmod(filename, 0o755)
         except Exception as e:
@@ -460,6 +464,134 @@ def create_download_dir(module, dir_path):
                     raise
 
 
+def get_source_details(module, source_id):
+    '''
+    Get protection source details
+    :param module: object that holds parameters passed to the module
+    :param source_id: protection source id
+    :return:
+    '''
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = get__cohesity_auth__token(module)
+    try:
+        if source_id:
+            uri = "https://" + server + \
+                  "/irisservices/api/v1/public/protectionSources?id=" + str(source_id)
+        else:
+            uri = "https://" + server + \
+                  "/irisservices/api/v1/public/protectionSources?environments=kPhysical"
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        response = open_url(
+            url=uri,
+            headers=headers,
+            validate_certs=validate_certs,
+            method="GET", timeout=REQUEST_TIMEOUT)
+        response = json.loads(response.read())
+        if source_id:
+            nodes = response
+        else:
+            nodes = response[0]['nodes']
+        source_details = dict()
+        for source in nodes:
+            if source['protectionSource']['name'] == module.params.get('host'):
+                source_details['agent'] =\
+                    source['protectionSource']['physicalProtectionSource']['agents'][0]
+                source_details['id'] = source['protectionSource']['id']
+        if not source_details:
+            module.fail_json(
+                changed=False,
+                msg="Can't find the host on the cluster")
+        return source_details
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
+def update_agent(module):
+    '''
+    upgrades the agent on physical servers
+    :param module: object that holds parameters passed to the module
+    :return:
+    '''
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = get__cohesity_auth__token(module)
+    result = dict(
+        changed=False,
+        msg='',
+        version=''
+    )
+    try:
+        source_details = get_source_details(module, None)
+        if source_details['agent']['upgradability'] == 'kUpgradable':
+            uri = "https://" + server + \
+                  "/irisservices/api/v1/public/physicalAgents/upgrade"
+            headers = {"Accept": "application/json",
+                       "Authorization": "Bearer " + token}
+            payload = {
+                "agentIds": [source_details['agent']['id']]
+            }
+            response = open_url(
+                url=uri,
+                data=json.dumps(payload),
+                headers=headers,
+                validate_certs=validate_certs,
+                method="POST", timeout=REQUEST_TIMEOUT)
+
+            wait_time = module.params.get('wait_minutes')
+            while wait_time > 0:
+                poll_source_details = get_source_details(module, source_details['id'])
+                if not poll_source_details:
+                    result['changed'] = True
+                    result['msg'] = "Update agent request is accepted but failed to check agent" \
+                                    " status during upgrade wait time"
+                    result['version'] = source_details['agent']['version']
+                    module.exit_json(**result)
+                elif poll_source_details['agent'].get('upgradeStatusMessage', ''):
+                    module.fail_json(
+                        changed=False,
+                        msg="Failed to upgrade agent. " + poll_source_details['agent']['upgradeStatusMessage'])
+                elif poll_source_details['agent']['upgradeStatus'] == 'kFinished':
+                    result['changed'] = True
+                    result['msg'] = "Successfully upgraded the agent"
+                    result['version'] = poll_source_details['agent']['version']
+                    module.exit_json(**result)
+                time.sleep(SLEEP_TIME_SECONDS)
+                wait_time = wait_time - 2
+            result['changed'] = True
+            result['msg'] = "The agent upgrade request is accepted." \
+                            " The upgrade is not finished in the wait time"
+            result['version'] = source_details['agent']['version']
+            module.exit_json(**result)
+        elif source_details['agent']['upgradability'] == 'kCurrent':
+            result['msg'] = "The host has the latest agent version"
+            result['version'] = source_details['agent']['version']
+            module.exit_json(**result)
+        elif source_details['agent']['upgradability'] == 'kNonUpgradableAgentIsNewer':
+            result['msg'] = "The agent version running on the host is newer" \
+                            " than the agent version on the cluster"
+            result['version'] = source_details['agent']['version']
+            module.exit_json(**result)
+        elif source_details['agent']['upgradability'] == 'kNonUpgradableAgentIsOld':
+            module.fail_json(
+                changed=False,
+                msg="The agent version running on the host is too old to support upgrades")
+        else:
+            module.fail_json(
+                changed=False,
+                msg="Can't upgrade the agent due to unknown or invalid"
+                    " agent version running on the host")
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
 def main():
     # => Load the default arguments including those specific to the Cohesity Agent.
     argument_spec = cohesity_common_argument_spec()
@@ -473,7 +605,10 @@ def main():
             file_based=dict(default=False, type='bool'),
             native_package=dict(default=False, type='bool'),
             download_uri=dict(defaut=''),
-            operating_system=dict(defalut="", type='str')
+            operating_system=dict(defalut="", type='str'),
+            host=dict(type='str', default=''),
+            upgrade=dict(type='bool', default=False),
+            wait_minutes=dict(type='int', default=30),
         )
     )
 
@@ -521,7 +656,7 @@ def main():
                         'msg'] = "Check Mode: Agent is currently not installed.  No changes."
             module.exit_json(**check_mode_results)
 
-        elif module.params.get('state') == "present":
+        elif module.params.get('state') == "present" and not module.params.get('upgrade'):
             # => Check if the Cohesity Agent is currently installed and only trigger the install
             # => if the agent does not exist.
             results = check_agent(module, results)
@@ -547,6 +682,12 @@ def main():
                 # => that the Agent is installed.  We should simply pass it foward
                 # => and act like things are normal.
                 pass
+        elif module.params.get('state') == "present" and module.params.get('upgrade'):
+            if not module.params.get('host'):
+                module.fail_json(
+                    changed=False,
+                    msg="The host parameter is required for agent upgrades")
+            update_agent(module)
         elif module.params.get('state') == "absent":
             # => Check if the Cohesity Agent is currently installed and only trigger the uninstall
             # => if the agent exists.

@@ -65,4 +65,7 @@
     native_package: "{{ cohesity_agent.native_package | default(False) }}"
     download_uri: "{{ cohesity_agent.download_uri | default() }}"
     operating_system: "{{ ansible_distribution }}"
+    host: "{{ cohesity_agent.host | default() }}"
+    wait_minutes: "{{ cohesity_agent.wait_minutes | default(30) }}"
+    upgrade: "{{ cohesity_agent.upgrade | default(False) }}"
   tags: always
