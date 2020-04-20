@@ -238,6 +238,72 @@ def check__protection_restore__exists(module, self):
     return False
 
 
+def get_source_details(module):
+    '''
+    Get VMware protection source details
+    :param module: object that holds parameters passed to the module
+    :return:
+    '''
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = get__cohesity_auth__token(module)
+    try:
+        uri = "https://" + server + \
+              "/irisservices/api/v1/public/protectionSources/rootNodes?environments=kVMware"
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        response = open_url(
+            url=uri,
+            headers=headers,
+            validate_certs=validate_certs,
+            method="GET", timeout=REQUEST_TIMEOUT)
+        response = json.loads(response.read())
+        source_details = dict()
+        for source in response:
+            if source['protectionSource']['name'] == module.params.get('endpoint'):
+                source_details['id'] = source['protectionSource']['id']
+        if not source_details:
+            module.fail_json(
+                changed=False,
+                msg="Can't find the endpoint on the cluster")
+        return source_details
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
+def get__vmware_snapshot_information__by_source(module, self, source_details):
+    '''
+    Get the snapshot information using environment, VMname and source id filters
+    :param module: object that holds parameters passed to the module
+    :param self: restore task details
+    :param source_details: parent protection source details
+    :return:
+    '''
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = self['token']
+    try:
+        uri = "https://" + server + \
+            "/irisservices/api/v1/public/restore/objects" + \
+            "?environments=kVMware&search=" + self['restore_obj']['vmname'] +\
+              "&registeredSourceIds=" + str(source_details['id'])
+
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        objects = open_url(url=uri, headers=headers,
+                           validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
+        objects = json.loads(objects.read())
+        return objects
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
 # => Return the Protection Job information based on the Environment and Job Name
 def get__job_information__for_restore(module, self):
     # => Gather the Protection Jobs by Environment to allow us
@@ -266,9 +332,17 @@ def get__job_information__for_restore(module, self):
 
 def get__snapshot_information__for_vmname(module, self):
     restore_objects = []
-    # => Return the Protection Job information based on the Environment and Job Name
-    job_data = get__job_information__for_restore(module, self)
-
+    job_data = dict()
+    job_data['uid'] = dict(
+        clusterId='',
+        clusterIncarnationId='',
+        id=''
+    )
+    if self['job_name']:
+        # => Return the Protection Job information based on the Environment and Job Name
+        job_data = get__job_information__for_restore(module, self)
+    else:
+        source_details = get_source_details(module)
     # => Create a restore object for each Virtual Machine
     for vmname in self['vm_names']:
         # => Build the Restore Dictionary Object
@@ -283,7 +357,10 @@ def get__snapshot_information__for_vmname(module, self):
         )
         self['restore_obj'] = restore_details.copy()
         self['restore_obj']['vmname'] = vmname
-        output = get__vmware_snapshot_information__by_vmname(module, self)
+        if self['job_name']:
+            output = get__vmware_snapshot_information__by_vmname(module, self)
+        else:
+            output = get__vmware_snapshot_information__by_source(module, self, source_details)
 
         if not output or output['totalCount'] == 0:
             failure = dict(
@@ -291,33 +368,44 @@ def get__snapshot_information__for_vmname(module, self):
                 job_name=self['job_name'],
                 vmname=vmname,
                 environment=self['environment'],
-                msg="Failed to find a snapshot for the file in the chosen Job name."
+                msg="Failed to find a snapshot on the cluster"
             )
             module.fail_json(**failure)
 
         # => TODO: Add support for selecting a previous backup.
         # => For now, let's just grab the most recent snapshot.
         success = False
-        for snapshot_info in output['objectSnapshotInfo']:
-            if snapshot_info['objectName'] == vmname:
-                snapshot_detail = snapshot_info['versions'][0]
-                if 'jobRunId' in self:
-                    snapshot_detail = [jobRun for jobRun in snapshot_info['versions']
-                                       if jobRun['jobRunId'] == int(self['jobRunId'])][0]
+        # when job name is given, select the most recent snapshot from the job
+        if self['job_name']:
+            for snapshot_info in output['objectSnapshotInfo']:
+                if snapshot_info['objectName'] == vmname:
+                    snapshot_detail = snapshot_info['versions'][0]
+                    if 'jobRunId' in self:
+                        snapshot_detail = [jobRun for jobRun in snapshot_info['versions']
+                                           if jobRun['jobRunId'] == int(self['jobRunId'])][0]
 
-                restore_details['protectionSourceId'] = snapshot_info['snapshottedSource']['id']
-                restore_details['jobRunId'] = snapshot_detail['jobRunId']
-                restore_details['startedTimeUsecs'] = snapshot_detail['startedTimeUsecs']
-                success = True
+                    restore_details['protectionSourceId'] = snapshot_info['snapshottedSource']['id']
+                    restore_details['jobRunId'] = snapshot_detail['jobRunId']
+                    restore_details['startedTimeUsecs'] = snapshot_detail['startedTimeUsecs']
+                    success = True
+        else:
+            # when job name is not given, select the most recent snapshot across all the jobs
+            timestamp = 0
+            for snapshot_info in output['objectSnapshotInfo']:
+                if snapshot_info['objectName'] == vmname and snapshot_info['versions'][0]['startedTimeUsecs'] >= timestamp:
+                    timestamp = snapshot_info['versions'][0]['startedTimeUsecs']
+                    restore_details['protectionSourceId'] = snapshot_info['snapshottedSource']['id']
+                    restore_details['jobRunId'] = snapshot_info['versions'][0]['jobRunId']
+                    restore_details['jobUid'] = snapshot_info['jobUid']
+                    restore_details['startedTimeUsecs'] = snapshot_info['versions'][0]['startedTimeUsecs']
+                    success = True
         if not success:
             module.fail_json(msg="No Snapshot Found for the VM: " + vmname)
-
         restore_objects.append(restore_details)
     return restore_objects
 
+
 # => Perform the Restore of a Virtual Machine to the selected ProtectionSource Target
-
-
 def start_restore__vms(module, self):
     payload = self.copy()
     payload.pop('vm_names', None)
@@ -435,7 +523,7 @@ def main():
             state=dict(choices=['present', 'absent',
                                 'started', 'stopped'], default='present'),
             endpoint=dict(type='str', required=True),
-            job_name=dict(type='str'),
+            job_name=dict(type='str', default=''),
             backup_id=dict(type='str'),
             backup_timestamp=dict(type='str'),
             # => Currently, the only supported environments types are list in the choices
@@ -475,8 +563,12 @@ def main():
         endpoint=module.params.get('endpoint'),
         job_name=module.params.get('job_name'),
         environment=module.params.get('environment'),
-        name=module.params.get('job_name') + ": " + module.params.get('name')
+
     )
+    if module.params.get('job_name'):
+        job_details['name'] = module.params.get('job_name') + ": " + module.params.get('name')
+    else:
+        job_details['name'] = module.params.get('name')
 
     if module.params.get('backup_id'):
         job_details['jobRunId'] = module.params.get('backup_id')
@@ -517,8 +609,7 @@ def main():
                 changed=False,
                 msg="The Restore Job for is already registered",
                 id=job_exists,
-                name=module.params.get('job_name') + ": " +
-                module.params.get('name')
+                name=job_details['name']
             )
         else:
             # check__mandatory__params(module)
@@ -531,8 +622,7 @@ def main():
                     module, job_details)
 
                 restore_data = dict(
-                    name=module.params.get('job_name') +
-                    ": " + module.params.get('name'),
+                    name=job_details['name'],
                     vm_names=module.params.get('vm_names'),
                     objects=source_object_info,
                     token=job_details['token'],
