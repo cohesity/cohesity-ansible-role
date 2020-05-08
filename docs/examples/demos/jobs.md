@@ -26,7 +26,7 @@ These example plays leverage the Ansible Inventory to dynamically create and rem
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using this playbook, refer to the [Setup](setup.md) and [How to Use](how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)

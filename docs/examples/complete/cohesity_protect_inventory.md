@@ -31,7 +31,7 @@ This example play can help accelerate the usage of the Cohesity Ansible integrat
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using this playbook, refer to the [Setup](/setup.md) and [How to Use](/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#Deploy-Full-Cohesity-Protection-Using-Ansible-Inventory)

@@ -189,7 +189,7 @@ This is an example playbook that creates new Protection Sources for NFS export. 
             cohesity_source:
                 state: present
                 endpoint: "{{ var_export_path }}"
-                environment: "GenericNAS"
+                environment: "GenericNaS"
                 nas_protocol: "NFS"
         tags: [ 'cohesity', 'sources', 'register', 'nfs' ]
 ```

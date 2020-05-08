@@ -1,4 +1,4 @@
-#=> Create a new VMware protection job
+#=> Create a new VMware protection job for all VMs in the vCenter
 ---
   - hosts: local
     gather_facts: no

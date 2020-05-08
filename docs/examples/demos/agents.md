@@ -25,7 +25,7 @@ These example plays employ the Ansible Inventory to dynamically uninstall and in
 
 > **Notes:**
   - Currently, the Cohesity Ansible Role requires Cohesity Cluster Administrator access.
-  - Before using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using this playbook, refer to the [Setup](/setup.md) and [How to Use](/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#Install-and-Remove-the-Cohesity-Agent-Using-Ansible-Inventory)
