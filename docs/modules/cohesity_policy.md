@@ -15,7 +15,7 @@
 ## Synopsis
 [top](#cohesity-policy-management)
 
-The Ansible Module creates, modifies or deletes a Protection Policy for the Cohesity Cluster
+The Ansible Module creates or deletes a Protection Policy for the Cohesity Cluster
 
 ### Requirements
 [top](#cohesity-policy-management)
@@ -62,10 +62,11 @@ The Ansible Module creates, modifies or deletes a Protection Policy for the Cohe
 ```yaml
 - cohesity_policy:
     name: POLICY_NAME
-    incremental_backup_schedule: 
-      periodicity:
-        Daily:
-          days: Monday
+    incremental_backup_schedule:   
+      periodicity: Daily
+      days: 
+        - Monday
+        - Tuesday
     cluster: cohesity.lab
     username: admin
     password: password
@@ -78,10 +79,11 @@ The Ansible Module creates, modifies or deletes a Protection Policy for the Cohe
 ```yaml
 - cohesity_policy:
     name: POLICY_NAME
-    incremental_backup_schedule: 
-      periodicity:
-        Daily:
-          days: Monday
+    incremental_backup_schedule:   
+      periodicity: Daily
+      days: 
+        - Monday
+        - Tuesday
     cluster: cohesity.lab
     username: admin
     password: password
@@ -138,7 +140,7 @@ This option is of type `dict` and has the following Keys
 
         **Required**: `True`
         
-        **Description**: Specifies the day of the week (such as 'kMonday') to start the Job Run. Used with day count to define the day in the month to start     the Job Run. Specifies a day in a week such as 'Sunday', 'Monday', etc.
+        **Description**: Specifies the day of the week (such as 'Monday' *Case Sensitive*) to start the Job Run. Used with day count to define the day in the month to start     the Job Run. Specifies a day in a week such as 'Sunday', 'Monday', etc.
 
       - `day_count`
 
@@ -146,7 +148,7 @@ This option is of type `dict` and has the following Keys
 
         **Required**: `True`
         
-        **Description**: Specifies the day count in the month (such as 'kThird') to start the Job Run. Used in combination with day to define the day in the month to start the Job Run. Specifies the day count in the month to start the backup. For example if day count is set to 'kThird' and day is set to 'kMonday', a backup is performed on the third Monday of every month. 'First' indicates that the first week should be choosen for specified day of every month. 'Second' indicates that the second week should be choosen for specified day of every month. 'Third' indicates that the third week should be choosen for specified day of every month. 'Fourth' indicates that the fourth week should be choosen for specified day of every month. 'Last' indicates that the last week should be choosen for specified day of every month.
+        **Description**: Specifies the day count in the month (such as 'Third' *Case Sensitive*) to start the Job Run. Used in combination with day to define the day in the month to start the Job Run. Specifies the day count in the month to start the backup. For example if day count is set to 'Third' and day is set to 'Monday', a backup is performed on the third Monday of every month. 'First' indicates that the first week should be choosen for specified day of every month. 'Second' indicates that the second week should be choosen for specified day of every month. 'Third' indicates that the third week should be choosen for specified day of every month. 'Fourth' indicates that the fourth week should be choosen for specified day of every month. 'Last' indicates that the last week should be choosen for specified day of every month.
   
     - If periodicity is `Continuous`, specify
 
@@ -186,7 +188,7 @@ This option is of type `dict` and has the following Keys
 
         **Required**: `True`
         
-        **Description**: Specifies the day of the week (such as 'kMonday') to start the Job Run. Used with day count to define the day in the month to start     the Job Run. Specifies a day in a week such as 'Sunday', 'Monday', etc.
+        **Description**: Specifies the day of the week (such as 'Monday' *Case Sensitive*) to start the Job Run. Used with day count to define the day in the month to start     the Job Run. Specifies a day in a week such as 'Sunday', 'Monday', etc.
 
       - `day_count`
 
@@ -194,7 +196,7 @@ This option is of type `dict` and has the following Keys
 
         **Required**: `True`
         
-        **Description**: Specifies the day count in the month (such as 'kThird') to start the Job Run. Used in combination with day to define the day in the month to start the Job Run. Specifies the day count in the month to start the backup. For example if day count is set to 'kThird' and day is set to 'kMonday', a backup is performed on the third Monday of every month. 'First' indicates that the first week should be choosen for specified day of every month. 'Second' indicates that the second week should be choosen for specified day of every month. 'Third' indicates that the third week should be choosen for specified day of every month. 'Fourth' indicates that the fourth week should be choosen for specified day of every month. 'Last' indicates that the last week should be choosen for specified day of every month.
+        **Description**: Specifies the day count in the month (such as 'Third' *Case Sensitive*) to start the Job Run. Used in combination with day to define the day in the month to start the Job Run. Specifies the day count in the month to start the backup. For example if day count is set to 'Third' and day is set to 'Monday', a backup is performed on the third Monday of every month. 'First' indicates that the first week should be choosen for specified day of every month. 'Second' indicates that the second week should be choosen for specified day of every month. 'Third' indicates that the third week should be choosen for specified day of every month. 'Fourth' indicates that the fourth week should be choosen for specified day of every month. 'Last' indicates that the last week should be choosen for specified day of every month.
 
 #### <a name="blackout_window"></a> blackout_window: 
 
@@ -250,7 +252,7 @@ This option is of type `dict` and has the following Keys
 
         **Type** : `List of strings`
         
-        **Description**: Specifies a list of days of the week when to start Job Runs. If no days are specified, the Jobs Runs will run every day of the week. Specifies days in a week such as 'Sunday', 'Monday', etc.
+        **Description**: Specifies a list of days of the week when to start Job Runs. If no days are specified, the Jobs Runs will run every day of the week. Specifies days in a week such as 'Sunday', 'Monday' (*Case Sensitive*) etc.
 
     - If periodicity is `Monthly`, specify
 
@@ -260,7 +262,7 @@ This option is of type `dict` and has the following Keys
 
         **Required**: `True`
         
-        **Description**: Specifies the day of the week (such as 'kMonday') to start the Job Run. Used with day count to define the day in the month to start     the Job Run. Specifies a day in a week such as 'Sunday', 'Monday', etc.
+        **Description**: Specifies the day of the week (such as 'Monday' *Case Sensitive*) to start the Job Run. Used with day count to define the day in the month to start     the Job Run. Specifies a day in a week such as 'Sunday', 'Monday', etc.
 
       - `day_count`
 
@@ -268,7 +270,7 @@ This option is of type `dict` and has the following Keys
 
         **Required**: `True`
         
-        **Description**: Specifies the day count in the month (such as 'kThird') to start the Job Run. Used in combination with day to define the day in the month to start the Job Run. Specifies the day count in the month to start the backup. For example if day count is set to 'kThird' and day is set to 'kMonday', a backup is performed on the third Monday of every month. 'First' indicates that the first week should be choosen for specified day of every month. 'Second' indicates that the second week should be choosen for specified day of every month. 'Third' indicates that the third week should be choosen for specified day of every month. 'Fourth' indicates that the fourth week should be choosen for specified day of every month. 'Last' indicates that the last week should be choosen for specified day of every month.
+        **Description**: Specifies the day count in the month (such as 'Third' *Case Sensitive*) to start the Job Run. Used in combination with day to define the day in the month to start the Job Run. Specifies the day count in the month to start the backup. For example if day count is set to 'Third' and day is set to 'Monday', a backup is performed on the third Monday of every month. 'First' indicates that the first week should be choosen for specified day of every month. 'Second' indicates that the second week should be choosen for specified day of every month. 'Third' indicates that the third week should be choosen for specified day of every month. 'Fourth' indicates that the fourth week should be choosen for specified day of every month. 'Last' indicates that the last week should be choosen for specified day of every month.
 
 #### <a name="log_backup_schedule"></a> log_backup_schedule: 
 

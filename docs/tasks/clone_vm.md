@@ -12,7 +12,7 @@
 ## Synopsis
 [top](#task-Cohesity-clone-vm)
 
-Use this task to clone a VM using VMWare workflow
+Create and destroy the clone using this task. This is used to create VMs using stored snapshots and perform some dev/test testing.
 
 #### How It Works
 - The tasks collects all the information (required and optional) and starts a clone task (if *state=present*).
@@ -36,11 +36,12 @@ Use this task to clone a VM using VMWare workflow
 
 The following is a list of variables and the configuration expected when using this task in your playbook.  For more information on these variables, see [Cohesity Clone VM](../modules/cohesity_clone.md?id=syntax).
 ```yaml
-- cohesity_clone:
+- cohesity_clone_vm:
     cluster: cohesity.lab
     username: admin
     password: password
     name: CLONE_TASK_NAME
+    job_name: JOB_NAME
     view_name: VIEW_NAME
     environment: VMware
     vm_names:
@@ -101,6 +102,7 @@ You can create a file called `cohesity-clone.yml`, add the contents from the sam
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_clone_vm:
                 name: CLONE_TASK_NAME
+                job_name: JOB_NAME
                 view_name: VIEW_NAME
                 environment: VMware
                 vm_names:
@@ -131,7 +133,7 @@ This is an example playbook that destroys the clone VM task and deletes the VM o
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Install new Cohesity Agent on each Physical Linux Server
+      - name: Destroy a Clone VM task using VMWare Workflow
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: clone_vm
@@ -141,6 +143,7 @@ This is an example playbook that destroys the clone VM task and deletes the VM o
             cohesity_password: "{{ var_cohesity_password }}"
             cohesity_validate_certs: "{{ var_validate_certs }}"
             name: CLONE_TASK_NAME
+            job_name: JOB_NAME
             view_name: VIEW_NAME
             environment: VMware
             vm_names:

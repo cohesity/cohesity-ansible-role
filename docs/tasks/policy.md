@@ -13,11 +13,11 @@
 ## Synopsis
 [top](#Cohesity-policy-management)
 
-Use this task to clone a VM using Test/Dev workflow
+The Ansible task is used to create or delete a Protection Policy for the Cohesity Cluster
 
 #### How It Works
-- The tasks collects all the information (required and optional) and starts a clone task (if *state=present*).
-- The task can also destory a clone (*state=absent*) that was cloned using Test/Dev workflow.
+- The tasks collects all the information (required and optional) and creates a policy (if *state=present*).
+- The task can also delete a policy (*state=absent*).
 
 
 ### Requirements
@@ -35,14 +35,15 @@ Use this task to clone a VM using Test/Dev workflow
 ## Ansible Variables
 [top](#Cohesity-policy-management)
 
-The following is a list of variables and the configuration expected when using this task in your playbook.  For more information on these variables, see [Cohesity Policy Management](../modules/cohesity_clone.md?id=syntax).
+The following is a list of variables and the configuration expected when using this task in your playbook.  For more information on these variables, see [Cohesity Policy Management](../modules/cohesity_policy.md?id=syntax).
 ```yaml
 - cohesity_policy:
     name: POLICY_NAME
-    incremental_backup_schedule: 
-      periodicity:
-        Daily:
-          days: Monday
+    incremental_backup_schedule:   
+      periodicity: Daily
+      days: 
+        - Monday
+        - Tuesday
     cluster: cohesity.lab
     username: admin
     password: password
@@ -89,7 +90,7 @@ You can create a file called `cohesity-policy.yml`, add the contents from the sa
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create a Clone VM task using Test/Dev Workflow
+      - name: Create a Protection Policy
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: policy
@@ -100,10 +101,11 @@ You can create a file called `cohesity-policy.yml`, add the contents from the sa
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_policy:
                 name: POLICY_NAME
-                incremental_backup_schedule: 
-                  periodicity:
-                    Daily:
-                      days: Monday
+                incremental_backup_schedule:   
+                  periodicity: Daily
+                  days: 
+                    - Monday
+                    - Tuesday
                 cluster: cohesity.lab
                 username: admin
                 password: password
@@ -131,7 +133,7 @@ This is an example playbook that deletes the Protection Policy on all `cohesity`
     roles:
         - cohesity.cohesity_ansible_role
     tasks:
-      - name: Create a Clone VM task using Test/Dev Workflow
+      - name: Delete a Protection Policy
         include_role:
             name: cohesity.cohesity_ansible_role
             tasks_from: policy
@@ -142,10 +144,11 @@ This is an example playbook that deletes the Protection Policy on all `cohesity`
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_policy:
                 name: POLICY_NAME
-                incremental_backup_schedule: 
-                  periodicity:
-                    Daily:
-                      days: Monday
+                incremental_backup_schedule:   
+                  periodicity: Daily
+                  days: 
+                    - Monday
+                    - Tuesday
                 cluster: cohesity.lab
                 username: admin
                 password: password
