@@ -28,7 +28,7 @@ This play does not require that the Protection Jobs were created via the Ansible
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this playbook, refer to the [Setup](/setup.md) and [How to Use](/how-to-use.md) sections of this guide.
+  - Before using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#Start-All-Registered-Cohesity-Protection-Jobs)

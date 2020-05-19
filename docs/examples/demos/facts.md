@@ -23,7 +23,7 @@ Upon completion of this play, the output is written to a file called `cohesity_f
 
 > **Note:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Prior to using this playbook, refer to the [Setup](/setup.md) and [How to Use](/how-to-use.md) sections of this guide.
+  - Prior to using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
 
 ## Ansible Inventory Configuration
 [top](#Cohesity-Facts-Collection)

@@ -30,7 +30,7 @@ This Ansible Module supports Physical and GenericNAS environments and initiates 
 [top](#cohesity-restore-virtual-machines)
 
 ```yaml
-- cohesity_restore_file:
+- cohesity_restore_vm:
     server: <ip or hostname for cohesity cluster>
     username: <username with cluster level permissions>
     password: <password for the selected user>

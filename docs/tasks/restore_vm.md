@@ -90,10 +90,10 @@ This is an example playbook that creates a new Virtual Machine restore operation
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
-      - name: Restore Files
+      - name: Restore VM
         include_role:
             name: cohesity.cohesity_ansible_role
-            tasks_from: restore_file
+            tasks_from: restore_vm
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
             cohesity_admin: "{{ var_cohesity_admin }}"
