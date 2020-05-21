@@ -1,5 +1,7 @@
 # Cohesity Facts Collection
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Ansible Inventory Configuration](#Ansible-Inventory-Configuration)
@@ -23,12 +25,12 @@ Upon completion of this play, the output is written to a file called `cohesity_f
 
 > **Note:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Prior to using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Prior to using this playbook, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Inventory Configuration
 [top](#Cohesity-Facts-Collection)
 
-To fully leverage this Ansible Play, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../configuring-your-ansible-inventory.md).
+To fully leverage this Ansible Play, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../common/configuring-your-ansible-inventory.md).
 
 This is an example inventory file: (Remember to change it to suit your environment.)
 ```ini

@@ -1,5 +1,7 @@
 # Cohesity Agent Management - Linux
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Requirements](#requirements)

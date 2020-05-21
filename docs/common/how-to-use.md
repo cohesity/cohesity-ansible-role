@@ -1,4 +1,7 @@
 # How to Use
+
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Getting Started](#Getting-Started)
 - [Ansible Inventory](#Ansible-Inventory)
@@ -69,7 +72,7 @@ Make sure that your [Ansible Inventory File](https://docs.ansible.com/ansible/la
 
   * If you plan to run Ansible tasks against Windows hosts, please make sure that the [windows hosts are setup correctly](https://www.ansible.com/blog/connecting-to-a-windows-host).
 
-  * For more information on how to use the Ansible Inventory, see [Configure Your Ansible Inventory](examples/configuring-your-ansible-inventory.md).
+  * For more information on how to use the Ansible Inventory, see [Configure Your Ansible Inventory](configuring-your-ansible-inventory.md).
 
 ## Using the Cohesity Ansible Role
 [top](#how-to-use)

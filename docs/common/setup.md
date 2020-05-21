@@ -1,5 +1,7 @@
 # Setup
 
+[Go back to Documentation home page ](../README.md)
+
 ## Steps to install
 
 * Make sure that the [prerequisites](pre-requisites.md) are installed.

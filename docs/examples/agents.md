@@ -1,5 +1,7 @@
 # Install and Remove the Cohesity Agent Using Ansible Inventory
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Ansible Variables](#ansible-variables)
@@ -11,7 +13,7 @@
 ## Synopsis
 [top](#Install-and-Remove-the-Cohesity-Agent-Using-Ansible-Inventory)
 
-These example plays employ the Ansible Inventory to dynamically uninstall and install the Cohesity Agent on the supported platforms. The example playbooks are located at the root of the role in [examples/demos/](https://github.com/cohesity/cohesity-ansible-role/tree/master/examples/demos).
+These example plays employ the Ansible Inventory to dynamically uninstall and install the Cohesity Agent on the supported platforms. The example playbooks are located at the root of the role in [playbooks/physical-server-workfllow](../../playbooks/physical-server-workfllow).
 > **IMPORTANT**!<br>
   These example plays should be considered for demo purposes only.  These plays uninstalls and then installs the Cohesity Agent on all Physical hosts based on the Ansible Inventory.  There are no job or source validations nor state checks to ensure that backups are not running.
 
@@ -25,7 +27,7 @@ These example plays employ the Ansible Inventory to dynamically uninstall and in
 
 > **Notes:**
   - Currently, the Cohesity Ansible Role requires Cohesity Cluster Administrator access.
-  - Before using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using this playbook, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#Install-and-Remove-the-Cohesity-Agent-Using-Ansible-Inventory)
@@ -40,7 +42,7 @@ These example plays employ the Ansible Inventory to dynamically uninstall and in
 ## Ansible Inventory Configuration
 [top](#Install-and-Remove-the-Cohesity-Agent-Using-Ansible-Inventory)
 
-To fully leverage this Ansible Play, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../configuring-your-ansible-inventory.md).
+To fully leverage this Ansible Play, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../common/configuring-your-ansible-inventory.md).
 
 This is an example inventory file: (Remember to change it to suit your environment.)
 ```ini
@@ -74,7 +76,7 @@ The combined source file for these two playbooks is located at the root of the r
 
 Here is an example playbook that uninstalls and installs the Cohesity agent on all `linux` hosts. (Remember to change it to suit your environment.)
 > **Notes:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common./how-to-use.md) sections of this guide.
   - When using the default download location, the Cohesity agent installer is placed in `/tmp/<temp-dir>`.  If your environment prevents the use of `/tmp` with a `noexec` option, then you must set an alternate download location.
 
 You can create a file called `deploy-cohesity-agent-linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
@@ -139,7 +141,7 @@ You can create a file called `deploy-cohesity-agent-linux.yml`, add the contents
 
 Here is an example playbook that uninstalls and installs the Cohesity agent on all `windows` hosts. (Remember to change it to suit your environment.)
 > **Notes:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common./how-to-use.md) sections of this guide.
   - Cohesity Agent installation on Windows supports two types of Agent install types: `filecbt` and `volcbt`.  When installing or removing the agent and selecting a `volcbt` type, you must reboot the Windows server to complete the action.
 
 You can create a file called `deploy-cohesity-agent-windows.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
@@ -196,7 +198,7 @@ You can create a file called `deploy-cohesity-agent-windows.yml`, add the conten
 ## Ansible Inventory Configuration
 [top](#Install-and-Remove-the-Cohesity-Agent-Using-Ansible-Inventory)
 
-To fully leverage this Ansible Play, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../configuring-your-ansible-inventory.md).
+To fully leverage this Ansible Play, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../common/configuring-your-ansible-inventory.md).
 
 Here is an example Inventory File. Before using it, edit it to address your own environment.
 ```ini

@@ -1,5 +1,7 @@
 # Deploy Full Cohesity Protection Using Ansible Inventory
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Ansible Variables](#ansible-variables)
@@ -11,15 +13,15 @@
 ## Synopsis
 [top](#Deploy-Full-Cohesity-Protection-Using-Ansible-Inventory)
 
-This example play can help accelerate the usage of the Cohesity Ansible integration by automatically generating a full-stack deployment of Cohesity Agents, Sources, and Jobs.  The source file for this playbook is located at the root of the role in `examples/complete/cohesity_protect_inventory.yml`.
+This example play can help accelerate the usage of the Cohesity Ansible integration by automatically generating a full-stack deployment of Cohesity Agents, Sources, and Jobs.  The source file for this playbook is located at the root of the role in [`playbooks/misc/cohesity_protect_inventory.yml`](../../playbooks/misc/cohesity_protect_inventory.yml).
 
 #### How It Works
 - The play starts by reading all Physical servers from the Ansible Inventory and installing the agent.
 - Upon completion of the agent installation, each Protection Source is registered based on environment type:
   - Physical
   - VMware
-  - GenericNAS
-- The final step is to create Protection Jobs for Linux Servers, Windows Servers, VMware and GenericNAS
+  - GenericNas
+- The final step is to create Protection Jobs for Linux Servers, Windows Servers, VMware and GenericNas
 - Once all the Protection Jobs are created, an immediate, one-time execution is started.
 
 ### Requirements
@@ -31,7 +33,7 @@ This example play can help accelerate the usage of the Cohesity Ansible integrat
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using this playbook, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#Deploy-Full-Cohesity-Protection-Using-Ansible-Inventory)
@@ -46,7 +48,7 @@ This example play can help accelerate the usage of the Cohesity Ansible integrat
 ## Ansible Inventory Configuration
 [top](#Deploy-Full-Cohesity-Protection-Using-Ansible-Inventory)
 
-To fully leverage this Ansible Play, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../configuring-your-ansible-inventory.md).
+To fully leverage this Ansible Play, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../common/configuring-your-ansible-inventory.md).
 
 Here is an example inventory file: (Remember to change it to suit your environment.)
 ```ini
@@ -102,17 +104,17 @@ nas_password=password
 ## Working with the cohesity_facts Module
 [top](#Deploy-Full-Cohesity-Protection-Using-Ansible-Inventory)
 
-This play leverages certain data collected as part of the `cohesity_facts` module distributed with the Cohesity Ansible Role.  For more information, see [Cohesity Facts](../../modules/cohesity_facts.md).
+This play leverages certain data collected as part of the `cohesity_facts` module distributed with the Cohesity Ansible Role.  For more information, see [Cohesity Facts](../library/cohesity_facts.md).
 
 ## Customize Your Playbooks
 [top](#Deploy-Full-Cohesity-Protection-Using-Ansible-Inventory)
 
 ### Register all hosts in the Inventory to enable full protection on the selected Cohesity cluster
 
-Here is an example playbook that queries the inventory to install Agents on all Linux and Windows hosts, register each host as a Protection Source, and then create and start a protection job for Linux, Windows, VMware, GenericNAS hosts. The source file for this playbook is located at the root of the role in `examples/complete/cohesity_protect_inventory.yml`.  (Remember to change it to suit your environment.)
+Here is an example playbook that queries the inventory to install Agents on all Linux and Windows hosts, register each host as a Protection Source, and then create and start a protection job for Linux, Windows, VMware, GenericNas hosts. The source file for this playbook is located at the root of the role in `examples/complete/cohesity_protect_inventory.yml`.  (Remember to change it to suit your environment.)
 
 ```yaml
-# => Cohesity Full Protection for Physical, VMware, and GenericNAS environments
+# => Cohesity Full Protection for Physical, VMware, and GenericNas environments
 # =>
 # => Role: cohesity.cohesity_ansible_role
 # => Version: 0.6.0
@@ -264,7 +266,7 @@ Here is an example playbook that queries the inventory to install Agents on all 
         tags: [ 'cohesity', 'sources', 'register', 'generic_nas' ]
 
 
-# => Create a new Protection Job for Linux, Windows, VMware, GenericNAS hosts
+# => Create a new Protection Job for Linux, Windows, VMware, GenericNas hosts
 # =>
         # => Manage Physical
       - name: Create new Protection Job with all Linux Physical Servers

@@ -1,5 +1,7 @@
 # Cohesity Restore Files
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Requirements](#requirements)
@@ -14,7 +16,7 @@
 ## Synopsis
 [top](#cohesity-restore-files)
 
-This Ansible Module supports Physical and GenericNAS environments and initiates a file and folder restore operation for the chosen Cohesity Protection Job on a Cohesity cluster.  When executed in a playbook, the Cohesity restore operation is validated and the appropriate restore action is applied.
+This Ansible Module supports Physical and GenericNas environments and initiates a file and folder restore operation for the chosen Cohesity Protection Job on a Cohesity cluster.  When executed in a playbook, the Cohesity restore operation is validated and the appropriate restore action is applied.
 
 ### Requirements
 [top](#cohesity-restore-files)

@@ -1,5 +1,7 @@
 # Create and Manage Cohesity Jobs Using Ansible Inventory
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Ansible Variables](#ansible-variables)
@@ -12,21 +14,21 @@
   - [Register a VMware protection job with VM exclusions](#Register-a-VMware-protection-job-with-VM-exclusions)
   - [Update a VMware protection job excluding a set of VMs](#Update-a-VMware-protection-job-excluding-a-set-of-VMs)
   - [Update a VMware protection job to protect a set of VMs](#Update-a-VMware-protection-job-to-protect-a-set-of-VMs)
-  - [Register protection Jobs for all GenericNAS hosts in the inventory](#Register-protection-Jobs-for-all-GenericNAS-hosts-in-the-inventory)
+  - [Register protection Jobs for all GenericNas hosts in the inventory](#Register-protection-Jobs-for-all-GenericNas-hosts-in-the-inventory)
   - [Remove Protection Job for all Linux hosts in the inventory](#Remove-Protection-Job-for-all-Linux-hosts-in-the-inventory)
   - [Remove Protection Job for all Windows hosts in the inventory](#Remove-Protection-Job-for-all-Windows-hosts-in-the-inventory)
   - [Remove Protection Jobs for all VMware hosts in the inventory](#Remove-Protection-Jobs-for-all-VMware-hosts-in-the-inventory)
-  - [Remove Protection Jobs for all GenericNAS hosts in the inventory](#Remove-Protection-Jobs-for-all-GenericNAS-hosts-in-the-inventory)
+  - [Remove Protection Jobs for all GenericNas hosts in the inventory](#Remove-Protection-Jobs-for-all-GenericNas-hosts-in-the-inventory)
 ## Synopsis
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
 
-These example plays leverage the Ansible Inventory to dynamically create and remove Protection Jobs for existing Protection Sources.  The example playbooks are located at the root of the role in [examples/demos/](https://github.com/cohesity/cohesity-ansible-role/tree/master/examples/demos).
+These example plays leverage the Ansible Inventory to dynamically create and remove Protection Jobs for existing Protection Sources.  The example playbooks are located at the root of the role in [`playbooks`](../../playbooks).
 > **IMPORTANT**!<br>
-  This example plays should be considered for demo purposes only.  This play registers and removes Physical, VMware, and GenericNAS Protection Jobs based on the Ansible Inventory.  There are no job validations or state checks to ensure that backups are not running.  If jobs are running, they will be canceled.  This action will **delete all backups** as part of the process.
+  This example plays should be considered for demo purposes only.  This play registers and removes Physical, VMware, and GenericNas Protection Jobs based on the Ansible Inventory.  There are no job validations or state checks to ensure that backups are not running.  If jobs are running, they will be canceled.  This action will **delete all backups** as part of the process.
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using this playbook, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
@@ -41,7 +43,7 @@ These example plays leverage the Ansible Inventory to dynamically create and rem
 ## Ansible Inventory Configuration
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
 
-To fully leverage these Ansible Plays, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../configuring-your-ansible-inventory.md).
+To fully leverage these Ansible Plays, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../common/configuring-your-ansible-inventory.md).
 
 This is an example inventory file: (Remember to change it to suit your environment.)
 ```ini
@@ -110,7 +112,7 @@ nas_password=password
 
 Here is an example playbook that registers a new file based Protection Job for all Linux hosts in the inventory and starts the protection job run. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `protection_job_linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -174,7 +176,7 @@ You can create a file called `protection_job_linux.yml`, add the contents from t
 
 Here is an example playbook that registers a new file based Protection Job for all Windows hosts in the inventory and starts the protection job run. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `protection_job_windows.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -237,7 +239,7 @@ You can create a file called `protection_job_windows.yml`, add the contents from
 
 Here is an example playbook that registers new Protection Jobs for all VMware hosts in the inventory and starts the protection job run. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `protection_job_vmware.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -301,7 +303,7 @@ You can create a file called `protection_job_vmware.yml`, add the contents from 
 
 Here is an example playbook that registers a new Protection Job for a set of VMs and starts the protection job run. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `protection_job_include_vms.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -364,7 +366,7 @@ You can create a file called `protection_job_include_vms.yml`, add the contents 
 
 Here is an example playbook that registers a new VMware Protection Job excluding a set of VMs and starts the protection job run. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `protection_job_exclude_vms.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -427,7 +429,7 @@ You can create a file called `protection_job_exclude_vms.yml`, add the contents 
 
 Here is an example playbook that updates an existing VMware Protection Job excluding a set of VMs. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `protection_job_exclude_vms.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -474,7 +476,7 @@ You can create a file called `protection_job_exclude_vms.yml`, add the contents 
 
 Here is an example playbook that updates an existing VMware Protection Job to protect a set of VMs. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `protection_job_include_vms.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -516,20 +518,20 @@ You can create a file called `protection_job_include_vms.yml`, add the contents 
 
 ```
 
-### Register Protection Jobs for all GenericNAS hosts in the inventory
+### Register Protection Jobs for all GenericNas hosts in the inventory
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
 
-Here is an example playbook that registers new Protection Jobs for all GenericNAS hosts in the inventory and starts the protection job run. (Remember to change it to suit your environment.)
+Here is an example playbook that registers new Protection Jobs for all GenericNas hosts in the inventory and starts the protection job run. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
-You can create a file called `protection_job_GenericNAS.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+You can create a file called `protection_job_GenericNas.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
-  ansible-playbook -i <inventory_file> protection_job_GenericNAS.yml -e "username=abc password=abc"
+  ansible-playbook -i <inventory_file> protection_job_GenericNas.yml -e "username=abc password=abc"
   ```
 
 ```yaml
-# => Create a new Protection Jobs for all GenericNAS hosts in inventory
+# => Create a new Protection Jobs for all GenericNas hosts in inventory
 # =>
 ---
   - hosts: workstation
@@ -585,7 +587,7 @@ You can create a file called `protection_job_GenericNAS.yml`, add the contents f
 
 Here is an example playbook that stops the protection job run, removes the existing Protection Job and deletes the backups for all Linux hosts in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `remove_protection_job_linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -643,7 +645,7 @@ You can create a file called `remove_protection_job_linux.yml`, add the contents
 
 Here is an example playbook that stops the protection job run, removes the existing Protection Job and deletes the backups for all Windows hosts in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `remove_protection_job_windows.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -700,7 +702,7 @@ You can create a file called `remove_protection_job_windows.yml`, add the conten
 
 Here is an example playbook that stops the protection job run, removes the existing Protection Jobs and deletes the backups for all VMware hosts in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `remove_protection_jobs_VMware.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -760,20 +762,20 @@ You can create a file called `remove_protection_jobs_VMware.yml`, add the conten
         tags: [ 'cohesity', 'sources', 'remove', 'vmware' ]
 ```
 
-### Remove Protection Jobs for all GenericNAS hosts in the inventory
+### Remove Protection Jobs for all GenericNas hosts in the inventory
 [top](#Create-and-Manage-Cohesity-Jobs-Using-Ansible-Inventory)
 
-Here is an example playbook that stops the protection job run, removes the existing Protection Jobs and deletes the backups for all GenericNAS hosts in the inventory. (Remember to change it to suit your environment.)
+Here is an example playbook that stops the protection job run, removes the existing Protection Jobs and deletes the backups for all GenericNas hosts in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
-You can create a file called `remove_protection_jobs_GenericNAS.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
+You can create a file called `remove_protection_jobs_GenericNas.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
-  ansible-playbook -i <inventory_file> remove_protection_jobs_GenericNAS.yml -e "username=abc password=abc"
+  ansible-playbook -i <inventory_file> remove_protection_jobs_GenericNas.yml -e "username=abc password=abc"
   ```
 
 ```yaml
-# => Remove Protection Jobs for all GenericNAS hosts in the inventory
+# => Remove Protection Jobs for all GenericNas hosts in the inventory
 # =>
 ---
   - hosts: workstation

@@ -1,5 +1,7 @@
 # Task: Cohesity Agent Management - Windows
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Requirements](#requirements)
@@ -29,12 +31,12 @@ Use this task to install and manage the Cohesity Agent on Windows hosts.
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Prior to using theis task, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Prior to using theis task, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#task-cohesity-agent-management---windows)
 
-The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Cohesity Agent Management - Windows](../modules/cohesity_win_agent.md?id=syntax).
+The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Cohesity Agent Management - Windows](../library/cohesity_win_agent.md).
 ```yaml
 cohesity_agent:
   state: "present"
@@ -54,7 +56,7 @@ This example shows how to include the Cohesity Ansible role in your custom playb
 
 This is an example playbook that installs the Cohesity agent on all `windows` hosts. (Remember to change it to suit your environment.)
 > **Note:**
-  - Prior to using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Prior to using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---
@@ -90,7 +92,7 @@ This is an example playbook that installs the Cohesity agent on all `windows` ho
 
 This is an example playbook that installs the Cohesity Agent on all `windows` hosts using a service account and the `filecbt` driver. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---

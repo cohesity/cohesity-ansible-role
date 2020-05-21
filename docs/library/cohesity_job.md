@@ -1,5 +1,7 @@
 # Cohesity Protection Job
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Requirements](#requirements)
@@ -224,6 +226,7 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
 |   | endpoint | String | | Specifies the source ip or hostname **Required** when *state=present*. |
 |   | exclude | Array | | List of vm's or resource pools or folders to be excluded from an existing or new VMware protection job. Can be used only when *state=present* | 
 |   | include | Array | | List of vm's or resource pools or folders to be included in an existing or new VMware protection job. Can be used only when *state=present* |
+
 ## Outputs
 [top](#cohesity-protection-job)
 

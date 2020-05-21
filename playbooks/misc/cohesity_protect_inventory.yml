@@ -1,4 +1,4 @@
-# => Cohesity Full Protection for Physical, VMware, and GenericNAS environments
+# => Cohesity Full Protection for Physical, VMware, and GenericNas environments
 # =>
 # => Role: cohesity.cohesity_ansible_role
 # => Version: 0.6.0
@@ -150,7 +150,7 @@
         tags: [ 'cohesity', 'sources', 'register', 'generic_nas' ]
 
 
-# => Create a new Protection Job for Linux, Windows, VMware, GenericNAS hosts
+# => Create a new Protection Job for Linux, Windows, VMware, GenericNas hosts
 # =>
         # => Manage Physical
       - name: Create new Protection Job with all Linux Physical Servers

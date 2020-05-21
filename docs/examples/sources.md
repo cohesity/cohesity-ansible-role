@@ -1,5 +1,7 @@
 # Remove and Register Cohesity Sources Using Ansible Inventory
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Ansible Variables](#ansible-variables)
@@ -16,13 +18,13 @@
 ## Synopsis
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
 
-These example plays leverage the Ansible Inventory to dynamically register and remove Protection Sources for supported Environment Types.  The example playbooks are located at the root of the role in [examples/demos/](https://github.com/cohesity/cohesity-ansible-role/tree/master/examples/demos).
+These example plays leverage the Ansible Inventory to dynamically register and remove Protection Sources for supported Environment Types.  The example playbooks are located at the root of the role in [`playbooks/source-management`](../../playbooks/source-management).
 > **IMPORTANT**!<br>
-  These example plays should be considered for demo purposes only. These plays registers and removes Physical, VMware, and GenericNAS Protection Sources based on the Ansible Inventory.  There are no job validations or state checks to ensure that backups are not running.  If jobs exist for the Source, an error is raised and the play fails.
+  These example plays should be considered for demo purposes only. These plays registers and removes Physical, VMware, and GenericNas Protection Sources based on the Ansible Inventory.  There are no job validations or state checks to ensure that backups are not running.  If jobs exist for the Source, an error is raised and the play fails.
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using this playbook, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
@@ -38,7 +40,7 @@ These example plays leverage the Ansible Inventory to dynamically register and r
 ## Ansible Inventory Configuration
 [top](#Remove-and-Register-Cohesity-Sources-Using-Ansible-Inventory)
 
-To fully leverage these Ansible Plays, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../configuring-your-ansible-inventory.md).
+To fully leverage these Ansible Plays, you must configure your Ansible Inventory file with certain keys and values. This makes it much easier to manage the overall experience. See [Configure Your Ansible Inventory](../common/configuring-your-ansible-inventory.md).
 
 This is an example inventory file: (Remember to change it to suit your environment.)
 ```ini
@@ -99,7 +101,7 @@ nas_password=password
 
 Here is an example playbook that registers a new Protection Source for all Linux hosts in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 # => Cohesity Protection Sources Physical Linux hosts
@@ -137,7 +139,7 @@ Here is an example playbook that registers a new Protection Source for all Linux
 
 Here is an example playbook that registers a new Protection Source for all Windows hosts in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 # => Cohesity Protection Sources Physical Windows hosts
@@ -176,7 +178,7 @@ Here is an example playbook that registers a new Protection Source for all Windo
 
 Here is an example playbook that registers a new VMware protection source using details given in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 # => Cohesity Protection Sources VMware hosts
@@ -218,10 +220,10 @@ Here is an example playbook that registers a new VMware protection source using 
 
 Here is an example playbook that registers a GenericNas Protection sources using details given in the inventory. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
-# => Cohesity Protection Sources GenericNAS hosts
+# => Cohesity Protection Sources GenericNas hosts
 ---
   - hosts: workstation
     # => We need to specify these variables to connect
@@ -260,7 +262,7 @@ Here is an example playbook that registers a GenericNas Protection sources using
 
 Here is an example playbook that unregister Physical Protection Sources for all the Linux hosts in the inventory. (Remember to change it to suit your environment.)
 > **Notes:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
   - The removal of a Protection Source with an existing Protection Job is unsupported at this time.
 
 ```yaml
@@ -300,7 +302,7 @@ Here is an example playbook that unregister Physical Protection Sources for all 
 
 Here is an example playbook that unregisters Physical Protection Sources for all the Windows hosts in the inventory. (Remember to change it to suit your environment.)
 > **Notes:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
   - The removal of a Protection Source with an existing Protection Job is unsupported at this time.
 
 ```yaml
@@ -340,7 +342,7 @@ Here is an example playbook that unregisters Physical Protection Sources for all
 
 Here is an example playbook that unregisters VMware protection sources based on the details given in inventory. (Remember to change it to suit your environment.)
 > **Notes:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
   - The removal of a Protection Source with an existing Protection Job is unsupported at this time.
 
 ```yaml
@@ -381,7 +383,7 @@ Here is an example playbook that unregisters VMware protection sources based on 
 
 Here is an example playbook that unregisters NAS protection sources based on the details given in inventory. (Remember to change it to suit your environment.)
 > **Notes:**
-  - Before using these example playbooks, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
   - The removal of a Protection Source with an existing Protection Job is unsupported at this time.
 
 ```yaml

@@ -1,5 +1,7 @@
 # Frequently Asked Questions
 
+[Go back to Documentation home page ](../README.md)
+
 ### Do the Ansible Modules support Active Directory based Cohesity Accounts?
 Yes.  You can configure your domain specific credentials in one of two formats.
 - Domain\\username

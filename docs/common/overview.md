@@ -1,8 +1,11 @@
 # Cohesity Ansible Role
 
-![](assets/images/cohesity_ansible.png)
+
+![](../assets/images/cohesity_ansible.png)
 ---
 [![License: Apache2](https://img.shields.io/hexpm/l/plug.svg?style=popout)](https://github.com/cohesity/cohesity-ansible-role/blob/master/LICENSE)
+
+[Go back to Documentation home page ](../README.md)
 
 This project provides an Ansible role for interacting with [Cohesity DataPlatform](https://www.cohesity.com/products/data-platform).
 

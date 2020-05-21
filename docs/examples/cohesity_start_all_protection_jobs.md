@@ -1,5 +1,7 @@
 # Start All Registered Cohesity Protection Jobs
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Ansible Variables](#ansible-variables)
@@ -28,7 +30,7 @@ This play does not require that the Protection Jobs were created via the Ansible
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this playbook, refer to the [Setup](../../setup.md) and [How to Use](../../how-to-use.md) sections of this guide.
+  - Before using this playbook, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#Start-All-Registered-Cohesity-Protection-Jobs)
@@ -43,7 +45,7 @@ This play does not require that the Protection Jobs were created via the Ansible
 ## Working with the cohesity_facts Module
 [top](#Start-All-Registered-Cohesity-Protection-Jobs)
 
-This play leverages certain data collected as part of the `cohesity_facts` module distributed with the Cohesity Ansible Role.  For more information, see [Cohesity Facts](../../modules/cohesity_facts.md).
+This play leverages certain data collected as part of the `cohesity_facts` module distributed with the Cohesity Ansible Role.  For more information, see [Cohesity Facts](../library/cohesity_facts.md).
 
 ## Customize Your Playbooks
 [top](#Start-All-Registered-Cohesity-Protection-Jobs)

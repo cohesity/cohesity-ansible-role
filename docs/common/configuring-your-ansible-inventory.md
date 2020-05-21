@@ -1,5 +1,7 @@
 # Configure Your Ansible Inventory
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Ansible Inventory File](#Ansible-Inventory-File)
@@ -41,8 +43,8 @@ The list below comprises the required settings and values in order to use the De
 | [group_name:vars] | Collection of variables belonging to the named group.  This can include any required defaults, such as authentication settings or other related variables. | **Note**: If specifically configured in `[group_name]`, a variable at that level will override the value in this section. |
 | [vmware] | Inventory name followed by **ansible_host**="vCenter IP" information for managed VMware endpoints | **Note**: If the inventory name is resolvable, then the `ansible_host` information is not required. |
 | [vmware:vars] | Supported variables as required by VMware Environment Management | Variable Types:<br>**type**=VMware<br>**vmware_type**=VCenter<br>**source_username**=username<br>**source_password**=password|
-| [generic_nas] | Inventory name followed by **endpoint**="path" information for managed GenericNAS Endpoints | **Note**: Windows Shares must have '\' escaped, as in: `\\\\windows_host\\share_name` |
-| [generic_nas:vars] | Supported variables as required by GenericNAS Environment Management | Variable Types:<br>**type**=GenericNas<br>**nas_protocol**=SMB<br>**nas_username**=username<br>**nas_password**=password|
+| [generic_nas] | Inventory name followed by **endpoint**="path" information for managed GenericNas Endpoints | **Note**: Windows Shares must have '\' escaped, as in: `\\\\windows_host\\share_name` |
+| [generic_nas:vars] | Supported variables as required by GenericNas Environment Management | Variable Types:<br>**type**=GenericNas<br>**nas_protocol**=SMB<br>**nas_username**=username<br>**nas_password**=password|
 
 ### Example Ansible Inventory File
 [top](#Configure-Your-Ansible-Inventoryy)

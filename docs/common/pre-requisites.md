@@ -1,5 +1,7 @@
 # Prerequisites
 
+[Go back to Documentation home page ](../README.md)
+
 The prerequisites for using the Cohesity Ansible Role are:
 * Cohesity DataPlatform running version 6.0 or higher
 * [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) version 2.6 or higher
