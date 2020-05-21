@@ -20,7 +20,7 @@ Refer the Cohesity Ansible Role Documentation here. The documentation covers dif
 - [Feedback](./common/feedback.md)
 
 
-## <a name="modules"></a> Available modules 
+## <a name="modules"></a> Available modules :books:
 
 - [cohesity_facts](./library/cohesity_facts.md)
 - [cohesity_agent](./library/cohesity_agent.md)
@@ -30,7 +30,7 @@ Refer the Cohesity Ansible Role Documentation here. The documentation covers dif
 - [cohesity_restore_file](./library/cohesity_restore_file.md)
 - [cohesity_restore_vm](./library/cohesity_restore_vm.md)
 
-## <a name="tasks"></a> Taks for each module
+## <a name="tasks"></a> Taks for each module :scissors:
 
 - [agent](./tasks/agent.md)
 - [win_agent](./tasks/win_agent.md)
