@@ -29,6 +29,9 @@ Refer the Cohesity Ansible Role Documentation here. The documentation covers dif
 - [cohesity_job](./library/cohesity_job.md)
 - [cohesity_restore_file](./library/cohesity_restore_file.md)
 - [cohesity_restore_vm](./library/cohesity_restore_vm.md)
+- [cohesity_clone_vm](./library/cohesity_clone_vm.md)
+- [cohesity_policy](./library/cohesity_policy.md)
+- [cohesity_view](./library/cohesity_view.md)
 
 ## <a name="tasks"></a> Taks for each module :scissors:
 
@@ -38,6 +41,9 @@ Refer the Cohesity Ansible Role Documentation here. The documentation covers dif
 - [job](./tasks/job.md)
 - [restore_file](./tasks/restore_file.md)
 - [restore_vm](./tasks/restore_vm.md)
+- [clone_vm](./tasks/clone_vm.md)
+- [policy](./tasks/policy.md)
+- [view](./tasks/view.md)
 
 
 ## <a name="example"></a> Examples to get you started :bulb:
