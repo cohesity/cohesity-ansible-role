@@ -164,7 +164,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster. Not required if *download_uri* is given. |
-| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as<br>- Domain/username. Not required if *download_uri* is given.|
+| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as<br>- Domain@username. Not required if *download_uri* is given.|
 | X | **password** | String | | Password belonging to the selected Username (password used to login to cluster from UI).  This parameter is not logged. Not required if *download_uri* is given.|
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. Not required if *download_uri* is given. |
 |   | state | Choice | -**present**<br>-absent | Determines whether the agent is *present* or *absent* from the host. |

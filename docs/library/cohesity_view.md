@@ -25,6 +25,7 @@ The Ansible Module can be used to create, update and delete a view.
 * Ansible version 2.6 or higher
   * The [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a system running one of the following UNIX operating systems: Linux (Red Hat, Debian, CentOS), macOS, or any of the BSDs. Windows is not supported for the Control Machine.
 * Python version 2.6 or higher
+* [Python Management SDK](https://developer.cohesity.com/apidocs-641.html#/python/getting-started)
 
 ## Syntax
 [top](#cohesity-view)
@@ -157,7 +158,7 @@ The Ansible Module can be used to create, update and delete a view.
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as.<br>- Domain/username |
+| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as.<br>- Domain@username |
 | X | **password** | String | | Password belonging to the selected username (password used to login to cluster from UI).  This parameter is not logged. |
 |   | state | Choice | -**present**<br>-absent | Determines the state of the view. If the state is **present** the view is created and if the view already exists then the view is updated. If the state is **absent** the view is deleted |
 | X | **name** | String | | Specifies the name of the view. |
