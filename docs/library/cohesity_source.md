@@ -172,7 +172,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 |   | source_username | String | | Specifies username to access the target source. **Required** when *state=present* and *environment=VMware* |
 |   | source_password | String | | Specifies the password to access the target source. This parameter will not be logged. **Required** when *state=present* and *environment=VMware* |
 |   | nas_protocol | Choice | -**NFS**<br>-SMB | Specifies the type of connection for the NAS Mountpoint. SMB Share paths must be in \\\\server\\share format. **Required** when *state=present* and *environment=GenericNas* |
-|   | nas_username | String |  | Specifies username to access the target NAS Environment. Supported Format is Username or Domain\\Username. **Required** when *state=present* and *environment=GenericNas* and *nas_protocol=SMB* |
+|   | nas_username | String |  | Specifies username to access the target NAS Environment. Supported Format is Username or Domain@Username. **Required** when *state=present* and *environment=GenericNas* and *nas_protocol=SMB* |
 |   | nas_password | String | | Specifies the password to access the target NAS Environment. This parameter is not logged. Required when *state=present* and *environment=GenericNas* and *nas_protocol=SMB* |
 
 ## Outputs

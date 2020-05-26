@@ -98,6 +98,9 @@ The Ansible Module creates or deletes a Protection Policy for the Cohesity Clust
 
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
+| X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
+| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured .<br>- Domain@username|
+| X | **password** | String | | Password belonging to the selected Username (password used to login to cluster from UI).  This parameter is not logged. |
 | X | **name** | String | | Name of the Protection Policy. |
 |  | description | String | | Protection Policy Description.|
 |  | state | Choice | -**present**<br>-absent | Determines if the Protection Policy should be present or absent from the host.|

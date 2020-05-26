@@ -33,7 +33,7 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
 
 ```yaml
 - cohesity_restore_vm:
-    server: <ip or hostname for cohesity cluster>
+    cluster: <ip or hostname for cohesity cluster>
     username: <username with cluster level permissions>
     password: <password for the selected user>
     validate_certs: <boolean to determine if SSL certificates should be validated>
