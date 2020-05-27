@@ -77,6 +77,14 @@ Function New-CohesityToken {
             "password"       = $self.password
             "domain"         = $cred[1]
             }
+      } elseif ($self.username -Match "/")
+      {
+        $cred = $self.username -split '/'
+        $payload = @{
+            "username"       = $cred[1]
+            "password"       = $self.password
+            "domain"         = $cred[0]
+            }
       }
       else
       {
