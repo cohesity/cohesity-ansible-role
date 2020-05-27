@@ -98,7 +98,7 @@ The Ansible Module is used to clone VMs using snapshots of backup made from VMs.
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured .<br>- Domain@username|
+| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured .<br>- username@domain|
 | X | **password** | String | | Password belonging to the selected Username (password used to login to cluster from UI).  This parameter is not logged. |
 | X | **name** | String | | Name of the Cloned VM. |
 |  | state | Choice | -**present**<br>-absent | Determines if the clone should be present or absent from the host.|

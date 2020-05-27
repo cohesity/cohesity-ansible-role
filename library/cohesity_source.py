@@ -128,7 +128,7 @@ options:
   nas_username:
     description:
       - Specifies username to access the target NAS Environment.
-      - Supported Format is Username or Domain@Username or Domain/username (will be deprecated in future).
+      - Supported Format is Username or username@domain or Domain/username (will be deprecated in future).
       - Required when I(state=present) and I(environment=GenericNas) and I(nas_protocol=SMB)
   nas_password:
     description:
