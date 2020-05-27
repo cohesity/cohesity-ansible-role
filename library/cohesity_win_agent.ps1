@@ -69,13 +69,13 @@ Function New-CohesityToken {
         ContentType = "application/json"
       }
 
-     if ($self.username -Match "/")
+     if ($self.username -Match "@")
      {
-        $cred = $self.username -split '/'
+        $cred = $self.username -split '@'
         $payload = @{
-            "username"       = $cred[1]
+            "username"       = $cred[0]
             "password"       = $self.password
-            "domain"         = $cred[0]
+            "domain"         = $cred[1]
             }
       }
       else

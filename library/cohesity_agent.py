@@ -10,19 +10,21 @@ import os
 import shutil
 import time
 
-from tempfile import mkstemp, mkdtemp
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.urls import open_url, urllib_error
 from ansible.module_utils._text import to_bytes, to_native
+from ansible.module_utils.urls import open_url, urllib_error
+from tempfile import mkstemp, mkdtemp
 
 try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, \
+        raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
 except Exception as e:
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, \
+        raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
 
 
 ANSIBLE_METADATA = {
@@ -153,6 +155,7 @@ RETURN = '''
 '''
 
 SLEEP_TIME_SECONDS = 120
+SECONDS_MINUTES_CONVERSION = 60
 
 class InstallError(Exception):
     pass
@@ -561,7 +564,7 @@ def update_agent(module):
                     result['version'] = poll_source_details['agent']['version']
                     module.exit_json(**result)
                 time.sleep(SLEEP_TIME_SECONDS)
-                wait_time = wait_time - 2
+                wait_time = wait_time - (SLEEP_TIME_SECONDS/SECONDS_MINUTES_CONVERSION)
             result['changed'] = True
             result['msg'] = "The agent upgrade request is accepted." \
                             " The upgrade is not finished in the wait time"

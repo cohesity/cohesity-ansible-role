@@ -266,10 +266,10 @@ def get_cohesity_client(module):
     username = module.params.get('username')
     password = module.params.get('password')
     domain = 'LOCAL'
-    if "/" in username:
-        user_domain = username.split("/")
-        username = user_domain[1]
-        domain = user_domain[0]
+    if "@" in username:
+        user_domain = username.split("@")
+        username = user_domain[0]
+        domain = user_domain[1]
 
     cohesity_client = CohesityClient(cluster_vip=cluster_vip,
                                      username=username,

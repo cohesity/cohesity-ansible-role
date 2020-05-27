@@ -958,8 +958,8 @@ def main():
                         module.params.get('start_time') +
                         ").  Please review and submit the correct Protection Job Starting time.")
                 job_details['startTime'] = dict(
-                    hour=start_time[0] + start_time[1],
-                    minute=start_time[2] + start_time[3]
+                    hour=int(start_time[0] + start_time[1]),
+                    minute=int(start_time[2] + start_time[3])
                 )
 
             response = register_job(module, job_details)
