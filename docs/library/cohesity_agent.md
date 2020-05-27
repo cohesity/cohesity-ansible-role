@@ -75,7 +75,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 ```yaml
 - cohesity_agent:
     cluster: cohesity.lab
-    username: demo@administrator
+    username: administrator@demo
     password: password
     state: present
 ```
