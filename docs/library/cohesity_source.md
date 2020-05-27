@@ -159,7 +159,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as.<br>- Domain@username |
+| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as.<br>- Domain@username or Domain/username (will be deprecated in future). |
 | X | **password** | String | | Password belonging to the selected Username (password used to login to cluster from UI).  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
 |   | state | Choice | -**present**<br>-absent | Determines the state of the Protection Source. |
@@ -172,7 +172,7 @@ The Ansible Module registers or removes Cohesity Protection Sources to/from a Co
 |   | source_username | String | | Specifies username to access the target source. **Required** when *state=present* and *environment=VMware* |
 |   | source_password | String | | Specifies the password to access the target source. This parameter will not be logged. **Required** when *state=present* and *environment=VMware* |
 |   | nas_protocol | Choice | -**NFS**<br>-SMB | Specifies the type of connection for the NAS Mountpoint. SMB Share paths must be in \\\\server\\share format. **Required** when *state=present* and *environment=GenericNas* |
-|   | nas_username | String |  | Specifies username to access the target NAS Environment. Supported Format is Username or Domain@Username. **Required** when *state=present* and *environment=GenericNas* and *nas_protocol=SMB* |
+|   | nas_username | String |  | Specifies username to access the target NAS Environment. Supported Format is Username or Domain@Username or Domain/username (will be deprecated in future). **Required** when *state=present* and *environment=GenericNas* and *nas_protocol=SMB* |
 |   | nas_password | String | | Specifies the password to access the target NAS Environment. This parameter is not logged. Required when *state=present* and *environment=GenericNas* and *nas_protocol=SMB* |
 
 ## Outputs
