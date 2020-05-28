@@ -130,7 +130,7 @@ The following information is copied directly from the included task in this role
     validate_certs: "{{ cohesity_validate_certs }}"
     state:  "{{ cohesity_restore_vm.state | default('present') }}"
     name: "{{ cohesity_restore_vm.name | default('') }}"
-    environment: "{{ cohesity_restore_vm.environment | default('Physical') }}"
+    environment: "{{ cohesity_restore_vm.environment | default('VMware') }}"
     job_name: "{{ cohesity_restore_vm.job_name | default('') }}"
     endpoint: "{{ cohesity_restore_vm.endpoint | default('') }}"
     backup_id: "{{ cohesity_restore_vm.backup_id | default('') }}"
