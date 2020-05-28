@@ -703,7 +703,7 @@ def main():
                         'suffix')
 
                 if module.params.get('restore_to_source'):
-                    datastore_id =  module.params.get('datastore_id')
+                    datastore_id = module.params.get('datastore_id')
                     resource_pool_id = module.params.get('resource_pool_id')
                     restore_to_source_details = get_source_details(module, True)
                     restore_to_source_objects = get_vmware_source_objects(module, restore_to_source_details['id'])
