@@ -22,32 +22,32 @@ This Ansible Module collects and compiles details about a Cohesity cluster.  The
 {
   "cluster": {
     "nodes": [
-          \# Array of Cohesity Node Details
+          Array of Cohesity Node Details
     ],
     "protection": {
       "jobs": [
-        \# Array of Job Details
+         Array of Job Details
       ],
       "policies": [
-        \# Array of Backup Policy Information
+         Array of Backup Policy Information
       ],
       "runs": [
-        \# Array of Backup executions
+         Array of Backup executions
       ],
       "sources": {
         "GenericNas": [
-          \# Array of GenericNas Protection Sources
+           Array of GenericNas Protection Sources
         ],
         "Physical": [
-          \# Array of Physical Protection Sources
+           Array of Physical Protection Sources
         ],
         "VMware":  [
-          \# Array of VMware Protection Sources
+           Array of VMware Protection Sources
         ],
       }
     },
     "storage_domains": [
-          \# Array of Cohesity Backup Storage Domains
+           Array of Cohesity Backup Storage Domains
     ],
   }
 }
@@ -145,32 +145,32 @@ This Ansible Module collects and compiles details about a Cohesity cluster.  The
 {
   "cluster": {
     "nodes": [
-          \# Array of Cohesity Node Details
+           Array of Cohesity Node Details
     ],
     "protection": {
       "jobs": [
-        \# Array of Job Details
+         Array of Job Details
       ],
       "policies": [
-        \# Array of Backup Policy Information
+         Array of Backup Policy Information
       ],
       "runs": [
-        \# Array of Backup executions
+         Array of Backup executions
       ],
       "sources": {
         "GenericNas": [
-          \# Array of GenericNas Protection Sources
+           Array of GenericNas Protection Sources
         ],
         "Physical": [
-          \# Array of Physical Protection Sources
+           Array of Physical Protection Sources
         ],
         "VMware":  [
-          \# Array of VMware Protection Sources
+           Array of VMware Protection Sources
         ],
       }
     },
     "storage_domains": [
-          \# Array of Cohesity Backup Storage Domains
+           Array of Cohesity Backup Storage Domains
     ],
   }
 }
