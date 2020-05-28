@@ -265,7 +265,6 @@ def download_agent(module, path):
 
         agent = open_url(url=uri, headers=headers,
                          validate_certs=False, timeout=REQUEST_TIMEOUT)
-        
         resp_headers = agent.headers
         if 'content-disposition' in resp_headers.keys():
             filename = resp_headers['content-disposition'].split("=")[1]

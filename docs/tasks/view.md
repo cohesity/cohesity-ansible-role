@@ -1,5 +1,7 @@
 # Task: Cohesity View Management
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Requirements](#requirements)
@@ -26,14 +28,15 @@ Use this task to create, update and delete a Cohesity view.
 * Ansible version 2.6 or higher
   * The [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a system running one of the following UNIX operating systems: Linux (Red Hat, Debian, CentOS), macOS, or any of the BSDs. Windows is not supported for the Control Machine.
 * Python version 2.6 or higher
+* [Python Management SDK](https://developer.cohesity.com/apidocs-641.html#/python/getting-started)
 
 > **Notes:**
-  - Before using this task, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using this task, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#task-cohesity-view-management)
 
-The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Cohesity View](../modules/cohesity_view.md?id=syntax).
+The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Cohesity View](../library/cohesity_view.md).
 ```yaml
 cohesity_view:
   state: 
@@ -67,7 +70,7 @@ Following inventory file can be used for the ansible-playbook runs below. Copy t
 
 ```
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `create_view.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -133,7 +136,7 @@ You can create a file called `create_view.yml`, add the contents from the sample
 
 This is an example playbook used to update a view. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---
@@ -186,7 +189,7 @@ This is an example playbook used to update a view. (Remember to change it to sui
 
 This is an example playbook that deletes a Cohesity view. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---

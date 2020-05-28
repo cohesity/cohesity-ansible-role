@@ -1,5 +1,7 @@
 # Task: Cohesity Protection Job Management
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Requirements](#requirements)
@@ -32,12 +34,12 @@ Use this task to add and configure Cohesity Protection Jobs.
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this task, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using this task, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#task-cohesity-protection-job-management)
 
-The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Cohesity Protection Job](/modules/cohesity_job.md?id=syntax).
+The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Cohesity Protection Job](../library/cohesity_job.md).
 ```yaml
 cohesity_protection:
   state: present
@@ -60,7 +62,7 @@ This example shows how to include the Cohesity Ansible Role in your custom playb
 
 This is an example playbook that creates a new Protection Job and adds Physical hosts to the job based on the registered inventory hostname. (Remember to change it to suit your environment.)
 > **Notes:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
   - This example requires that the endpoints matches existing Protection Sources.  See [Task: Cohesity Protection Source Management](tasks/source.md).
   - Make sure includeFilePath and excludeFilePaths exist on the sources
 
@@ -125,7 +127,7 @@ You can create a file called `protection_job_physical.yml`, add the contents fro
 
 This is an example playbook that creates a new Protection Job for the chosen vCenter host. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---
@@ -169,7 +171,7 @@ This is an example playbook that creates a new Protection Job for the chosen vCe
 
 This is an example playbook that starts an existing VMware protection job. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---
@@ -207,7 +209,7 @@ This is an example playbook that starts an existing VMware protection job. (Reme
 
 This is an example playbook that deletes a Protection job. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---

@@ -18,11 +18,27 @@ It includes modules, tasks, and example plays useful for automating common tasks
 
 This Ansible role leverages Cohesity REST API to interact with the Cohesity Cluster.
 
-## Documentation
+## Table of contents :scroll:
 
-* [Online reference for Cohesity Ansible Role](https://cohesity.github.io/cohesity-ansible-role).
+ - [Getting Started](#get-started)
+ - [More samples playbooks](#example)
+ - [How can you contribute](#contribute)
+ - [Suggestions and Feedback](#suggest)
 
-## Suggestions and Feedback
+
+## <a name="get-started"></a> Let's get started :hammer_and_pick:
+
+* [Documentation for Cohesity Ansible Role](./docs).
+
+## <a name="examples"></a> Some samples to get you going :bulb:
+
+* Refer [`playbooks`](./playbooks) folder to find more examples.
+
+## <a name="contribute"></a> Contribute :handshake:
+
+* [Refer our contribution guideline](./CONTRIBUTING.md).
+
+## <a name="suggest"></a> Suggestions and Feedback :raised_hand:
 
 We would love to hear from you. Please send your suggestions and feedback to: [cohesity-api-sdks@cohesity.com](mailto:cohesity-api-sdks@cohesity.com)
 

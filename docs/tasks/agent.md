@@ -1,5 +1,7 @@
 # Task: Cohesity Agent Management - Linux
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Requirements](#requirements)
@@ -31,12 +33,12 @@ Use this task to install the required packages on Ubuntu/Debian and CentOS/RHEL 
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this task, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using this task, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#task-cohesity-agent-management---linux)
 
-The following is a list of variables and the configuration expected when using this task in your playbook.  For more information on these variables, see [Cohesity Agent Management - Linux](../modules/cohesity_agent.md?id=syntax).
+The following is a list of variables and the configuration expected when using this task in your playbook.  For more information on these variables, see [Cohesity Agent Management - Linux](../library/cohesity_agent.md).
 ```yaml
 cohesity_agent:
   state: "present"
@@ -70,7 +72,7 @@ ansible_user=cohesity
 
 This is an example playbook that installs the Cohesity agent on all `linux` hosts. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `cohesity-agent-linux.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -109,7 +111,7 @@ You can create a file called `cohesity-agent-linux.yml`, add the contents from t
 
 This is an example playbook that installs the Cohesity agent on all `linux` hosts using the Root account. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---
@@ -148,7 +150,7 @@ This is an example playbook that installs the Cohesity agent on all `linux` host
 This is an example playbook that installs the Cohesity agent on all `linux` hosts using a custom download location. (Remember to change it to suit your environment.)
 > **Notes:**
   - When using the default download location, the Cohesity agent installer is placed in `/tmp/<temp-dir`.  If your environment prevents the use of `/tmp` with a `noexec` option, then you must select an alternate location.
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---
