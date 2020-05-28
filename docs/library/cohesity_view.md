@@ -156,7 +156,7 @@ The Ansible Module can be used to create, update and delete a view.
 | Required | Parameters | Type | Choices/Defaults | Comments |
 | --- | --- | --- | --- | --- |
 | X | **cluster** | String | | IP or FQDN for the Cohesity cluster |
-| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as.<br>- Domain/username |
+| X | **username** | String | | Username with which Ansible will connect to the Cohesity cluster (username used to login to cluster from UI). Domain-specific credentials can be configured as<br>- username@domain |
 | X | **password** | String | | Password belonging to the selected username (password used to login to cluster from UI).  This parameter is not logged. |
 |   | state | Choice | -**present**<br>-absent | Determines the state of the view. If the state is **present** the view is created and if the view already exists then the view is updated. If the state is **absent** the view is deleted |
 | X | **name** | String | | Specifies the name of the view. |
