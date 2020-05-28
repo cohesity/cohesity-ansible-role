@@ -18,7 +18,7 @@
 
 This Ansible Module collects and compiles details about a Cohesity cluster.  The data can be compiled and returned as a variable, which can then be used to perform actions based on the collected information.
 
-```json
+```
 {
   "cluster": {
     "nodes": [
@@ -141,7 +141,7 @@ This Ansible Module collects and compiles details about a Cohesity cluster.  The
 ## Outputs
 [top](#cohesity-facts)
 
-```json
+```
 {
   "cluster": {
     "nodes": [
