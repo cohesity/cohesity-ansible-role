@@ -33,7 +33,7 @@ Refer the Cohesity Ansible Role Documentation here. The documentation covers dif
 - [cohesity_policy](./library/cohesity_policy.md)
 - [cohesity_view](./library/cohesity_view.md)
 
-## <a name="tasks"></a> Taks for each module :scissors:
+## <a name="tasks"></a> Tasks for each module :scissors:
 
 - [agent](./tasks/agent.md)
 - [win_agent](./tasks/win_agent.md)

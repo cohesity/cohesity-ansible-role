@@ -28,7 +28,7 @@ Use this task to create, update and delete a Cohesity view.
 * Ansible version 2.6 or higher
   * The [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a system running one of the following UNIX operating systems: Linux (Red Hat, Debian, CentOS), macOS, or any of the BSDs. Windows is not supported for the Control Machine.
 * Python version 2.6 or higher
-* [Python Management SDK](https://developer.cohesity.com/apidocs-641.html#/python/getting-started)
+* [Cohesity Management SDK](https://developer.cohesity.com/apidocs-641.html#/python/getting-started)
 
 > **Notes:**
   - Before using this task, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.

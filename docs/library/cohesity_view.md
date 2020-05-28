@@ -23,6 +23,7 @@ The Ansible Module can be used to create, update and delete a view.
 * Ansible version 2.6 or higher
   * The [Ansible Control Machine](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-machine-requirements) must be a system running one of the following UNIX operating systems: Linux (Red Hat, Debian, CentOS), macOS, or any of the BSDs. Windows is not supported for the Control Machine.
 * Python version 2.6 or higher
+* [Cohesity Management SDK](https://developer.cohesity.com/apidocs-641.html#/python/getting-started)
 
 ## Syntax
 [top](#cohesity-view)
