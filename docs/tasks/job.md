@@ -191,7 +191,7 @@ This is an example playbook that starts an existing VMware protection job. (Reme
       - name: Start protection job
         include_role:
             name: cohesity.cohesity_ansible_role
-            tasks_from: source
+            tasks_from: job
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
             cohesity_admin: "{{ var_cohesity_admin }}"
@@ -230,7 +230,7 @@ This is an example playbook that deletes a Protection job. (Remember to change i
       - name: Delete protection job
         include_role:
             name: cohesity.cohesity_ansible_role
-            tasks_from: source
+            tasks_from: job
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
             cohesity_admin: "{{ var_cohesity_admin }}"

@@ -34,7 +34,7 @@ Use this task to perform a Cohesity VM restore operation.
 ## Ansible Variables
 [top](#task-cohesity-virtual-machine-restore-operation)
 
-The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Syntax](../library/cohesity_job.md) in the Cohesity Protection Job module.
+The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Syntax](../library/cohesity_restore_vm.md) in the Cohesity Restore VM module.
 ```yaml
 cohesity_restore_vm:
   state: present
@@ -80,7 +80,7 @@ This is an example playbook that creates a new Virtual Machine restore operation
         var_cohesity_admin: admin
         var_cohesity_password: admin
         var_validate_certs: False
-        var_cohesity_restore_name: "Ansible Test File Restore"
+        var_cohesity_restore_name: "Ansible Test VM Restore"
         var_cohesity_endpoint:
         var_cohesity_job_name:
         var_cohesity_vms:
