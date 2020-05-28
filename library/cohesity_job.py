@@ -428,6 +428,32 @@ def get_vmware_vm_ids(module, job_meta_data, job_details, vm_names):
         raise__cohesity_exception__handler(error, module)
 
 
+def get_view_storage_domain_id(module, self):
+    '''
+    function to get view's storage domain id.
+    :param module:
+    :param self:
+    :return:
+    '''
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = self['token']
+    view_name = module.params.get('view_name')
+    try:
+        uri = "https://" + server + "/irisservices/api/v1/public/views/" + view_name
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        response = open_url(url=uri, method="GET", headers=headers,
+                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
+        response = json.loads(response.read())
+        return response['viewBoxId']
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
 def register_job(module, self):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
@@ -735,7 +761,7 @@ def update_vmware_job(module, job_meta_data, job_details):
         )
 
 
-def update_physical_server_job(module, job_details, job_exists):
+def update_job_util(module, job_details, job_exists):
     if len(module.params.get('protection_sources')
            ) == 1 and not module.params.get('protection_sources')[0]:
         module.fail_json(
@@ -808,9 +834,10 @@ def main():
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
-                choices=['VMware', 'PhysicalFiles', 'Physical', 'GenericNas'],
+                choices=['VMware', 'PhysicalFiles', 'Physical', 'GenericNas', 'View'],
                 default='PhysicalFiles'
             ),
+            view_name=dict(type='str', required=False),
             protection_sources=dict(type='list', aliases=['sources'], default=''),
             protection_policy=dict(type='str', aliases=['policy'], default='Bronze'),
             storage_domain=dict(type='str', default='DefaultStorageDomain'),
@@ -877,8 +904,8 @@ def main():
         if job_exists:
             if module.params.get('environment') == "VMware":
                 update_vmware_job(module, job_meta_data, job_details)
-            if module.params.get('environment') in ("PhysicalFiles", "Physical"):
-                update_physical_server_job(module, job_details, job_exists)
+            if module.params.get('environment') in ("PhysicalFiles", "Physical", "GenericNas"):
+                update_job_util(module, job_details, job_exists)
             else:
                 module.exit_json(
                     msg="The protection job already exists",
@@ -889,35 +916,37 @@ def main():
 
         else:
             check__mandatory__params(module)
+            if job_details['environment'] == 'View':
+                job_details['viewName'] = module.params.get('view_name')
+                job_details['viewBoxId'] = get_view_storage_domain_id(module, job_details)
+                del job_details['sourceIds']
+            else:
+                job_details['sourceIds'] = list()
+                if job_details['environment'] == "PhysicalFiles":
+                    job_details['environment'] = "Physical"
+                prot_source = dict(
+                    environment=job_details['environment'],
+                    token=job_details['token']
+                )
+                i = 0
+                for source in module.params.get('protection_sources'):
+                    prot_source['endpoint'] = source['endpoint']
+                    source_id = get__prot_source_id__by_endpoint(
+                        module, prot_source)
+                    if source_id:
+                        job_details['sourceIds'].append(source_id)
+                        module.params.get('protection_sources')[i]['endpoint'] = source_id
+                    else:
+                        module.params.get('protection_sources')[i]['endpoint'] = None
+                    i += 1
 
-            job_details['sourceIds'] = list()
-            if job_details['environment'] == "PhysicalFiles":
-                job_details['environment'] = "Physical"
-            prot_source = dict(
-                environment=job_details['environment'],
-                token=job_details['token']
-            )
-            i = 0
-            for source in module.params.get('protection_sources'):
-                prot_source['endpoint'] = source['endpoint']
-                source_id = get__prot_source_id__by_endpoint(
-                    module, prot_source)
-                if source_id:
-                    job_details['sourceIds'].append(source_id)
-                    module.params.get('protection_sources')[i]['endpoint'] = source_id
-                else:
-                    module.params.get('protection_sources')[i]['endpoint'] = None
-                i += 1
-
-            job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
-                module, job_details)
+                job_details['parentSourceId'] = get__prot_source_root_id__by_environment(
+                    module, job_details)
+                job_details['viewBoxId'] = get__storage_domain_id__by_name(
+                    module, job_details)
             job_details['environment'] = module.params.get('environment')
             job_details['policyId'] = get__prot_policy_id__by_name(
                 module, job_details)
-
-            job_details['viewBoxId'] = get__storage_domain_id__by_name(
-                module, job_details)
-
             if module.params.get('start_time'):
                 start_time = list(module.params.get(
                     'start_time').replace(":", ""))

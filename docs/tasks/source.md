@@ -1,5 +1,7 @@
 # Task: Cohesity Protection Source Management
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Requirements](#requirements)
@@ -31,12 +33,12 @@ Use this task to add and configure Cohesity Protection Sources.
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this task, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using this task, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#task-cohesity-protection-source-management)
 
-The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Cohesity Protection Source](../modules/cohesity_source.md?id=syntax).
+The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Cohesity Protection Source](../library/cohesity_source.md).
 ```yaml
 cohesity_source:
   state: present
@@ -49,6 +51,9 @@ cohesity_source:
   nas_protocol: ""
   nas_username: ""
   nas_password: ""
+  skip_validation: ""
+  nas_type: ""
+
 ```
 ## Customize Your Playbooks
 [top](#task-cohesity-protection-source-management)
@@ -73,7 +78,7 @@ Following inventory file can be used in the ansible-playbook runs below. Copy th
 ansible_user=cohesity
 ```
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 You can create a file called `protection_source_physical.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
@@ -115,7 +120,7 @@ You can create a file called `protection_source_physical.yml`, add the contents 
 
 This is an example playbook that creates new Protection Sources for the chosen vCenter host. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---
@@ -158,7 +163,7 @@ This is an example playbook that creates new Protection Sources for the chosen v
 
 This is an example playbook that creates new Protection Sources for NFS export. (Remember to change it to suit your environment.)
 > **Note:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ```yaml
 ---
@@ -189,7 +194,7 @@ This is an example playbook that creates new Protection Sources for NFS export. 
             cohesity_source:
                 state: present
                 endpoint: "{{ var_export_path }}"
-                environment: "GenericNAS"
+                environment: "GenericNaS"
                 nas_protocol: "NFS"
         tags: [ 'cohesity', 'sources', 'register', 'nfs' ]
 ```
@@ -217,6 +222,8 @@ The following information is copied directly from the included task in this role
     nas_protocol: "{{ cohesity_source.nas_protocol | default('NFS') }}"
     nas_username: "{{ cohesity_source.nas_username | default('') }}"
     nas_password: "{{ cohesity_source.nas_password | default('') }}"
+    skip_validation: "{{ cohesity_source.skip_validation | default(False) }}"
+    nas_type: "{{ cohesity_source.nas_type | default('Host') }}"
   tags: always
 
 ```

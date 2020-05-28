@@ -1,0 +1,20 @@
+---
+- name: "Cohesity Protection Policy: Set {{ cohesity_policy.name | default('policy_name') }} to state of {{ cohesity_policy.state | default('present') }}"
+  cohesity_policy:
+    cluster: "{{ cohesity_server }}"
+    username: "{{ cohesity_admin }}"
+    password: "{{ cohesity_password }}"
+    state: "{{ cohesity_policy.state | default('present') }}"
+    name: "{{ cohesity_policy.name | default('') }}"
+    description: "{{ cohesity_policy.description | default('') }}"
+    days_to_retain: "{{ cohesity_policy.days_to_retain | default(90) }}"
+    retries: "{{ cohesity_policy.retries | default(3) }}"
+    retry_interval: "{{ cohesity_policy.retry_interval | default(30) }}"
+    incremental_backup_schedule: "{{ cohesity_policy.incremental_backup_schedule }}"
+    full_backup_schedule: "{{ cohesity_policy.full_backup_schedule | default('') }}"
+    blackout_window: "{{ cohesity_policy.blackout_window | default('') }}"
+    bmr_backup_schedule: "{{ cohesity_policy.bmr_backup_schedule | default('') }}"
+    log_backup_schedule: "{{ cohesity_policy.log_backup_schedule | default('') }}"
+    extended_retention: "{{ cohesity_policy.extended_retention | default('') }}"
+    archival_copy: "{{ cohesity_policy.archival_copy | default('') }}"
+  tags: always

@@ -148,4 +148,9 @@ def get__cohesity_auth__token(self):
         auth.username = user_domain[1]
         auth.domain = user_domain[0]
 
+    if "@" in auth.username:
+        user_domain = auth.username.split("@")
+        auth.username = user_domain[0]
+        auth.domain = user_domain[1]
+
     return auth.get_token(server)

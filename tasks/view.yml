@@ -1,0 +1,20 @@
+---
+- name: "Cohesity view: Set {{ cohesity_view.name | default('view_name') }} to state of {{ cohesity_view.state | default('present') }}"
+  cohesity_view:
+    cluster: "{{ cohesity_server }}"
+    username: "{{ cohesity_admin }}"
+    password: "{{ cohesity_password }}"
+    state: "{{ cohesity_view.state | default('present') }}"
+    name: "{{ cohesity_view.name }}"
+    description: "{{ cohesity_view.description | default('') }}"
+    storage_domain: "{{ cohesity_view.storage_domain }}"
+    qos_policy: "{{ cohesity_view.qos_policy | default('Backup Target Low') }}"
+    protocol: "{{ cohesity_view.protocol | default('All') }}"
+    case_insensitive: "{{ cohesity_view.case_insensitive | default(True) }}"
+    object_key_pattern: "{{ cohesity_view.object_key_pattern | default('') }}"
+    inline_dedupe_compression: "{{ cohesity_view.inline_dedupe_compression | default(False) }}"
+    security: "{{ cohesity_view.security | default('') }}"
+    quota: "{{ cohesity_view.quota | default('') }}"
+    nfs_options: "{{ cohesity_view.nfs_options | default('') }}"
+    smb_options: "{{ cohesity_view.smb_options | default('') }}"
+  tags: always

@@ -1,5 +1,7 @@
 # Task: Cohesity File Restore Operation
 
+[Go back to Documentation home page ](../README.md)
+
 ## Table of Contents
 - [Synopsis](#synopsis)
 - [Requirements](#requirements)
@@ -27,12 +29,12 @@ Use this task to perform a Cohesity file restore operation.
 
 > **Notes:**
   - Currently, the Ansible Module requires Full Cluster Administrator access.
-  - Before using this task, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
+  - Before using this task, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
 
 ## Ansible Variables
 [top](#task-cohesity-file-restore-operation)
 
-The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Syntax](/modules/cohesity_restore_file.md?id=syntax) in the Cohesity Restore Files module.
+The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Syntax](../library/cohesity_restore_file.md) in the Cohesity Restore Files module.
 ```yaml
 cohesity_restore_file:
   state: "present"
@@ -59,9 +61,9 @@ This example shows how to include the Cohesity Ansible Role in your custom playb
 
 This is an example playbook that creates a new file restore operation for a Protection Job. (Remember to change it to suit your environment.)
 > **Notes:**
-  - Before using these example playbooks, refer to the [Setup](../setup.md) and [How to Use](../how-to-use.md) sections of this guide.
-  - This example requires that the endpoint matches an existing Protection Source. See the [Cohesity Protection Source Management](tasks/source.md) task.
-  - This example requires that the Protection job exists and has been run at least once. See the [Cohesity Protection Job Management](tasks/job.md) task.
+  - Before using these example playbooks, refer to the [Setup](../common/setup.md) and [How to Use](../common/how-to-use.md) sections of this guide.
+  - This example requires that the endpoint matches an existing Protection Source. See the [Cohesity Protection Source Management](../tasks/source.md) task.
+  - This example requires that the Protection job exists and has been run at least once. See the [Cohesity Protection Job Management](../tasks/job.md) task.
 
 You can create a file called `restore_files.yml`, add the contents from the sample playbook, and then run the playbook using `ansible-playbook`:
   ```
