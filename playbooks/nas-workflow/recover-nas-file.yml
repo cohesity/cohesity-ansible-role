@@ -32,4 +32,3 @@
                   - /demo/demo.json
                 restore_location: /demo
                 wait_for_job: yes
-
