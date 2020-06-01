@@ -10,6 +10,7 @@
     environment: "{{ cohesity_source.environment | default('Physical') }}"
     host_type: "{{ cohesity_source.host_type | default('Linux') }}"
     vmware_type: "{{ cohesity_source.vmware_type | default('VCenter') }}"
+    refresh: "{{ cohesity_source.refresh | default(False) }}"
     source_username: "{{ cohesity_source.source_username | default('') }}"
     source_password: "{{ cohesity_source.source_password | default('') }}"
     nas_protocol: "{{ cohesity_source.nas_protocol | default('NFS') }}"
