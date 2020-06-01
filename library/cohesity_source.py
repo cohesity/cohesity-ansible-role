@@ -344,9 +344,11 @@ def refresh_vmware_source(module, source_id, access_token):
         uri = "https://" + server + "/irisservices/api/v1/public/protectionSources/refresh/" + str(source_id)
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
-        response = open_url(url=uri, headers=headers,
+        response = open_url(url=uri,
+                            headers=headers,
                             validate_certs=validate_certs,
-                            method='POST', timeout=REQUEST_TIMEOUT)
+                            method='POST',
+                            timeout=REQUEST_TIMEOUT)
         results = dict(
             changed=True,
             msg="Refreshed VMware protection source",
