@@ -20,10 +20,10 @@ This Ansible role leverages Cohesity REST API to interact with the Cohesity Clus
 
 ## Table of contents :scroll:
 
- - [Getting Started](#get-started)
- - [More samples playbooks](#examples)
- - [How can you contribute](#contribute)
- - [Suggestions and Feedback](#suggest)
+ - [Getting Started](https://github.com/cohesity/cohesity-ansible-role/blob/master/README.md#get-started)
+ - [More samples playbooks](https://github.com/cohesity/cohesity-ansible-role/blob/master/README.md#examples)
+ - [How can you contribute](https://github.com/cohesity/cohesity-ansible-role/blob/master/README.md#contribute)
+ - [Suggestions and Feedback](https://github.com/cohesity/cohesity-ansible-role/blob/master/README.md#suggest)
 
 
 ## <a name="get-started"></a> Let's get started :hammer_and_pick:
