@@ -9,13 +9,13 @@ import json
 import time
 
 from ansible.module_utils.basic import AnsibleModule
-from cohesity_management_sdk.cohesity_client import CohesityClient
 from cohesity_management_sdk.exceptions.api_exception import APIException
 from cohesity_management_sdk.models.cancel_protection_job_run_param import CancelProtectionJobRunParam
 from cohesity_management_sdk.models.delete_protection_job_param import DeleteProtectionJobParam
 from cohesity_management_sdk.models.protection_job_request_body import ProtectionJobRequestBody
 from cohesity_management_sdk.models.run_protection_job_param import RunProtectionJobParam
 from cohesity_management_sdk.models.time_of_day import TimeOfDay
+from module_utils.storage.cohesity.cohesity_module_utils import get_cohesity_client
 
 try:
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec,\
@@ -266,30 +266,6 @@ def delete_physical_server_job(module, job_id):
         raise__cohesity_exception__handler(error, module)
 
 
-def get_cohesity_client(module):
-    '''
-    function to get cohesity cohesity client
-    :param module: object that holds parameters passed to the module
-    :return:
-    '''
-    try:
-        cluster_vip = module.params.get('cluster')
-        username = module.params.get('username')
-        password = module.params.get('password')
-        domain = 'LOCAL'
-        if "@" in username:
-            user_domain = username.split("@")
-            username = user_domain[0]
-            domain = user_domain[1]
-        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
-                                         username=username,
-                                         password=password,
-                                         domain=domain)
-        return cohesity_client
-    except Exception as error:
-        raise__cohesity_exception__handler(error, module)
-
-
 def main():
     argument_spec = dict(
             cluster=dict(type='str', required=True),
@@ -325,50 +301,50 @@ def main():
             if job_details:
                 check_mode_results = dict(
                     changed=False,
-                    msg="Check Mode: The Cohesity protection job already exists on the cluster",
+                    msg="Check Mode: The Cohesity protection job already exists on the cluster"
                 )
             else:
                 check_mode_results = dict(
                     changed=True,
-                    msg="Check Mode: The Cohesity protection job is created",
+                    msg="Check Mode: The Cohesity protection job is created"
                 )
         elif module.params.get('state') == "absent":
             if job_details:
                 check_mode_results = dict(
                     changed=True,
-                    msg="Check Mode: The Cohesity protection job is deleted",
+                    msg="Check Mode: The Cohesity protection job is deleted"
                 )
             else:
                 check_mode_results = dict(
                     changed=False,
-                    msg="Check Mode: The Cohesity protection job doesn't exist on the cluster",
+                    msg="Check Mode: The Cohesity protection job doesn't exist on the cluster"
                 )
         elif module.params.get('state') == "started":
             if job_details:
                 check_mode_results = dict(
                     changed=True,
-                    msg="Check Mode: The Cohesity protection job run is started",
+                    msg="Check Mode: The Cohesity protection job run is started"
                 )
             else:
                 check_mode_results = dict(
                     changed=False,
-                    msg="Check Mode: The Cohesity protection job doesn't exist on the cluster",
+                    msg="Check Mode: The Cohesity protection job doesn't exist on the cluster"
                 )
         elif module.params.get('state') == "stopped":
             if job_details:
                 check_mode_results = dict(
                     changed=True,
-                    msg="Check Mode: The Cohesity protection job run is stopped",
+                    msg="Check Mode: The Cohesity protection job run is stopped"
                 )
             else:
                 check_mode_results = dict(
                     changed=False,
-                    msg="Check Mode: The Cohesity protection job doesn't exist on the cluster",
+                    msg="Check Mode: The Cohesity protection job doesn't exist on the cluster"
                 )
         else:
             check_mode_results = dict(
                 changed=False,
-                msg="Check Mode: Invalid state",
+                msg="Check Mode: Invalid state"
             )
         module.exit_json(**check_mode_results)
 
@@ -376,7 +352,7 @@ def main():
         if job_details:
             results = dict(
                 changed=False,
-                msg="The Cohesity protection job already exists on the cluster",
+                msg="The Cohesity protection job already exists on the cluster"
             )
         else:
             protection_job = create_physical_server_job(module)
@@ -397,7 +373,7 @@ def main():
         else:
             results = dict(
                 changed=False,
-                msg="The Cohesity protection job doesn't exist on the cluster",
+                msg="The Cohesity protection job doesn't exist on the cluster"
             )
     elif module.params.get('state') == 'started':
         if job_details:
