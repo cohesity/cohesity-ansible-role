@@ -2,7 +2,7 @@
 
 Refer the Cohesity Ansible Role Documentation here. The documentation covers different modules in the library, tasks for all these modules and some sample playbooks to get started. 
 
-## Table of contents :scroll:
+## <a name="toc"></a> Table of contents :scroll:
 
 - [Getting Started](#get-started)
 - [Modules](#modules)
