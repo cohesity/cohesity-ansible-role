@@ -586,8 +586,7 @@ def main():
                         restore_file_list.append(
                             convert__windows_file_name(restore_file))
                     elif environment == "GenericNas":
-                        restore_file_list.append(strip__prefix(
-                            job_details['endpoint'], restore_file))
+                        restore_file_list.append(restore_file)
                     else:
                         restore_file_list = restore_file
 
