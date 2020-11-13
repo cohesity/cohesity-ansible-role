@@ -21,9 +21,14 @@
               sources:
                 - endpoint: "{{ item }}"
                   paths:
-                    - includeFilePath: "/home"
+                    - includeFilePath: "/path1/"
                       excludeFilePaths:
-                        - "/home/cohesityagent"
+                        - "/path1/exclude_path1" # This path should be present under /path1
+                        - "/path1/exclude_path2" # This path should be present under /path1
+                      skipNestedVolumes: False
+                    - includeFilePath: "/path2"
+                      excludeFilePaths:
+                        - "/path2/exclude_path1" # This path should be present under /path2
                       skipNestedVolumes: False
               environment: "PhysicalFiles"
         with_items: "{{ groups['linux'] }}"
