@@ -246,7 +246,7 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
 |   | description | String | | Optional Description to assign to the Protection Job |
 | X | environment | Choice | -**PhysicalFiles**<br>-Physical<br>-VMware<br>-GenericNas<br>-View | Specifies the environment type (such as VMware or SQL) of the Protection Job. For Physical sources this value can be 'PhysicalFiles' or 'Physical'. 'PhysicalFiles' for file based and 'Physical' for block based protection jobs |
 |   | protection_sources | Array |  | Valid list of dictionaries with endpoint, paths **Required** when *state=present*. |
-|   | protection_policy | String |  | Valid policy name or ID for an existing Protection Policy to be assigned to the job. **Required** when *state=present*. |
+|   | protection_policy | String | Bronze  | Valid policy name or ID for an existing Protection Policy to be assigned to the job. **Required** when *state=present*. |
 |   | storage_domain | String | | Existing Storage Domain with which the Protection Job will be associated. Required when *state=present*. |
 |   | time_zone | String | America/Los_Angeles | Specifies the time zone to use when calculating time for this Protection Job (such as the Job start time). The time must be specified in the **Area/Location** format, such as "America/New_York". |
 |   | start_time | String | | Specifies the registered start time for the Protection Job.  Format must be 24hr time in either the *HHMM* or *HH:MM* style.  If not configured, then Cohesity will automatically select a time. Optional when *state=present*. |
