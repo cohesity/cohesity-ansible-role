@@ -815,7 +815,7 @@ def update_job_util(module, job_details, job_exists):
 
                 # Check whether the include path is already available.
                 if include_path not in list(existing_file_path[source_id].keys()):
-                    module.exit_json(output=update_sources)
+                    update_sources.append(source_id)
                     break
 
                 # Check if existing excluded path matches with new exclude path.
@@ -840,9 +840,13 @@ def update_job_util(module, job_details, job_exists):
         existing_job_details['sourceIds'].extend(new_sources)
         existing_job_details['token'] = job_details['token']
         response = update_job(module, existing_job_details, new_sources)
+        if job_details['environment'] == 'PhysicalFiles':
+            msg = "Successfully added sources and filepaths to existing protection job"
+        else:
+            msg = "Successfully added sources to existing protection job"
         results = dict(
             changed=True,
-            msg="Successfully added sources to existing protection job",
+            msg=msg,
             **response)
     else:
         module.fail_json(
