@@ -183,9 +183,7 @@ def wait__for_job_state__transition(module, job_id, state='start'):
             loop_cnt += 1
 
     if loop_cnt == 21:
-        module.fail_json(
-            msg='Failed to successfully ' +
-            state +
+        module.fail_json(msg='Failed to successfully ' + state +
             ' the Cohesity Protection Job',
             changed=False,
             id=job_id,
@@ -284,50 +282,6 @@ def unregister_job(module, _id):
         return resp
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
-
-
-def update_job_util(module, job_details, job_exists):
-    if module.params.get('endpoint') and not module.params.get('databases'):
-        module.fail_json(
-            msg='Missing protection sources to add to the existing protection job',
-            id=job_exists,
-            name=module.params.get('name'))
-
-    job_details['id'] = job_exists
-    # job_details['sourceIds'] = list()
-    prot_source = dict(
-        environment=job_details['environment'],
-        token=job_details['token']
-    )
-    parent_id, source_id = get_source_id_by_endpoint(module)
-    existing_job_details = get_prot_job_details(job_details, module)
-    already_exist_in_job = set(
-        job_details['sourceIds']).issubset(
-        existing_job_details['sourceIds'])
-    if already_exist_in_job and job_details['sourceIds']:
-        results = dict(
-            changed=False,
-            msg='The protection sources are already being protected',
-            id=job_exists,
-            name=module.params.get('name')
-        )
-    elif (not already_exist_in_job) and len(job_details['sourceIds']) != 0:
-        new_sources = list(set(job_details['sourceIds']).difference(existing_job_details['sourceIds']))
-        existing_job_details['sourceIds'].extend(
-            job_details['sourceIds'])
-        existing_job_details['token'] = job_details['token']
-        response = update_job(module, existing_job_details, new_sources)
-        results = dict(
-            changed=True,
-            msg='Successfully added sources to existing protection job',
-            **response)
-    else:
-        module.fail_json(
-            msg='Sources don\'t exist on the cluster',
-            id=job_exists,
-            name=module.params.get('name')
-        )
-    module.exit_json(**results)
 
 
 def get_cohesity_client(module):

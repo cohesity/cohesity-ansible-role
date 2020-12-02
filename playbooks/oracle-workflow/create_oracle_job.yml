@@ -1,0 +1,23 @@
+#=> Create a Oracle protection job for oracle sources available in the vCenter
+---
+  - hosts: localhost
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Protection job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: oracle_job
+        vars:
+          cohesity_server: 10.14.31.6
+          cohesity_admin: admin
+          cohesity_password: Cohe$1ty
+          cohesity_validate_certs: False
+          cohesity_oracle:
+              state: present
+              job_name: protect_oracle
+              storage_domain: "DefaultStorageDomain"
+              policy: "Silver"
+              endpoint: "10.2.103.113"
+              cancel_active: true

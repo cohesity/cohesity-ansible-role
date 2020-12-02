@@ -1,0 +1,27 @@
+# => Register Oracle protection sources
+---
+  - hosts: linux
+    vars:
+        var_cohesity_server: 10.14.31.6
+        var_cohesity_admin: admin
+        var_cohesity_password: Cohe$1ty
+        var_validate_certs: False
+    gather_facts: no
+    become: False
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      # => Cycle through each member of the hosts and register as Cohesity Protection Source
+      - name: Create new Protection Source as Oracle source.
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: oracle_source
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: False
+            cohesity_oracle:
+                state: absent
+                endpoint: "{{ item }}"
+        with_items: "{{ groups['linux'] }}"
