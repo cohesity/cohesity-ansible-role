@@ -480,7 +480,6 @@ def register_job(module, self):
                 vms = module.params.get('exclude')
                 payload['excludeSourceIds'] = get_vmware_ids(module, parent_source_id, self, vms)
         data = json.dumps(payload)
-        # module.exit_json(output=payload)
         response = open_url(url=uri, data=data, headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
@@ -533,7 +532,6 @@ def start_job(module, self):
         payload['runType'] = "k" + self['runType']
 
         data = json.dumps(payload)
-        # module.exit_json(output=payload)
         response = open_url(url=uri, data=data, headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
@@ -676,7 +674,6 @@ def stop_job(module, self):
             payload['jobRunId'] = backup_run['backupRun']['jobRunId']
 
             data = json.dumps(payload)
-            # module.exit_json(output=data)
             response = open_url(url=uri, data=data, headers=headers,
                                 validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
