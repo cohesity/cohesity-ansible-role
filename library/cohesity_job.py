@@ -6,6 +6,7 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import json
+from collections import defaultdict
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url, urllib_error
 
@@ -479,7 +480,6 @@ def register_job(module, self):
                 vms = module.params.get('exclude')
                 payload['excludeSourceIds'] = get_vmware_ids(module, parent_source_id, self, vms)
         data = json.dumps(payload)
-        # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
@@ -532,7 +532,6 @@ def start_job(module, self):
         payload['runType'] = "k" + self['runType']
 
         data = json.dumps(payload)
-        # module.exit_json(output=data)
         response = open_url(url=uri, data=data, headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
@@ -574,16 +573,15 @@ def update_job(module, job_details, update_source_ids):
                    "Authorization": "Bearer " + token}
         payload = job_details.copy()
         del payload['token']
-        if module.params.get('state') == 'absent' and module.params.get('environment') == 'PhysicalFiles':
+        if module.params.get('environment') == 'PhysicalFiles':
             if 'sourceSpecialParameters' in payload:
-                i = 0
+                updated_source_params = []
                 for parameter in payload['sourceSpecialParameters']:
-                    if parameter['sourceId'] in update_source_ids:
-                        del payload['sourceSpecialParameters'][i]
-                    i += 1
-        elif module.params.get('state') == 'present' and module.params.get('environment') == 'PhysicalFiles':
-            payload['sourceSpecialParameters'].extend(create_paths_parameter(module, update_source_ids))
-
+                    if parameter['sourceId'] not in update_source_ids:
+                        updated_source_params.append(parameter)
+                payload['sourceSpecialParameters'] = updated_source_params
+            if module.params.get('state') == 'present':
+                payload['sourceSpecialParameters'].extend(create_paths_parameter(module, update_source_ids))
         data = json.dumps(payload)
         response = open_url(
             url=uri,
@@ -676,7 +674,6 @@ def stop_job(module, self):
             payload['jobRunId'] = backup_run['backupRun']['jobRunId']
 
             data = json.dumps(payload)
-            # module.exit_json(output=data)
             response = open_url(url=uri, data=data, headers=headers,
                                 validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
 
@@ -795,6 +792,35 @@ def update_job_util(module, job_details, job_exists):
     already_exist_in_job = set(
         job_details['sourceIds']).issubset(
         existing_job_details['sourceIds'])
+
+    update_sources = []
+    if job_details['environment'] == 'PhysicalFiles':
+        existing_file_path = defaultdict(dict)
+        # Fetch existing include exclude path details.
+        for each_source in existing_job_details['sourceSpecialParameters']:
+            source_id = each_source['sourceId']
+            existing_file_path[source_id] = {_params['backupFilePath']:_params.get('excludedFilePaths', []) for _params in each_source['physicalSpecialParameters']['filePaths']}
+        for source in module.params.get('protection_sources'):
+            source_id = source['endpoint']
+
+            # Check the source is already available in the job.
+            if source_id not in list(existing_file_path.keys()):
+                continue
+            for path in source['paths']:
+                include_path = path['includeFilePath']
+                exclude_path = path['excludeFilePaths']
+
+                # Check whether the include path is already available.
+                if include_path not in list(existing_file_path[source_id].keys()):
+                    update_sources.append(source_id)
+                    break
+
+                # Check if existing excluded path matches with new exclude path.
+                if sorted(exclude_path) != sorted(existing_file_path[source_id][include_path]):
+                    update_sources.append(source_id)
+                    break
+    if update_sources:
+        already_exist_in_job = False
     if already_exist_in_job and len(job_details['sourceIds']) != 0:
         results = dict(
             changed=False,
@@ -804,13 +830,20 @@ def update_job_util(module, job_details, job_exists):
         )
     elif (not already_exist_in_job) and len(job_details['sourceIds']) != 0:
         new_sources = list(set(job_details['sourceIds']).difference(existing_job_details['sourceIds']))
-        existing_job_details['sourceIds'].extend(
-            job_details['sourceIds'])
+        if update_sources:
+            # Add sources with updated paths to new sources.
+            new_sources.extend(update_sources)
+            [existing_job_details['sourceIds'].remove(_id) for _id in new_sources if _id in existing_job_details['sourceIds']]
+        existing_job_details['sourceIds'].extend(new_sources)
         existing_job_details['token'] = job_details['token']
         response = update_job(module, existing_job_details, new_sources)
+        if job_details['environment'] == 'PhysicalFiles':
+            msg = "Successfully added sources and filepaths to existing protection job"
+        else:
+            msg = "Successfully added sources to existing protection job"
         results = dict(
             changed=True,
-            msg="Successfully added sources to existing protection job",
+            msg=msg,
             **response)
     else:
         module.fail_json(
