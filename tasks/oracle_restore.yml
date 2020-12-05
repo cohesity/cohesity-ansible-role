@@ -1,5 +1,5 @@
 ---
-- name: "Cohesity Restore tasks: Restore {{ cohesity_oracle.source_db }} to server {{ cohesity_oracle.target_server }}"
+- name: "Cohesity Restore tasks: Restore {{ cohesity_oracle.source_server }} to server/view"
   cohesity_oracle_restore:
     cluster: "{{ cohesity_server }}"
     username: "{{ cohesity_admin }}"
@@ -9,11 +9,11 @@
     view_name: "{{ cohesity_oracle.view_name | default('')}}"
     source_db: "{{ cohesity_oracle.source_db}}"
     source_server: "{{ cohesity_oracle.source_server }}"
-    target_server: "{{ cohesity_oracle.target_server }}"
-    target_db: "{{ cohesity_oracle.target_db }}"
-    oracle_home: "{{ cohesity_oracle.oracle_home }}"
-    oracle_base: "{{ cohesity_oracle.oracle_base }}"
-    oracle_data: "{{ cohesity_oracle.oracle_data }}"
+    target_server: "{{ cohesity_oracle.target_server | default('') }}"
+    target_db: "{{ cohesity_oracle.target_db | default('') }}"
+    oracle_home: "{{ cohesity_oracle.oracle_home | default('') }}"
+    oracle_base: "{{ cohesity_oracle.oracle_base | default('') }}"
+    oracle_data: "{{ cohesity_oracle.oracle_data | default('') }}"
     channels: "{{ cohesity_oracle.channels | default('') }}"
     control_file: "{{ cohesity_oracle.control_file | default('') }}"
     redo_log_path: "{{ cohesity_oracle.redo_log_path | default('') }}"

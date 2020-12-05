@@ -10,9 +10,9 @@
           name: cohesity.cohesity_ansible_role
           tasks_from: oracle_job
         vars:
-          cohesity_server: 10.14.31.6
-          cohesity_admin: admin
-          cohesity_password: Cohe$1ty
+          cohesity_server: orcl-serv2-eng-db.com
+          cohesity_admin: "{{ username }}"
+          cohesity_password: "{{ password }}"
           cohesity_validate_certs: False
           cohesity_oracle:
               state: present

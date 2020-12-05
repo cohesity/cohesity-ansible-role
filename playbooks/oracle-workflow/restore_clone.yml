@@ -1,19 +1,21 @@
-#=> Remove Oracle protection job available in the vCenter
+#=> Create a Oracle database restore(clone) to protection view.
 ---
-  - hosts: localhost
+  - hosts: linux
     gather_facts: no
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
-      - name: Protection job
+      - name: Restore Oracle Job
         include_role:
           name: cohesity.cohesity_ansible_role
-          tasks_from: oracle_job
+          tasks_from: oracle_restore
         vars:
           cohesity_server: orcl-serv2-eng-db.com
           cohesity_admin: "{{ username }}"
           cohesity_password: "{{ password }}"
           cohesity_validate_certs: False
           cohesity_oracle:
-              state: present
-              job_name: protect_oracle
+              source_db: cdb1
+              task_name: recover_tasks
+              view_name: xyz
+              source_server: {{ source_server }}

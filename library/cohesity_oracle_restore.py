@@ -103,7 +103,7 @@ def create_recover_job(module, token, database_info):
     # Alternate location params.
     alternate_location_params = None
     server = module.params.get('cluster') 
-    view_name = module.params.get('view_name')
+    view_name = module.params.get('view_name', None)
     source_db = module.params.get('source_db') 
     source_server = module.params.get('source_server') 
     validate_certs = module.params.get('validate_certs') 
@@ -239,7 +239,10 @@ def main():
     # Check for restore task status.
     task_id = resp['restoreTask']['performRestoreTaskState']['base']['taskId']
     status = check_for_status(module, task_id)
-    msg = 'Successfully restored task to %s' % module.params.get('target_server')
+    view_name = module.params.get('view_name')
+    target, server = (view_name, 'view') if view_name else \
+        (module.params.get('target_server'), 'server')
+    msg = 'Successfully restored task to %s %s' % (server, target)
     if status == False:
         msg = 'Error occured during task recovery.'
     module.exit_json(changed=status, output=msg)
