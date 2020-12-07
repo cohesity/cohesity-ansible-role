@@ -1,0 +1,28 @@
+#=> Create a new Oracle database restore.
+---
+  - hosts: linux
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Restore Oracle Job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: oracle_restore
+        vars:
+          cohesity_server: orcl-serv2-eng-db.com
+          cohesity_admin: "{{ username }}"
+          cohesity_password: "{{ password }}"
+          cohesity_validate_certs: False
+          cohesity_oracle:
+              source_db: cdb1
+              task_name: recover_tasks
+              source_server: {{ source_server }}
+              target_server: {{ target_server }}
+              target_db: cdb1
+              oracle_home: /u01/app/oracle/product/12.1.0.2/db_1
+              oracle_base: /u01/app/oracle
+              oracle_data: /u01/app/oracle/product/12.1.0.2/db_1
+              log_time: null
+              overwrite: true
+              no_recovery: false
