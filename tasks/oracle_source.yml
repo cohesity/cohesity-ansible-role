@@ -5,6 +5,7 @@
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
     validate_certs: "{{ cohesity_validate_certs | default(False) }}"
+    force_register: "{{ cohesity_oracle.force_register | default(False) }}"
     state: "{{ cohesity_oracle.state | default('present') }}"
     endpoint: "{{ cohesity_oracle.endpoint | default('') }}"
     db_username: "{{ cohesity_oracle.db_username | default('') }}"
