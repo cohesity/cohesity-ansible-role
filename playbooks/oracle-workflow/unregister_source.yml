@@ -1,6 +1,6 @@
 # => Register Oracle protection sources
 ---
-  - hosts: linux
+  - hosts: localhost
     gather_facts: no
     become: False
     roles:

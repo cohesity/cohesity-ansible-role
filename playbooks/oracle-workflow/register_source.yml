@@ -1,6 +1,6 @@
 # => Register Oracle protection sources
 ---
-  - hosts: linux
+  - hosts: localhost
     gather_facts: no
     become: False
     roles:
@@ -18,6 +18,7 @@
             cohesity_validate_certs: False
             cohesity_oracle:
                 state: present
+                force_register: True
                 endpoint: "{{ item }}"
                 db_username: "{{ username }}"
                 db_password: "{{ password }}"

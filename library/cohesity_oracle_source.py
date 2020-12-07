@@ -8,7 +8,7 @@ __metaclass__ = type
 import json
 import time
 from ansible.module_utils.basic import AnsibleModule
-from ansible.module_utils.urls import open_url
+from ansible.module_utils.urls import open_url, urllib_error
 from cohesity_management_sdk.cohesity_client import CohesityClient
 from cohesity_management_sdk.exceptions.api_exception import APIException
 from cohesity_management_sdk.models.register_protection_source_parameters import RegisterProtectionSourceParameters
@@ -19,9 +19,11 @@ try:
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
+    from module_utils.storage.cohesity.cohesity_hints import get__prot_source__all
 except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
+    from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source__all
 
 
 EXAMPLES = '''
@@ -126,6 +128,9 @@ def get__protection_source_registration__status(module, self):
                 if node["protectionSource"]["name"] == endpoint:
                     return node["protectionSource"]["id"]
         return False
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
 
@@ -142,16 +147,22 @@ def register_source(module, self):
         response = cohesity_client.protection_sources.create_register_protection_source(
                    body)
         return response
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
 
 
 # => Unregister an existing Cohesity Protection Source.
-def unregister_source(source_id):
+def unregister_source(module, source_id):
     try:
         response = cohesity_client.protection_sources.delete_unregister_protection_source(
                    source_id)
         return response
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
 
@@ -296,7 +307,7 @@ def main():
 
     elif module.params.get('state') == 'absent':
         if current_status:
-            response = unregister_source(current_status)
+            response = unregister_source(module, current_status)
 
             results = dict(
                 changed=True,
