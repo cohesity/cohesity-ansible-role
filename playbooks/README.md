@@ -18,6 +18,10 @@
 
 * The playbooks here cover Physical protection workflow. It covers Agent installation and uninstallation (linux, windows), job creation, recovery workflow
 
+### [Oracle Workflow](./oracle-workflow)
+
+* The playbooks here cover Oracle protection workflow. It includes `Registration` --> `Job Creation` --> `Job Run` --> `Recover workflow`
+
 ### [Common Workflow](./common)
 
 * The playbooks present here are the common workflows that can be used for any workflow, like `starting/stopping` protection job.
