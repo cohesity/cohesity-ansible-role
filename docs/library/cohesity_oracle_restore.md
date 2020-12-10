@@ -7,7 +7,7 @@
 - [Requirements](#requirements)
 - [Syntax](#syntax)
 - [Examples](#examples)
-  - [Restore a single database from a Oracle Backup](# Restore-a-single-database-from-a-Oracle-Source-to-another -Source)
+  - [Restore a single database from a Oracle Backup](#Restore-a-single-database-from-a-Oracle-Source-to-another-Source)
   - [Restore database to a view](#Restore-database-to-a-view)
 - [Parameters](#parameters)
 - [Outputs](#outputs)

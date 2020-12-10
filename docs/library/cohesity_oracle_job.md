@@ -52,7 +52,7 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
 ## Examples
 [top](#cohesity-oracle-protection-job)
 
-### Create a new Oracle Server ProtectionJob
+### Create a new Oracle Server Protection Job
 [top](#cohesity-oracle-protection-job)
 
 ```yaml
