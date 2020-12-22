@@ -745,7 +745,7 @@ def update_vmware_job(module, job_meta_data, job_details):
             # If append_to_existing is set to true, then job sources are replaced with
             # latest include vms, if append_to_existing is set to false latest include
             # vms are added to existing vms.
-            if append_to_existing == False:
+            if append_to_existing == True:
                 existing_source_ids = job_meta_data["sourceIds"]
                 include_vm_ids.extend([
                     source_id for source_id in existing_source_ids if source_id not in include_vm_ids])
@@ -889,7 +889,7 @@ def main():
                 choices=['Regular', 'Full', 'Log', 'System'], default='Regular'),
             cancel_active=dict(type='bool', default=False),
             validate_certs=dict(type='bool', default=False),
-            append_to_existing=dict(type='bool', default=True),
+            append_to_existing=dict(type='bool', default=False),
             exclude=dict(type=list, default=''),
             include=dict(type=list, default='')
         )
