@@ -741,11 +741,11 @@ def update_vmware_job(module, job_meta_data, job_details):
         if len(module.params.get('include')) != 0:
             vms = module.params.get('include')
             include_vm_ids = get_vmware_ids(module, job_meta_data, job_details, vms)
-            remove_existing = module.params.get('remove_existing')
-            # If remove_existing is set to true, then job sources are replaced with
-            # latest include vms, if remove_existing is set to false latest include
+            append_to_existing = module.params.get('append_to_existing')
+            # If append_to_existing is set to true, then job sources are replaced with
+            # latest include vms, if append_to_existing is set to false latest include
             # vms are added to existing vms.
-            if remove_existing == False:
+            if append_to_existing == False:
                 existing_source_ids = job_meta_data["sourceIds"]
                 include_vm_ids.extend([
                     source_id for source_id in existing_source_ids if source_id not in include_vm_ids])
@@ -889,7 +889,7 @@ def main():
                 choices=['Regular', 'Full', 'Log', 'System'], default='Regular'),
             cancel_active=dict(type='bool', default=False),
             validate_certs=dict(type='bool', default=False),
-            remove_existing=dict(type='bool', default=True),
+            append_to_existing=dict(type='bool', default=True),
             exclude=dict(type=list, default=''),
             include=dict(type=list, default='')
         )
