@@ -525,7 +525,9 @@ def start_job(module, self):
             "/irisservices/api/v1/public/protectionJobs/run/" + str(self['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
+        source_ids = payload.get('sourceIds', [])
         payload = dict()
+        payload['runNowParameters'] = [{'sourceId':source_id} for source_id in source_ids]
         payload['name'] = self['name']
         payload['environment'] = self['environment']
 
@@ -534,7 +536,6 @@ def start_job(module, self):
         data = json.dumps(payload)
         response = open_url(url=uri, data=data, headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
-
         # => There is no data output so if we get a 204 then we are
         # => happy.
         if not response.getcode() == 204:
@@ -1081,9 +1082,30 @@ def main():
     elif module.params.get('state') == "started":
         if job_exists:
             job_details['id'] = job_exists
+            job_details['sourceIds'] = []
             job_details['runType'] = module.params.get(
                 'ondemand_run_type')
 
+            prot_source = dict(
+                    environment=job_details['environment'],
+                    token=job_details['token']
+            )
+            if module.params.get('environment') == 'VMware':
+                ids = []
+                job_meta_data = {"parentSourceId": job_meta_data['parentSourceId']}
+                if len(module.params.get('include')) != 0:
+                    vms = module.params.get('include')
+                    ids = get_vmware_ids(module, job_meta_data, job_details, vms)
+                job_details['sourceIds'] = ids
+            elif 'Physical' in module.params.get('environment'):
+                prot_source['environment'] = 'Physical'
+                for source in module.params.get('protection_sources'):
+                    if source and type(source) == dict:
+                        prot_source['endpoint'] = source['endpoint']
+                        source_id = get__prot_source_id__by_endpoint(
+                            module, prot_source)
+                        if source_id:
+                            job_details['sourceIds'].append(source_id)
             response = start_job(module, job_details)
 
             results = dict(
