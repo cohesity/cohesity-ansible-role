@@ -507,6 +507,7 @@ def start_job(module, self):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
     token = self['token']
+
     payload = self.copy()
     payload['active_only'] = True
     payload['is_deleted'] = False
@@ -1089,9 +1090,8 @@ def main():
                     environment=job_details['environment'],
                     token=job_details['token']
             )
-
-            i = 0
             if module.params.get('environment') == 'VMware':
+                ids = []
                 job_meta_data = {"parentSourceId": job_meta_data['parentSourceId']}
                 if len(module.params.get('include')) != 0:
                     vms = module.params.get('include')
@@ -1100,11 +1100,12 @@ def main():
             elif 'Physical' in module.params.get('environment'):
                 prot_source['environment'] = 'Physical'
                 for source in module.params.get('protection_sources'):
-                    prot_source['endpoint'] = source['endpoint']
-                    source_id = get__prot_source_id__by_endpoint(
-                        module, prot_source)
-                    if source_id:
-                        job_details['sourceIds'].append(source_id)
+                    if source and type(source) == dict:
+                        prot_source['endpoint'] = source['endpoint']
+                        source_id = get__prot_source_id__by_endpoint(
+                            module, prot_source)
+                        if source_id:
+                            job_details['sourceIds'].append(source_id)
             response = start_job(module, job_details)
 
             results = dict(
