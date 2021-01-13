@@ -817,7 +817,7 @@ def update_job_util(module, job_details, job_exists):
                 continue
             for path in source['paths']:
                 include_path = path['includeFilePath']
-                exclude_path = path['excludeFilePaths']
+                exclude_path = path.get('excludeFilePaths', [])
 
                 # Check whether the include path is already available.
                 if include_path not in list(existing_file_path[source_id].keys()):
