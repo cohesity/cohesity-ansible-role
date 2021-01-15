@@ -811,13 +811,16 @@ def update_job_util(module, job_details, job_exists):
             existing_file_path[source_id] = {_params['backupFilePath']:_params.get('excludedFilePaths', []) for _params in each_source['physicalSpecialParameters']['filePaths']}
         for source in module.params.get('protection_sources'):
             source_id = source['endpoint']
-
             # Check the source is already available in the job.
             if source_id not in list(existing_file_path.keys()):
                 continue
-            for path in source['paths']:
-                include_path = path['includeFilePath']
-                exclude_path = path['excludeFilePaths']
+            paths = source.get('paths', [])
+            if not paths:
+                update_sources.append(source_id)
+                continue
+            for path in paths:
+                include_path = path.get('includeFilePath', '')
+                exclude_path = path.get('excludeFilePaths', [])
 
                 # Check whether the include path is already available.
                 if include_path not in list(existing_file_path[source_id].keys()):
