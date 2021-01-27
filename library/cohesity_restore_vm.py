@@ -253,7 +253,8 @@ def get_source_details(module, restore_to_source):
         uri = "https://" + server + \
               "/irisservices/api/v1/public/protectionSources/rootNodes?environments=kVMware"
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         response = open_url(
             url=uri,
             headers=headers,
@@ -291,7 +292,8 @@ def get_vmware_source_objects(module, source_id):
         uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + str(
             source_id) + "&excludeTypes=kVirtualMachine" + "&includeDatastores=true"
 
-        headers = {"Accept": "application/json", "Authorization": "Bearer " + token}
+        headers = {"Accept": "application/json", "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
 
         response = open_url(
             url=uri,
@@ -351,7 +353,8 @@ def get__vmware_snapshot_information__by_source(module, self, source_details):
               "&registeredSourceIds=" + str(source_details['id'])
 
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         objects = open_url(url=uri, headers=headers,
                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         objects = json.loads(objects.read())
@@ -478,7 +481,8 @@ def start_restore(module, uri, self):
     try:
         uri = "https://" + server + uri
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -520,7 +524,8 @@ def wait_restore_complete(module, self):
         uri = "https://" + server + \
             "/irisservices/api/v1/public/restore/tasks/" + str(self['id'])
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         attempts = 0
         # => Wait for the restore based on a predetermined number of minutes with checks every 30 seconds.
         while attempts < wait_counter:

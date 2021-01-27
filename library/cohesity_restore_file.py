@@ -376,7 +376,8 @@ def start_restore(module, uri, self):
     try:
         uri = "https://" + server + uri
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -419,7 +420,8 @@ def wait_restore_complete(module, self):
             "/irisservices/api/v1/public/restore/tasks/" + str(self['id'])
         headers = {
             "Accept": "application/json",
-            "Authorization": "Bearer " + token}
+            "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         attempts = 0
         # => Wait for the restore based on a predetermined number of minutes with checks every 30 seconds.
         while attempts < wait_counter:
