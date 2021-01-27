@@ -336,7 +336,8 @@ def register_source(module, self):
     try:
         uri = "https://" + server + "/irisservices/api/v1/public/protectionSources/register"
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         payload = self.copy()
         payload['environment'] = "k" + self['environment']
         if self['environment'] == "Physical":
@@ -378,7 +379,8 @@ def unregister_source(module, self):
         uri = "https://" + server + \
             "/irisservices/api/v1/public/protectionSources/" + str(self['id'])
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
 
         response = open_url(url=uri, method='DELETE', headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)

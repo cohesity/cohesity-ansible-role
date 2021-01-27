@@ -375,7 +375,9 @@ def get_vmware_ids(module, job_meta_data, job_details, vm_names):
     try:
         uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + str(job_meta_data['parentSourceId'])
 
-        headers = {"Accept": "application/json", "Authorization": "Bearer " + token}
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
 
         response = open_url(
             url=uri,
@@ -404,7 +406,8 @@ def get_vmware_vm_ids(module, job_meta_data, job_details, vm_names):
         uri = "https://" + server + \
               "/irisservices/api/v1/public/protectionSources/virtualMachines?vCenterId=" + str(job_meta_data['parentSourceId'])
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         response = open_url(
             url=uri,
             method='GET',
@@ -443,7 +446,8 @@ def get_view_storage_domain_id(module, self):
     try:
         uri = "https://" + server + "/irisservices/api/v1/public/views/" + view_name
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         response = open_url(url=uri, method="GET", headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         response = json.loads(response.read())
@@ -462,7 +466,8 @@ def register_job(module, self):
     try:
         uri = "https://" + server + "/irisservices/api/v1/public/protectionJobs"
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -525,7 +530,8 @@ def start_job(module, self):
         uri = "https://" + server + \
             "/irisservices/api/v1/public/protectionJobs/run/" + str(self['id'])
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         source_ids = payload.get('sourceIds', [])
         payload = dict()
         payload['runNowParameters'] = [{'sourceId':source_id} for source_id in source_ids]
@@ -572,7 +578,8 @@ def update_job(module, job_details, update_source_ids):
         uri = "https://" + server + \
             "/irisservices/api/v1/public/protectionJobs/" + str(job_details['id'])
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         payload = job_details.copy()
         del payload['token']
         if module.params.get('environment') == 'PhysicalFiles':
@@ -619,7 +626,8 @@ def get_prot_job_details(self, module):
             "/irisservices/api/v1/public/protectionJobs/" + str(self['id'])
 
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         response = open_url(url=uri, headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         if not response.getcode() == 200:
@@ -661,7 +669,8 @@ def stop_job(module, self):
             "/irisservices/api/v1/public/protectionRuns/cancel/" + \
             str(self['id'])
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -712,7 +721,8 @@ def unregister_job(module, self):
         uri = "https://" + server + \
             "/irisservices/api/v1/public/protectionJobs/" + str(self['id'])
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
 
         payload = dict(
             deleteSnapshots=self['deleteSnapshots']

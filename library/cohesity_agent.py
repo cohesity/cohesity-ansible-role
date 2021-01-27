@@ -257,11 +257,13 @@ def download_agent(module, path):
                 "/irisservices/api/v1/public/physicalAgents/download?hostType=k" + os_type + '&pkgType=' + package_type
             headers = {
                 "Accept": "application/octet-stream",
-                "Authorization": "Bearer " + token}
+                "Authorization": "Bearer " + token,
+                "user-agent": "Ansible-v2.2.0"}
         else:
             uri = module.params.get('download_uri')
             headers = {
-                "Accept": "application/octet-stream"}
+                "Accept": "application/octet-stream",
+                "user-agent": "Ansible-v2.2.0"}
 
         agent = open_url(url=uri, headers=headers,
                          validate_certs=False, timeout=REQUEST_TIMEOUT)
@@ -484,7 +486,8 @@ def get_source_details(module, source_id):
             uri = "https://" + server + \
                   "/irisservices/api/v1/public/protectionSources?environments=kPhysical"
         headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token}
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
         response = open_url(
             url=uri,
             headers=headers,
@@ -533,7 +536,8 @@ def update_agent(module):
             uri = "https://" + server + \
                   "/irisservices/api/v1/public/physicalAgents/upgrade"
             headers = {"Accept": "application/json",
-                       "Authorization": "Bearer " + token}
+                       "Authorization": "Bearer " + token,
+                       "user-agent": "Ansible-v2.2.0"}
             payload = {
                 "agentIds": [source_details['agent']['id']]
             }
