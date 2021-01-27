@@ -119,7 +119,7 @@ You can create a file called `protection_job_physical.yml`, add the contents fro
                           skipNestedVolumes: False
                 environment: "PhysicalFiles"   
                 time_zone: "Asia/Kolkata"
-                start_time: "12:34"
+                start_time: "21:34"
         with_items: "{{ groups['linux'] }}"
         tags: [ 'cohesity', 'jobs', 'register', 'physical' ]
 ```
@@ -166,7 +166,7 @@ This is an example playbook that creates a new Protection Job for the chosen vCe
                   - endpoint: "{{ var_endpoint }}"
                 environment: "VMware"
                 time_zone: "Asia/Kolkata"
-                start_time: "12:34"
+                start_time: "22:34"
         tags: [ 'cohesity', 'jobs', 'register', 'vmware' ]
 ```
 
