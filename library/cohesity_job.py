@@ -375,7 +375,8 @@ def get_vmware_ids(module, job_meta_data, job_details, vm_names):
     try:
         uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + str(job_meta_data['parentSourceId'])
 
-        headers = {"Accept": "application/json", "Authorization": "Bearer " + token,
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token,
                    "user-agent": "Ansible-v2.2.0"}
 
         response = open_url(

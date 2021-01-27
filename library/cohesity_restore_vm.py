@@ -292,7 +292,8 @@ def get_vmware_source_objects(module, source_id):
         uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + str(
             source_id) + "&excludeTypes=kVirtualMachine" + "&includeDatastores=true"
 
-        headers = {"Accept": "application/json", "Authorization": "Bearer " + token,
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token,
                    "user-agent": "Ansible-v2.2.0"}
 
         response = open_url(
