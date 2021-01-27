@@ -118,6 +118,8 @@ You can create a file called `protection_job_physical.yml`, add the contents fro
                             - "/home/Documents"
                           skipNestedVolumes: False
                 environment: "PhysicalFiles"   
+                time_zone: "Asia/Kolkata"
+                start_time: "21:34"
         with_items: "{{ groups['linux'] }}"
         tags: [ 'cohesity', 'jobs', 'register', 'physical' ]
 ```
@@ -163,6 +165,8 @@ This is an example playbook that creates a new Protection Job for the chosen vCe
                 sources: 
                   - endpoint: "{{ var_endpoint }}"
                 environment: "VMware"
+                time_zone: "Asia/Kolkata"
+                start_time: "22:34"
         tags: [ 'cohesity', 'jobs', 'register', 'vmware' ]
 ```
 
@@ -268,6 +272,8 @@ The following information is copied directly from the included task in this role
     cancel_active: "{{ cohesity_protection.cancel_active | default(False) }}"
     exclude: "{{cohesity_protection.exclude | default('') }}"
     include: "{{cohesity_protection.include | default('') }}"
+    time_zone: "{{ cohesity_protection.time_zone | default('America/Los_Angeles') }}"
+    start_time: "{{ cohesity_protection.start_time | default('') }}"
   tags: always
 
 ```

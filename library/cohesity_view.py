@@ -9,6 +9,7 @@ import json
 
 from ansible.module_utils.basic import AnsibleModule
 from cohesity_management_sdk.cohesity_client import CohesityClient
+from cohesity_management_sdk.controllers.base_controller import BaseController
 from cohesity_management_sdk.exceptions.api_exception import APIException
 from cohesity_management_sdk.models.create_view_request import CreateViewRequest
 from cohesity_management_sdk.models.nfs_root_permissions import NfsRootPermissions
@@ -321,6 +322,8 @@ def main():
     )
 
     global cohesity_client
+    base_controller = BaseController()
+    base_controller.global_headers['user-agent'] = 'Ansible-v2.2.0'
     cohesity_client = get_cohesity_client(module)
     view_exists, view_details = get_view_details(module)
 

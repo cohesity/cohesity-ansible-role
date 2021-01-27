@@ -469,6 +469,7 @@ def register_job(module, self):
         payload.pop('token', None)
 
         payload['environment'] = "k" + self['environment']
+        payload['timezone'] = self['timezone']
         if payload['environment'] == "kPhysicalFiles":
             payload['sourceSpecialParameters'] = create_paths_parameter(module, payload['sourceIds'])
         elif payload['environment'] == "kVMware":
@@ -994,8 +995,8 @@ def main():
             job_details['policyId'] = get__prot_policy_id__by_name(
                 module, job_details)
             if module.params.get('start_time'):
-                start_time = list(module.params.get(
-                    'start_time').replace(":", ""))
+                start_time = module.params.get(
+                    'start_time').replace(":", "")
                 if not len(start_time) == 4:
                     # => There are only so many options here but if we get more characters
                     # => than four then we need to escape quickly.

@@ -10,6 +10,7 @@ import time
 
 from ansible.module_utils.basic import AnsibleModule
 from cohesity_management_sdk.cohesity_client import CohesityClient
++from cohesity_management_sdk.controllers.base_controller import BaseController
 from cohesity_management_sdk.models.clone_task_request import CloneTaskRequest
 from cohesity_management_sdk.models.vmware_clone_parameters import VmwareCloneParameters
 from cohesity_management_sdk.models.restore_object_details import RestoreObjectDetails
@@ -310,6 +311,8 @@ def main():
     )
 
     global cohesity_client
+    base_controller = BaseController()
+    base_controller.global_headers['user-agent'] = 'Ansible-v2.2.0'
     cohesity_client = get_cohesity_client(module)
     clone_exists, clone_details = get_clone_task(module, False)
 
