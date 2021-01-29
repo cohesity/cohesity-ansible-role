@@ -33,7 +33,7 @@
 
 ### Requet more sample
 
-* You can find a lot of sample playbooks here to get staretd and we are constantly adding more samples but if you feel any workflow is missing or you are looking for a new workflow, please raise a request [here](https://github.com/cohesity/cohesity/cohesity-ansible-role/issues/new?assignees=&labels=&template=sample-requests---questions---.md&title=). 
+* You can find a lot of sample playbooks here to get staretd and we are constantly adding more samples but if you feel any workflow is missing or you are looking for a new workflow, please raise a request [here](https://github.com/cohesity/cohesity-ansible-role/issues/new?assignees=&labels=&template=sample-requests---questions---.md&title=). 
 
 ### Suggestions and Feedback
 
