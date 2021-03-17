@@ -779,32 +779,47 @@ def update_vmware_job(module, job_meta_data, job_details):
 
 
 def delete_sources(module, job_meta_data, job_details):
+    missing_sources = []
     job_details['environment'] = 'Physical'
-    for source in module.params.get('protection_sources'):
-        job_details['endpoint'] = source['endpoint']
-        source_id = get__prot_source_id__by_endpoint(
-            module, job_details)
-        if source_id in job_meta_data['sourceIds']:
-            job_meta_data['sourceIds'].remove(source_id)
-        else:
-            continue
-        if module.params.get('environment') == 'PhysicalFiles':
-            for source in job_meta_data['sourceSpecialParameters']:
-                if source['sourceId'] == source_id:
-                    index = job_meta_data['sourceSpecialParameters'].index(source)
-                    del job_meta_data['sourceSpecialParameters'][index]
-    if len(job_meta_data['sourceIds']) == 0:
+    try:
+        for source in module.params.get('protection_sources'):
+            job_details['endpoint'] = source['endpoint']
+            source_id = get__prot_source_id__by_endpoint(
+                module, job_details)
+            if source_id in job_meta_data['sourceIds']:
+                job_meta_data['sourceIds'].remove(source_id)
+            else:
+                missing_sources.append(source['endpoint'])
+            if module.params.get('environment') == 'PhysicalFiles':
+                for source in job_meta_data['sourceSpecialParameters']:
+                    if source['sourceId'] == source_id:
+                        index = job_meta_data['sourceSpecialParameters'].index(source)
+                        del job_meta_data['sourceSpecialParameters'][index]
+        if len(job_meta_data['sourceIds']) == 0:
+            module.fail_json(
+                msg="Cannot remove all the sources from a protection job.",
+                id=job_meta_data['id'],
+                changed=False,
+                name=module.params.get('name'))
+        if missing_sources:
+            # If any source provided is not available in the job, sources are not updated.
+            module.fail_json(
+                msg="Removing sources from protection job failed. Following list of sources"
+                    " are not available in the job: %s" % ", ".join(missing_sources),
+                id=job_meta_data['id'],
+                changed=False,
+                name=module.params.get('name'))
+        job_meta_data['token'] = job_details['token']
+        response = update_job(module, job_meta_data)
+        module.exit_json(
+                changed=True,
+                msg="Successfully removed sources from the protection job",
+                **response)
+    except Exception as err:
         module.fail_json(
-            msg="Cannot remove all the sources from a protection job.",
-            id=job_meta_data['id'],
-            changed=False,
-            name=module.params.get('name'))
-    job_meta_data['token'] = job_details['token']
-    response = update_job(module, job_meta_data)
-    module.exit_json(
-            changed=True,
-            msg="Successfully updated the protection job",
-            **response)
+                changed=False,
+                msg="Error while removing sources from the protection job")
+
 
 def update_job_util(module, job_details, job_exists):
     if len(module.params.get('protection_sources')
