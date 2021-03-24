@@ -570,7 +570,7 @@ def start_job(module, self):
         raise__cohesity_exception__handler(error, module)
 
 
-def update_job(module, job_details, update_source_ids):
+def update_job(module, job_details, update_source_ids=None):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
     token = job_details['token']
@@ -582,7 +582,7 @@ def update_job(module, job_details, update_source_ids):
                    "user-agent": "Ansible-v2.2.0"}
         payload = job_details.copy()
         del payload['token']
-        if module.params.get('environment') == 'PhysicalFiles':
+        if module.params.get('environment') == 'PhysicalFiles' and module.params.get('delete_sources') == False:
             if 'sourceSpecialParameters' in payload:
                 updated_source_params = []
                 for parameter in payload['sourceSpecialParameters']:
@@ -778,6 +778,49 @@ def update_vmware_job(module, job_meta_data, job_details):
         )
 
 
+def delete_sources(module, job_meta_data, job_details):
+    missing_sources = []
+    job_details['environment'] = 'Physical'
+    try:
+        for source in module.params.get('protection_sources'):
+            job_details['endpoint'] = source['endpoint']
+            source_id = get__prot_source_id__by_endpoint(
+                module, job_details)
+            if source_id in job_meta_data['sourceIds']:
+                job_meta_data['sourceIds'].remove(source_id)
+            else:
+                missing_sources.append(source['endpoint'])
+            if module.params.get('environment') == 'PhysicalFiles':
+                for source in job_meta_data['sourceSpecialParameters']:
+                    if source['sourceId'] == source_id:
+                        index = job_meta_data['sourceSpecialParameters'].index(source)
+                        del job_meta_data['sourceSpecialParameters'][index]
+        if len(job_meta_data['sourceIds']) == 0:
+            module.fail_json(
+                msg="Cannot remove all the sources from a protection job.",
+                id=job_meta_data['id'],
+                changed=False,
+                name=module.params.get('name'))
+        if missing_sources:
+            # If any source provided is not available in the job, sources are not updated.
+            module.fail_json(
+                msg="Removing sources from protection job failed. Following list of sources"
+                    " are not available in the job: %s" % ", ".join(missing_sources),
+                id=job_meta_data['id'],
+                changed=False,
+                name=module.params.get('name'))
+        job_meta_data['token'] = job_details['token']
+        response = update_job(module, job_meta_data)
+        module.exit_json(
+                changed=True,
+                msg="Successfully removed sources from the protection job",
+                **response)
+    except Exception as err:
+        module.fail_json(
+                changed=False,
+                msg="Error while removing sources from the protection job")
+
+
 def update_job_util(module, job_details, job_exists):
     if len(module.params.get('protection_sources')
            ) == 1 and not module.params.get('protection_sources')[0]:
@@ -897,6 +940,7 @@ def main():
             protection_sources=dict(type='list', aliases=['sources'], default=''),
             protection_policy=dict(type='str', aliases=['policy'], default='Bronze'),
             storage_domain=dict(type='str', default='DefaultStorageDomain'),
+            delete_sources=dict(type='bool', default=False),
             time_zone=dict(type='str', default='America/Los_Angeles'),
             start_time=dict(type='str', default=''),
             delete_backups=dict(type='bool', default=False),
@@ -959,6 +1003,8 @@ def main():
 
         results['source_vars'] = job_details
         if job_exists:
+            if module.params.get('delete_sources') == True:
+                delete_sources(module, job_meta_data, job_details)
             if module.params.get('environment') == "VMware":
                 update_vmware_job(module, job_meta_data, job_details)
             if module.params.get('environment') in ("PhysicalFiles", "Physical", "GenericNas"):
