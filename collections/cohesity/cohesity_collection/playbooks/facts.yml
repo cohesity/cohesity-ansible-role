@@ -1,0 +1,32 @@
+# => Cohesity Facts saved to JSON file
+# =>
+# => Role: cohesity.cohesity_ansible_role
+# => Version: 0.5.0
+# => Date: 2018-11-05
+# =>
+
+# => Find and start all active Cohesity Protection Jobs registered to a Cluster
+---
+  - hosts: localhost
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cluster_vip
+        var_cohesity_admin: admin
+        var_cohesity_password: admin
+        var_validate_certs: False
+    gather_facts: yes
+    tasks:
+        # => Gather Cohesity Facts
+        - name: Gather Cohesity Cluster Details
+          cohesity_facts:
+              cluster: "{{ var_cohesity_server }}"
+              username: "{{ var_cohesity_admin }}"
+              password: "{{ var_cohesity_password }}"
+              validate_certs: "{{ var_validate_certs }}"
+              state: complete
+              include_deleted: False
+          register: cohesity
+
+        - name: "Write the Collected Facts to {{ inventory_dir }}/cohesity_facts.json"
+          local_action: copy content="{{ cohesity | to_nice_json }}" dest="{{ inventory_dir }}/cohesity_facts.json"

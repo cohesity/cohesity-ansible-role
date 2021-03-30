@@ -1,0 +1,16 @@
+---
+- name: "Cohesity Protection Job: Set {{ cohesity_oracle.job_name | default('job_name') }} to state of {{ cohesity_oracle.state | default('present') }}"
+  cohesity_oracle_job:
+    cluster: "{{ cohesity_server }}"
+    username: "{{ cohesity_admin }}"
+    password: "{{ cohesity_password }}"
+    validate_certs: "{{ cohesity_validate_certs | default(False) }}"
+    state: "{{ cohesity_oracle.state | default('present') }}"
+    name: "{{ cohesity_oracle.job_name | default('') }}"
+    endpoint: "{{ cohesity_oracle.endpoint | default('') }}"
+    protection_policy: "{{ cohesity_oracle.policy | default('Bronze') }}"
+    storage_domain: "{{ cohesity_oracle.storage_domain | default('DefaultStorageDomain') }}"
+    delete_backups: "{{ cohesity_oracle.delete_backups | default(False) }}"
+    cancel_active: "{{ cohesity_oracle.cancel_active | default(False) }}"
+    time_zone: " {{ cohesity_oracle.time_zone | default('Asia/Kolkata') }}"
+  tags: always

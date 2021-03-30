@@ -1,0 +1,22 @@
+---
+- name: "Cohesity clone VMs: Set {{ cohesity_clone_vm.name | default('clone_task_name') }} to state of {{ cohesity_clone_vm.state | default('present') }}"
+  cohesity_clone_vm:
+    cluster: "{{ cohesity_server }}"
+    username: "{{ cohesity_admin }}"
+    password: "{{ cohesity_password }}"
+    validate_certs: "{{ cohesity_validate_certs | default(False) }}"
+    state: "{{ cohesity_clone_vm.state | default('present') }}"
+    name: "{{ cohesity_clone_vm.name }}"
+    environment: "{{ cohesity_clone_vm.environment | default('VMware') }}"
+    job_name: "{{ cohesity_clone_vm.job_name }}"
+    view_name: "{{ cohesity_clone_vm.view_name }}"
+    backup_timestamp: "{{ cohesity_clone_vm.backup_timestamp | default('') }}"
+    vm_names: "{{ cohesity_clone_vm.vm_names }}"
+    wait_for_job: "{{ cohesity_clone_vm.wait_for_job | default(True) }}"
+    wait_minutes: "{{ cohesity_clone_vm.wait_minutes | default(30) }}"
+    network_connected: "{{ cohesity_clone_vm.network_connected | default(True) }}"
+    power_on: "{{ cohesity_clone_vm.power_on | default(True) }}"
+    resource_pool: "{{ cohesity_clone_vm.resource_pool }}"
+    prefix: "{{ cohesity_clone_vm.prefix | default('') }}"
+    suffix: "{{ cohesity_clone_vm.suffix | default('') }}"
+  tags: always

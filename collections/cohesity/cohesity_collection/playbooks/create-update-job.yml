@@ -1,0 +1,34 @@
+---
+  - hosts: localhost
+    gather_facts: no
+    collections:
+      - cohesity.cohesity_collections
+    tasks:
+      - name: Protection job
+        include_role:
+          name: cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: cluster_vip
+          cohesity_admin: "admin"
+          cohesity_password: "admin"
+          cohesity_validate_certs: False
+          cohesity_protection:
+              state: present
+              job_name: "protect_vm1"
+              policy: Gold
+              #storage_domain: "DefaultStorageDomain"
+              storage_domain: "DemoStorageDomain"
+              sources:
+                - endpoint: "{{ item }}"
+                  paths:
+                    - includeFilePath: "/root/include1"
+                      excludeFilePaths:  
+                        - "/root/include1/exclude1"
+                    - includeFilePath: "/root/include2"
+                      excludeFilePaths:  
+                        - "/root/include2/exclude1"
+                      skipNestedVolumes: False  
+              environment: "PhysicalFiles"
+              delete_sources: True
+        with_items: '{{ groups["linux"] }}'

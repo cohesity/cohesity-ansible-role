@@ -1,0 +1,22 @@
+---
+- name: "Cohesity Protection Job: Set {{ cohesity_protection.job_name | default('job_name') }} to state of {{ cohesity_protection.state | default('present') }}"
+  cohesity_job:
+    cluster: "{{ cohesity_server }}"
+    username: "{{ cohesity_admin }}"
+    password: "{{ cohesity_password }}"
+    validate_certs: "{{ cohesity_validate_certs | default(False) }}"
+    state: "{{ cohesity_protection.state | default('present') }}"
+    name: "{{ cohesity_protection.job_name | default('') }}"
+    view_name: "{{ cohesity_protection.view_name | default('') }}"
+    environment: "{{ cohesity_protection.environment | default('PhysicalFiles') }}"
+    protection_sources: "{{ cohesity_protection.sources | default('') }}"
+    protection_policy: "{{ cohesity_protection.policy | default('Bronze') }}"
+    storage_domain: "{{ cohesity_protection.storage_domain | default('DefaultStorageDomain') }}"
+    delete_backups: "{{ cohesity_protection.delete_backups | default(False) }}"
+    cancel_active: "{{ cohesity_protection.cancel_active | default(False) }}"
+    append_to_existing: "{{ cohesity_protection.append_to_existing | default(False) }}"
+    exclude: "{{ cohesity_protection.exclude | default('') }}"
+    include: "{{ cohesity_protection.include | default('') }}"
+    time_zone: "{{ cohesity_protection.time_zone | default('America/Los_Angeles') }}"
+    start_time: "{{ cohesity_protection.start_time | default('') }}"
+  tags: always
