@@ -1,5 +1,0 @@
----
-# from galaxy
-- src: https://github.com/cohesity/cohesity-ansible-role/
-  version: nas-recover-bug-fix
-  name: cohesity.cohesity_ansible_role

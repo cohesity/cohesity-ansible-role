@@ -28,7 +28,7 @@ description: Cohesity Ansible Collections
 # Either a single license or a list of licenses for content inside of a collection. Ansible Galaxy currently only
 # accepts L(SPDX,https://spdx.org/licenses/) licenses. This key is mutually exclusive with 'license_file'
 license:
-- GPL-2.0-or-later
+- Apache 2.0
 
 # The path to the license file for the collection. This path is relative to the root of the collection. This key is
 # mutually exclusive with 'license'
@@ -45,13 +45,13 @@ tags: []
 dependencies: {}
 
 # The URL of the originating SCM repository
-repository: http://example.com/repository
+repository: https://github.com/cohesity/cohesity-ansible-role
 
 # The URL to any online docs
-documentation: http://docs.example.com
+documentation: https://developer.cohesity.com
 
 # The URL to the homepage of the collection/project
-homepage: https://cohesity.com
+homepage: www.cohesity.com
 
 # The URL to the collection issue tracker
-issues: http://example.com/issue/tracker
+issues: https://github.com/cohesity/cohesity-ansible-role/issues/new/choose
