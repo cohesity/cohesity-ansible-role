@@ -26,4 +26,5 @@
     prefix: "{{ cohesity_restore_vm.prefix | default('') }}"
     suffix: "{{ cohesity_restore_vm.suffix | default('') }}"
     vm_folder_id: "{{ cohesity_restore_vm.vm_folder_id | default('') }}"
+    recovery_process_type: "{{ cohesity_restore_vm.recovery_type | default('InstantRecovery') }}"
   tags: always
