@@ -176,7 +176,7 @@ The Ansible Module deploys or removes the Cohesity Physical Agent from supported
 |   | file_based | Boolean | False | When enabled, this installs the agent in non-LVM mode and supports only file based backups. |
 |   | native_package | Boolean | False | When enabled, native installers are used for agent installation. If agent is installed using a native package, then agent uninstallation should also be done using native package i.e if **state=absent** then **native_package=True**|
 |   | download_uri | String | | URI to download the agent, if downloading the installer from custom location is preferred. If specified the cluster credentials are not required. |
-|   | operating_system | String| -CentOS <br> -Ubuntu <br> -RedHat | The operating sytem on which the agent is installed. Required only when **native_package** is **True**
+|   | operating_system | String| -CentOS <br> -Ubuntu <br> -RedHat <br> -SLES <br> -AIX | The operating sytem on which the agent is installed. Required only when **native_package** is **True**
 
 ## Outputs
 [top](#cohesity-agent-management---linux)
