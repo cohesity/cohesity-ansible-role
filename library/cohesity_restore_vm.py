@@ -122,6 +122,12 @@ options:
   resource_pool_id:
     description:
       - Specifies the resource pool where the cloned or recovered objects are attached.
+  recovery_type:
+    description:
+      - Specifies the type of recovery process to be performed.
+      - If unspecified, then an instant recovery will be performed.
+    type: str
+    default: InstantRecovery
   prefix:
     description:
       - Specifies a prefix to prepended to the source object name to derive a new name for the recovered or cloned object.
@@ -611,6 +617,7 @@ def main():
             prefix=dict(type='str'),
             resource_pool_id=dict(type='str'),
             resource_pool_name=dict(type='str', default=''),
+            recovery_process_type=dict(type='str', default='InstantRecovery'),
             suffix=dict(type='str'),
             vm_folder_id=dict(type='str')
 
@@ -697,7 +704,8 @@ def main():
                     type="kRecoverVMs",
                     vmwareParameters=dict(
                         poweredOn=module.params.get('power_state'),
-                        disableNetwork=module.params.get('network_connected')
+                        disableNetwork=module.params.get('network_connected'),
+                        recoveryProcessType='k'+module.params.get('recovery_process_type')
                     )
                 )
 
