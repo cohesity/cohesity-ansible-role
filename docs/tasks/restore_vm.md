@@ -42,19 +42,23 @@ cohesity_restore_vm:
   environment: VMware
   job_name: ""
   endpoint: ""
+  restore_to_source: ""
   backup_id: ""
   vms: ""
   wait_for_job: ""
   wait_minutes: 0
   datastore_id: ""
+  datastore_name: ""
   datastore_folder_id: ""
   network_connected: yes
   network_id: ""
   power_state: yes
   resource_pool_id: ""
+  resource_pool_name: ""
   prefix: ""
   suffix: ""
   vm_folder_id: ""
+  recovery_type: InstantRecovery
 ```
 ## Customize Your Playbooks
 [top](#task-cohesity-virtual-machine-restore-operation)
@@ -127,25 +131,29 @@ The following information is copied directly from the included task in this role
     cluster: "{{ cohesity_server }}"
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
-    validate_certs: "{{ cohesity_validate_certs }}"
+    validate_certs: "{{ cohesity_validate_certs | default(False) }}"
     state:  "{{ cohesity_restore_vm.state | default('present') }}"
     name: "{{ cohesity_restore_vm.name | default('') }}"
     environment: "{{ cohesity_restore_vm.environment | default('VMware') }}"
     job_name: "{{ cohesity_restore_vm.job_name | default('') }}"
     endpoint: "{{ cohesity_restore_vm.endpoint | default('') }}"
+    restore_to_source: "{{ cohesity_restore_vm.restore_to_source | default('') }}"
     backup_id: "{{ cohesity_restore_vm.backup_id | default('') }}"
     vm_names: "{{ cohesity_restore_vm.vms | default('') }}"
     wait_for_job: "{{ cohesity_restore_vm.wait_for_job | default('yes') }}"
     wait_minutes: "{{ cohesity_restore_vm.wait_minutes | default(30) }}"
     datastore_id: "{{ cohesity_restore_vm.datastore_id | default('') }}"
+    datastore_name: "{{ cohesity_restore_vm.datastore_name | default('') }}"
     datastore_folder_id: "{{ cohesity_restore_vm.datastore_folder_id | default('') }}"
     network_connected: "{{ cohesity_restore_vm.network_connected | default('yes') }}"
     network_id: "{{ cohesity_restore_vm.network_id | default('') }}"
     power_state: "{{ cohesity_restore_vm.power_state | default('yes') }}"
     resource_pool_id: "{{ cohesity_restore_vm.resource_pool_id | default('') }}"
+    resource_pool_name: "{{ cohesity_restore_vm.resource_pool_name | default('') }}"
     prefix: "{{ cohesity_restore_vm.prefix | default('') }}"
     suffix: "{{ cohesity_restore_vm.suffix | default('') }}"
     vm_folder_id: "{{ cohesity_restore_vm.vm_folder_id | default('') }}"
+    recovery_process_type: "{{ cohesity_restore_vm.recovery_type | default('InstantRecovery') }}"
   tags: always
 
 ```

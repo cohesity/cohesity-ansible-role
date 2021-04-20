@@ -122,7 +122,7 @@ options:
   resource_pool_id:
     description:
       - Specifies the resource pool where the cloned or recovered objects are attached.
-  recovery_process_type:
+  recovery_type:
     description:
       - Specifies the type of recovery process to be performed.
       - If unspecified, then an instant recovery will be performed.

@@ -9,6 +9,7 @@
 - [Examples](#examples)
   - [Restore a single Virtual Machine](#Restore-a-single-Virtual-Machine)
   - [Restore multiple Virtual Machines from a specific Snapshot with a new prefix and disable the network](#Restore-multiple-Virtual-Machines-from-a-specific-snapshot-with-a-new-prefix-and-disable-the-network)
+  - [Restore a Virtual Machine using Copy Recovery Type](#Restore-Virtual-Machine-Using-Copy-Recover-Type)
 - [Parameters](#parameters)
 - [Outputs](#outputs)
 
@@ -104,6 +105,26 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
 
 ```
 
+### Restore Virtual Machine Using Copy Recover Type)
+[top](#cohesity-restore-virtual-machines)
+
+```yaml
+- name: Restore a Virtual Machine Using Copy Recovery Method
+  cohesity_restore_vm:
+    cluster: cohesity.lab
+    username: admin
+    password: password
+    state: present
+    name: "Ansible Test VM Restore"
+    endpoint: "myvcenter.cohesity.demo"
+    environment: "VMware"
+    job_name: "myvcenter.cohesity.demo"
+    vm_names:
+      - chs-win-01
+    recovery_type: CopyRecovery
+```
+
+
 ## Parameters
 [top](#cohesity-restore-virtual-machines)
 
@@ -132,6 +153,7 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
 |   | prefix | String | | Specifies a prefix to prepended to the source object name to derive a new name for the restored or cloned object. |
 |   | suffix | String | | Specifies a suffix to appended to the original source object name to derive a new name for the restored or cloned object |
 |   | vm_folder_id | String | | Specifies a folder where the VMs should be restored |
+|   | recovery_type | String | InstantRecovery | Specifies the type of recovery process to be performed. If unspecified, then an InstantRecovery will be performed. |
 
 
 ## Outputs
