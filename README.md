@@ -44,4 +44,4 @@ We would love to hear from you. Please send your suggestions and feedback to: [c
 
 ## License
 
-Apache 2.0
+Apache-2.0
