@@ -50,9 +50,6 @@ cohesity_restore_file:
   preserve_attributes: True
   restore_location: ""
   backup_timestamp: ""
-  vm_name: ""
-  vm_username: ""
-  vm_password: ""
 ```
 ## Customize Your Playbooks
 [top](#task-cohesity-file-restore-operation)
@@ -122,8 +119,8 @@ The following information is copied directly from the included task in this role
     cluster: "{{ cohesity_server }}"
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
-    validate_certs: "{{ cohesity_validate_certs | default(False) }}"
-    state: "{{ cohesity_restore_file.state | default('present') }}"
+    validate_certs: "{{ cohesity_validate_certs }}"
+    state:  "{{ cohesity_restore_file.state | default('present') }}"
     name: "{{ cohesity_restore_file.name | default('') }}"
     environment: "{{ cohesity_restore_file.environment | default('PhysicalFiles') }}"
     job_name: "{{ cohesity_restore_file.job_name | default('') }}"
@@ -133,12 +130,9 @@ The following information is copied directly from the included task in this role
     wait_for_job: "{{ cohesity_restore_file.wait_for_job | default('yes') }}"
     wait_minutes: "{{ cohesity_restore_file.wait_minutes | default(10) }}"
     overwrite: "{{ cohesity_restore_file.overwrite | default('yes') }}"
-    vm_name: "{{ cohesity_restore_file.vm_name | default('') }}"
     preserve_attributes: "{{ cohesity_restore_file.preserve_attributes | default('yes') }}"
     restore_location: "{{ cohesity_restore_file.restore_location | default('') }}"
-    backup_timestamp: "{{ cohesity_restore_file.backup_timestamp | default('') }}"
-    vm_password: "{{ cohesity_restore_file.vm_password | default('') }}"
-    vm_username: "{{ cohesity_restore_file.vm_username | default('') }}"
+    backup_timestamp: "{{cohesity_restore_file.backup_timestamp | default('') }}"
   tags: always
 
 ```

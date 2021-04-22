@@ -10,7 +10,6 @@
   - [Restore a single file from a Physical Windows Backup](#Restore-a-single-file-from-a-Physical-Windows-Backup)
   - [Restore a single file from a GenericNas NFS Backup and wait for the job to complete](#Restore-a-single-file-from-a-GenericNas-NFS-Backup-and-wait-for-the-job-to-complete)
   - [Restore multiple files from a specific Physical Windows Backup and wait for up to 10 minutes for the process to complete](#Restore-multiple-files-from-a-specific-Physical-Windows-Backup-and-wait-for-up-to-10-minutes-for-the-process-to-complete)
-  - [Restore a single file from a VMware VM Backup](#Restore-a-single-file-from-a-VMware-VM-Backup)
 - [Parameters](#parameters)
 - [Outputs](#outputs)
 
@@ -115,29 +114,6 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
     wait_minutes: 10
 ```
 
-### Restore a single file from a VMware VM Backup
-[top](#cohesity-restore-files)
-
-```yaml
----
-- cohesity_restore_file:
-    name: "Ansible File Restore to Virtual Machine"
-    environment: "VMware"
-    job_name: "myvm.demo"
-    endpoint: "myvcenter.cohesity.demo"
-    vm_name: "demo"
-    files:
-      - "/home/cohesity/sample"
-    wait_for_job: True
-    state: "present"
-    backup_timestamp: 2021-04-11:21:37
-    restore_location: /home/cohesity/
-    vm_username: admin
-    vm_password: admin
-
-```
-
-
 ## Parameters
 [top](#cohesity-restore-files)
 
@@ -150,8 +126,8 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
 |   | state | Choice | -**present**<br>-absent<br>-started<br>-stopped | Determines the state of the restore operation. |
 | X | **name** | String | | Descriptor to assign to the Restore Job.  The Restore Job name will appear in the format: `job_name:name`. |
 | X | **job_name** | String | | Name of the Protection Job |
-| X | **environment** | Choice | -**PhysicalFiles**<br>-Physical<br>-GenericNas<br>-VMware | Specifies the environment type (such as VMware or MS SQL) of the Protection Source this Job is protecting. For Physical protection source, this value can be 'PhysicalFiles' or 'Physical'. 'PhysicalFiles' if the protection job is file based and 'Physical' for block based protection jobs |
-| X | **endpoint** | String | | Specifies the network endpoint where the Protection Source is reachable. It can be the URL, hostname, IP address, NFS mount point, or SMB Share of the Protection Source. Specifies the Vcenter name in case of VMware environment|
+| X | **environment** | Choice | -**PhysicalFiles**<br>-Physical<br>-GenericNas | Specifies the environment type (such as VMware or MS SQL) of the Protection Source this Job is protecting. For Physical protection source, this value can be 'PhysicalFiles' or 'Physical'. 'PhysicalFiles' if the protection job is file based and 'Physical' for block based protection jobs |
+| X | **endpoint** | String | | Specifies the network endpoint where the Protection Source is reachable. It can be the URL, hostname, IP address, NFS mount point, or SMB Share of the Protection Source. |
 |   | backup_id | String |  | Optional Cohesity ID to use as source for the restore operation.  If not selected, the most recent `RunId` will be used. |
 | X | **file_names** | Array |  | Array of files and folders to restore |
 |   | wait_for_job | Boolean | True | Wait until the Restore Job completes |
@@ -160,9 +136,6 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
 |   | preserve_attributes | Boolean | False | If `true`, the restore operation maintains the original file or folder attributes |
 |   | restore_location | String |  | Alternate location to which the files will be restored |
 |   | backup_timestamp | String |  | Backup Run time for the restore operation. It should be given in YYYY-MM-DD:hh:mm format. If not specified, most recent backup job run is used.
-|   | vm_name | String | | Name of the VM where files are located. **Required** when *environment=VMware*|
-|   | vm_username | String | | Username of the VM to which the files will be restored. **Required** when *environment=VMware*|
-|   | vm_password | String | | Password of the VM to which the files will be restored. **Required** when *environment=VMware*|
 
 
 ## Outputs
