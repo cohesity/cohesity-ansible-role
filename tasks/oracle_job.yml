@@ -12,5 +12,6 @@
     storage_domain: "{{ cohesity_oracle.storage_domain | default('DefaultStorageDomain') }}"
     delete_backups: "{{ cohesity_oracle.delete_backups | default(False) }}"
     cancel_active: "{{ cohesity_oracle.cancel_active | default(False) }}"
-    time_zone: " {{ cohesity_oracle.time_zone | default('Asia/Kolkata') }}"
+    time_zone: "{{ cohesity_oracle.time_zone | default('Asia/Kolkata') }}"
+    databases: "{{ cohesity_oracle.databases | default('') }}"
   tags: always
