@@ -11,6 +11,10 @@ from datetime import datetime
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url, urllib_error
 
+from cohesity_management_sdk.cohesity_client import CohesityClient
+from cohesity_management_sdk.controllers.base_controller import BaseController
+from cohesity_management_sdk.exceptions.api_exception import APIException
+
 try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
@@ -24,7 +28,7 @@ except ImportError:
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, \
-        get__prot_source_root_id__by_environment, get__restore_job__by_type
+        get__prot_source_root_id__by_environment, get__restore_job__by_type, get_cohesity_client
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -67,6 +71,7 @@ options:
       - PhysicalFiles
       - Physical
       - GenericNas
+      - VMware
   job_name:
     description:
       - Name of the Protection Job
@@ -117,6 +122,19 @@ options:
       - protection run timestamp in YYYY-MM-DD:HH:MM format to use as source for the Restore operation. If not specified,
         the most recent timestamp is used
     type: String
+  vm_name:
+    description:
+      - Name of the Vcenter virtual machine, from where the files are located. Required if the environment is VMware.
+    type: String
+  vm_username:
+    description:
+      - Username of the virtual machine, where files will be restored. Required if the environment is VMware.
+    type: String
+  vm_password:
+    description:
+      - Password of the virtual machine, where files will be restored. Required if the environment is VMware.
+    type: String
+
 
 
 extends_documentation_fragment:
@@ -171,6 +189,24 @@ EXAMPLES = '''
       - C:\\data\\large_directory
     wait_for_job: yes
     wait_minutes: 10
+
+
+# Restore a single file from a VMware VM Backup
+- cohesity_restore_file:
+    name: "Ansible File Restore to Virtual Machine"
+    environment: "VMware"
+    job_name: "myvm.demo"
+    endpoint: "myvcenter.cohesity.demo"
+    vm_name: "demo"
+    files:
+      - "/home/cohesity/sample"
+    wait_for_job: True
+    state: "present"
+    backup_timestamp: 2021-04-11:21:37
+    restore_location: /home/cohesity/
+    vm_username: admin
+    vm_password: admin
+
 '''
 
 RETURN = '''
@@ -401,6 +437,40 @@ def start_restore(module, uri, self):
         raise__cohesity_exception__handler(error, module)
 
 
+def get__job_information__for_file(module, source_object_info):
+    try:
+        # Based on job id fetch run details based on used provided timestamp.
+        # If timestamp is not provided fetch latest successful run details.
+        run_id = None
+        job_runs = cohesity_client.protection_runs.get_protection_runs(
+            job_id=source_object_info["jobId"])
+        for run in job_runs:
+            if not module.params.get('backup_timestamp') and run.backup_run.status == "kSuccess":
+                run_id = run.backup_run.job_run_id
+                t_secs = run.backup_run.stats.start_time_usecs
+                break
+            else:
+                snapshot_timestamp = datetime.strptime(
+                    module.params.get('backup_timestamp'), '%Y-%m-%d:%H:%M').replace(second=0)
+                t = datetime.strptime(
+                time.ctime(run.backup_run.stats.start_time_usecs /
+                    1000000),
+                '%a %b %d %H:%M:%S %Y').replace(
+                second=0)
+                if snapshot_timestamp != t:
+                    continue
+                run_id = run.backup_run.job_run_id
+                t_secs = run.backup_run.stats.start_time_usecs
+                break
+        if not run_id :
+            module.fail_json(msg="Run details not available")
+        source_object_info["jobRunId"] = run_id
+        source_object_info["startedTimeUsecs"] = t_secs
+    except APIException as err:
+        module.fail_json(msg="Error occured while fetching job run details, error details %s" % err)
+
+
+
 def wait_restore_complete(module, self):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
@@ -483,7 +553,7 @@ def main():
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
             environment=dict(
-                choices=['PhysicalFiles', 'GenericNas', 'Physical'],
+                choices=['PhysicalFiles', 'GenericNas', 'Physical', 'VMware'],
                 default='PhysicalFiles'
             ),
             job_name=dict(type='str', required=True),
@@ -495,6 +565,9 @@ def main():
             overwrite=dict(type='bool', default=True),
             preserve_attributes=dict(type='bool', default=True),
             restore_location=dict(type='str', default=''),
+            vm_name=dict(type='str', default=''),
+            vm_username=dict(type='str', default=''),
+            vm_password=dict(type='str', default=''),
             wait_minutes=dict(type='str', default=10)
 
         )
@@ -516,6 +589,11 @@ def main():
         environment=module.params.get('environment'),
         name=module.params.get('job_name') + ": " + module.params.get('name')
     )
+
+    global cohesity_client
+    base_controller = BaseController()
+    base_controller.global_headers['user-agent'] = 'Ansible-v2.2.0'
+    cohesity_client = get_cohesity_client(module)
 
     if module.params.get('backup_id'):
         job_details['jobRunId'] = module.params.get('backup_id')
@@ -561,9 +639,10 @@ def main():
         else:
             # check__mandatory__params(module)
             environment = module.params.get('environment')
+            endpoint = module.params.get('endpoint')
             response = []
 
-            if environment in ("PhysicalFiles", "GenericNas", "Physical"):
+            if environment in ("PhysicalFiles", "GenericNas", "Physical", "VMware"):
                 # => Gather the Source Details
                 job_details['file_names'] = module.params.get('file_names')
                 prot_source = dict(
@@ -576,6 +655,14 @@ def main():
                     prot_source['environment'] = "GenericNas"
                 source_id = get__prot_source_id__by_endpoint(
                     module, prot_source)
+                if environment == "VMware":
+                    source_id = None
+                    vcenter_list = cohesity_client.protection_sources.list_protection_sources_root_nodes(environment='k'+environment)
+                    for vcenter in vcenter_list:
+                        if vcenter.protection_source.vmware_protection_source.name == endpoint:
+                            source_id = vcenter.protection_source.id
+                    if not source_id:
+                        module.fail_json(msg="Vcenter '%s' is not registered to the cluster" % endpoint)
                 if not source_id:
                     module.fail_json(
                         msg="Failed to find the endpoint on the cluster",
@@ -590,30 +677,83 @@ def main():
                     elif environment == "GenericNas":
                         restore_file_list.append(strip__prefix(
                             job_details['endpoint'], restore_file))
+                    elif environment == "VMware":
+                        restore_file_list.append(restore_file)
                     else:
                         restore_file_list = restore_file
 
                 job_details['file_names'] = restore_file_list
-                source_object_info = get__snapshot_information__for_file(
-                    module, job_details)
 
-                for objectInfo in source_object_info:
-                    restore_data = dict(
-                        name=module.params.get('job_name') +
-                        ": " +
-                        module.params.get('name'),
-                        filenames=restore_file_list,
-                        targetSourceId=objectInfo['protectionSourceId'],
-                        sourceObjectInfo=objectInfo,
-                        token=job_details['token'],
-                        overwrite=module.params.get('overwrite'),
-                        preserveAttributes=module.params.get('preserve_attributes'))
+                if environment == "VMware":
+                    vm_id = None
+                    vm_name = module.params.get("vm_name")
+                    # Fetch the virtual machine source id, using which files can be searched.
+                    objects = cohesity_client.protection_sources.list_virtual_machines(v_center_id=source_id,names=vm_name)
+                    for each_object in objects:
+                        if each_object.name == vm_name:
+                            vm_id = each_object.id
+                            break
 
-                    if module.params.get('restore_location'):
-                        restore_data['newBaseDirectory'] = module.params.get(
-                            'restore_location')
+                    for file_name in job_details['file_names']:
+                        resp = cohesity_client.restore_tasks.search_restored_files(
+                            environments='kVMware',search=file_name, source_ids=vm_id)
 
-                    response.append(start_restore__files(module, restore_data))
+                        # Fail if the file is not available.
+                        if not (resp and resp.files):
+                            module.fail_json(msg="File '%s' is not available to restore" % file_name)
+                        for file_obj in resp.files:
+                            if not (file_obj.filename == file_name and file_obj.protection_source.name == vm_name):
+                                module.fail_json(
+                                    msg="File '%s' is not available in virtual machine '%s' to restore" % (file_name, vm_name))
+                            source_object_info = dict(jobId=file_obj.job_id,
+                                protectionSourceId=file_obj.source_id,
+                                environment="kVMware")
+
+                        get__job_information__for_file(module, source_object_info)
+
+                        # For VMware file restore, VM credentials are mandatory.
+                        if not (module.params.get('username') or module.params.get('password')):
+                            module.fail_json(msg="Please provide VM credentials to to proceed with restore.")
+                        restore_data = dict(
+                            name=module.params.get('job_name') +
+                            ": " +
+                            module.params.get('name'),
+                            filenames=restore_file_list,
+                            targetSourceId=vm_id,
+                            targetParentSourceId=source_id,
+                            sourceObjectInfo=source_object_info,
+                            token=job_details['token'],
+                            overwrite=module.params.get('overwrite'),
+                            username=module.params.get('vm_username'),
+                            password=module.params.get('vm_password'),
+                            preserveAttributes=module.params.get('preserve_attributes'))
+
+                        if module.params.get('restore_location'):
+                            restore_data['newBaseDirectory'] = module.params.get(
+                                'restore_location')
+
+                        response.append(start_restore__files(module, restore_data))
+                else:
+                    source_object_info = get__snapshot_information__for_file(
+                        module, job_details)
+
+                    for objectInfo in source_object_info:
+                        restore_data = dict(
+                            name=module.params.get('job_name') +
+                            ": " +
+                            module.params.get('name'),
+                            filenames=restore_file_list,
+                            targetSourceId=objectInfo['protectionSourceId'],
+                            sourceObjectInfo=objectInfo,
+                            token=job_details['token'],
+                            overwrite=module.params.get('overwrite'),
+                            preserveAttributes=module.params.get('preserve_attributes'))
+
+                        if module.params.get('restore_location'):
+                            restore_data['newBaseDirectory'] = module.params.get(
+                                'restore_location')
+
+                        response.append(start_restore__files(module, restore_data))
 
             else:
                 # => This error should never happen based on the set assigned to the parameter.
