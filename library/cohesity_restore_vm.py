@@ -703,7 +703,7 @@ def main():
                     token=job_details['token'],
                     type="kRecoverVMs",
                     vmwareParameters=dict(
-                        poweredOn=module.params.get('power_state')=="yes",
+                        poweredOn=module.params.get('power_state'),
                         disableNetwork=module.params.get('network_connected'),
                         recoveryProcessType='k'+module.params.get('recovery_process_type')
                     )
