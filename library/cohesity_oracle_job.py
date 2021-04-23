@@ -398,7 +398,8 @@ def main():
                 environment='kOracle', id=parent_id)
             if not resp:
                 module.fail_json(msg="Oracle source is not available to protect")
-            [application_nodes.extend(node["applicationNodes"]) for node in resp[0].nodes]
+            for node in resp[0].nodes:
+                application_nodes.extend(node["applicationNodes"])
 
             # Make copy of database list and remove once entity id fetched. This check
             # is to ensure availability of databases in server.
