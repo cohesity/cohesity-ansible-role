@@ -169,8 +169,14 @@ def verify_dependencies():
 
 def check_agent(module, results):
     # => Determine if the Cohesity Agent is currently installed
-    if os.path.exists("/etc/init.d/cohesity-agent"):
-        cmd = "/etc/init.d/cohesity-agent version"
+    aix_agent_path = "/usr/local/cohesity/agent/aix_agent.sh"
+    def_agent_path = "/etc/init.d/cohesity-agent"
+
+    # Look for default ansible agent path and aix agent path.
+    agent_path = def_agent_path if os.path.exists(def_agent_path) else \
+        aix_agent_path if os.path.exists(aix_agent_path) else None
+    if agent_path:
+        cmd = "%s version" % agent_path
         rc, out, err = module.run_command(cmd)
         split_out = out.split("\n")
         version = ""
@@ -241,7 +247,16 @@ def check_agent(module, results):
 
 def download_agent(module, path):
     try:
-        if not module.params.get('download_uri'):
+        if module.params.get('operating_system') == "AIX":
+            server = module.params.get('cluster')
+            token = get__cohesity_auth__token(module)
+            uri = "https://" + server + \
+                "/irisservices/api/v1/public/physicalAgents/download?hostType=kAix&agentType=kJava"
+            headers = {
+                "Accept": "application/octet-stream",
+                "Authorization": "Bearer " + token,
+                "user-agent": "cohesity-ansible/v2.2.0"}
+        elif not module.params.get('download_uri'):
             os_type = "Linux"
             server = module.params.get('cluster')
             token = get__cohesity_auth__token(module)
@@ -357,6 +372,8 @@ def install_agent(module, installer, native):
                 cmd = "sudo COHESITYUSER={0} dpkg -i {1}".format(user, installer)
             elif module.params.get('operating_system') in ("CentOS", "RedHat"):
                 cmd = "sudo COHESITYUSER={0} rpm -i {1}".format(user, installer)
+            elif module.params.get('operating_system') == "AIX":
+                cmd = "sudo COHESITYUSER={0} installp -ad {1} all".format(user, installer)
             else:
                 installation_failures(
                     module, "", "",
@@ -381,10 +398,11 @@ def extract_agent(module, filename):
     #
     # => Note: Python 2.6 doesn't fully support the new string formatters, so this
     # => try..except will give us a clean backwards compatibility.
-    import os
+
     directory = os.path.dirname(os.path.abspath(filename))
     target = directory + "/install_files"
     create_download_dir(module, target)
+
     try:
         cmd = "{0} --nox11 --noexec --target {1} ".format(filename, target)
     except Exception as e:
@@ -419,7 +437,13 @@ def remove_agent(module, installer, native):
             installation_failures(
                 module, out, rc, "Cohesity Agent is partially installed")
     else:
-        if module.params.get('operating_system') == "Ubuntu":
+        if module.params.get('operating_system') == "AIX":
+            cmd = "installp -u cohesity_agent.rte"
+            rc, out, err = module.run_command(cmd)
+            if rc:
+                installation_failures(
+                    module, stdout, rc, "Failed to uninstall cohesity agent")
+        elif module.params.get('operating_system') == "Ubuntu":
             cmd = "sudo dpkg -P cohesity-agent"
             rc, stdout, stderr = module.run_command(cmd)
             if rc:
@@ -635,6 +659,10 @@ def main():
         tempdir = mkdtemp(
             prefix="ansible."
         )
+    # Agent installation for AIX operating system is done using native package.
+    if module.params.get('operating_system') == "AIX":
+        module.params['native_package'] = True
+
     success = True
     try:
         if module.check_mode:

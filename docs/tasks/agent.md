@@ -203,12 +203,28 @@ The following information is copied directly from the included task in this role
     - cohesity_agent.state == "present"
   tags: always
 
+- name: Install Prerequisite Packages for SLES
+  action: >
+    {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,libcap-progs" state=present
+  when:
+    - ansible_distribution == "SLES"
+    - cohesity_agent.state == "present"
+  tags: always
+
+- name: Install Prerequisite Packages for AIX
+  action: >
+    {{ ansible_pkg_mgr }} name="wget,rsync" state=present
+  when:
+    - ansible_distribution == "AIX"
+    - cohesity_agent.state == "present"
+  tags: always
+
 - name: Check if firewall is enabled on CentOS or RedHat
   command : "firewall-cmd --state"
   ignore_errors: yes
   register : firewall_status_centos
   when:
-    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat" or ansible_distribution == "SLES"
     - cohesity_agent.state == "present"
   tags: always
 
@@ -218,7 +234,7 @@ The following information is copied directly from the included task in this role
   - --zone=public --permanent --add-port 50051/tcp
   - --reload
   when:
-    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
+    - ansible_distribution == "CentOS" or ansible_distribution == "RedHat" or ansible_distribution == "SLES"
     - cohesity_agent.state == "present"
     - firewall_status_centos.rc == 0
   tags: always
@@ -253,6 +269,9 @@ The following information is copied directly from the included task in this role
     native_package: "{{cohesity_agent.native_package | default(False) }}"
     download_uri: "{{ cohesity_agent.download_uri | default() }}"
     operating_system: "{{ ansible_distribution }}"
+    host: "{{ cohesity_agent.host | default() }}"
+    wait_minutes: "{{ cohesity_agent.wait_minutes | default(30) }}"
+    upgrade: "{{ cohesity_agent.upgrade | default(False) }}"
   tags: always
 
 ```
