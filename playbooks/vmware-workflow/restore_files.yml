@@ -1,0 +1,28 @@
+#=> restore files from VMware Backup based on timestamp provided or recent job run is used for the operation.
+---
+  - hosts: localhost
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Restore Files
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: restore_vmware_file
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: False
+            cohesity_restore_vmware_file:
+                name: "Ansible File Restore"
+                job_name: "ProtectFiles"
+                endpoint: "myvmware.host.com"
+                vm_name: "myvm.name"
+                files:
+                  - "/home/cohesity/sample"
+                wait_for_job: True
+                state: "present"
+                backup_timestamp: 2021-04-11:21:37
+                restore_location: /home/cohesity/a
+                vm_username: myvm.username
+                vm_password: myvm.password

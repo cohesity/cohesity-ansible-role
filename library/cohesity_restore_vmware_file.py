@@ -600,12 +600,12 @@ def main():
                     source_id = vcenter.protection_source.id
             if not source_id:
                 module.fail_json(msg="Vcenter '%s' is not registered to the cluster" % endpoint)
-            job_details['endpoint'] = source_id
-
-            restore_file_list = job_details['file_names']
 
             vm_id = None
             vm_name = module.params.get("vm_name")
+            restore_file_list = module.params.get('file_names')
+            job_details['endpoint'] = source_id
+            job_details['file_names'] = restore_file_list
 
             # Fetch the virtual machine source id, using which files can be searched.
             objects = cohesity_client.protection_sources.list_virtual_machines(v_center_id=source_id,names=vm_name)
