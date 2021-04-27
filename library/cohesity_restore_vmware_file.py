@@ -11,6 +11,10 @@ from datetime import datetime
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url, urllib_error
 
+from cohesity_management_sdk.cohesity_client import CohesityClient
+from cohesity_management_sdk.controllers.base_controller import BaseController
+from cohesity_management_sdk.exceptions.api_exception import APIException
+
 try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
@@ -24,7 +28,7 @@ except ImportError:
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, \
-        get__prot_source_root_id__by_environment, get__restore_job__by_type
+        get__prot_source_root_id__by_environment, get__restore_job__by_type, get_cohesity_client
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -33,7 +37,7 @@ ANSIBLE_METADATA = {
 }
 
 DOCUMENTATION = '''
-module: cohesity_restore_file
+module: cohesity_restore_vmware_file
 short_description: Restore Files and Folders from Cohesity Protection Jobs
 description:
     - Ansible Module used to start a Cohesity Recovery Job on a Cohesity Cluster.
@@ -41,7 +45,7 @@ description:
     - will be applied.
 version_added: '2.6.5'
 author:
-  - Jeremy Goodrum (github.com/exospheredata)
+  - Naveena
   - Cohesity, Inc
 
 options:
@@ -58,30 +62,14 @@ options:
     description:
       - Descriptor to assign to the Recovery Job.  The Recovery Job name will consist of the job_name:name format.
     required: yes
-  environment:
-    description:
-      - Specifies the environment type (such as PhysicalFiles or Physical or GenericNas) of the Protection Job
-      - . Supported environment types include 'PhysicalFiles', 'GenericNas'
-    required: yes
-    choices:
-      - PhysicalFiles
-      - Physical
-      - GenericNas
   job_name:
     description:
       - Name of the Protection Job
     required: yes
   endpoint:
     description:
-      - Specifies the network endpoint of the Protection Source where it is reachable. It could
-      - be an URL or hostname or an IP address of the Protection Source or a NAS Share/Export Path.
+      - Specifies the name of Vcenter where file is located.
     required: yes
-    aliases:
-      - hostname
-      - ip_address
-  backup_id:
-    description:
-      - Optional Cohesity ID to use as source for the Restore operation.  If not selected, the most recent RunId will be used
   backup_timestamp:
     description:
       - Future option to identify backups based on a timestamp
@@ -117,7 +105,18 @@ options:
       - protection run timestamp in YYYY-MM-DD:HH:MM format to use as source for the Restore operation. If not specified,
         the most recent timestamp is used
     type: String
-
+  vm_name:
+    description:
+      - Name of the Vcenter virtual machine, from where the files are located. Required if the environment is VMware.
+    type: String
+  vm_username:
+    description:
+      - Username of the virtual machine, where files will be restored. Required if the environment is VMware.
+    type: String
+  vm_password:
+    description:
+      - Password of the virtual machine, where files will be restored. Required if the environment is VMware.
+    type: String
 
 extends_documentation_fragment:
     - cohesity
@@ -127,50 +126,42 @@ notes:
 '''
 
 EXAMPLES = '''
-# Restore a single file from a PhysicalFiles Windows Backup
-- cohesity_restore_file:
+
+# Restore multiple files from a specific VMware Backup and wait for up to 10 minutes for the process to complete
+- cohesity_restore_vmware_file:
     cluster: cohesity.lab
     username: admin
     password: password
     state: present
     name: Restore Single File
     job_name: myhost
-    environment: PhysicalFiles
-    endpoint: mywindows.host.lab
-    file_names:
-      - C:\\data\\big_file
-    wait_for_job: no
-
-# Restore a single file from a GenericNas NFS Backup and wait for the job to complete
-- cohesity_restore_file:
-    cluster: cohesity.lab
-    username: admin
-    password: password
-    state: present
-    name: Restore Single File to NFS Location
-    job_name: mynfs
-    environment: GenericNas
-    endpoint: mynfs.host.lab:/exports
-    file_names:
-      - /data
-    restore_location: /restore
-    wait_for_job: yes
-
-# Restore multiple files from a specific Physical Windows Backup and wait for up to 10 minutes for the process to complete
-- cohesity_restore_file:
-    cluster: cohesity.lab
-    username: admin
-    password: password
-    state: present
-    name: Restore Single File
-    job_name: myhost
-    environment: Physical
-    endpoint: mywindows.host.lab
+    endpoint: myvcenter.host.lab
     file_names:
       - C:\\data\\files
       - C:\\data\\large_directory
+    vm_name: "demo"
+    vm_username: admin
+    vm_password: admin
     wait_for_job: yes
     wait_minutes: 10
+
+
+# Restore a single file from a VMware VM Backup
+- cohesity_restore_vmware_file:
+    name: "Ansible File Restore to Virtual Machine"
+    environment: "VMware"
+    job_name: "myvm.demo"
+    endpoint: "myvcenter.cohesity.demo"
+    files:
+      - "/home/cohesity/sample"
+    wait_for_job: True
+    state: "present"
+    backup_timestamp: 2021-04-11:21:37
+    restore_location: /home/cohesity/
+    vm_name: "demo"
+    vm_username: admin
+    vm_password: admin
+
 '''
 
 RETURN = '''
@@ -181,7 +172,7 @@ RETURN = '''
         "C:\\data\\files"
     ],
     "msg": "Registration of Cohesity Restore Job Complete",
-    "name": "mywindows: Ansible Test Multi-File Restore",
+    "name": "myvcenter: Ansible Test Multi-File Restore",
     "restore_jobs": [
         {
             "fullViewName": "cohesity_int_54295",
@@ -401,6 +392,40 @@ def start_restore(module, uri, self):
         raise__cohesity_exception__handler(error, module)
 
 
+def get__job_information__for_file(module, source_object_info):
+    try:
+        # Based on job id fetch run details based on used provided timestamp.
+        # If timestamp is not provided fetch latest successful run details.
+        run_id = None
+        job_runs = cohesity_client.protection_runs.get_protection_runs(
+            job_id=source_object_info["jobId"])
+        for run in job_runs:
+            if not module.params.get('backup_timestamp') and run.backup_run.status == "kSuccess":
+                run_id = run.backup_run.job_run_id
+                t_secs = run.backup_run.stats.start_time_usecs
+                break
+            else:
+                snapshot_timestamp = datetime.strptime(
+                    module.params.get('backup_timestamp'), '%Y-%m-%d:%H:%M').replace(second=0)
+                t = datetime.strptime(
+                time.ctime(run.backup_run.stats.start_time_usecs /
+                    1000000),
+                '%a %b %d %H:%M:%S %Y').replace(
+                second=0)
+                if snapshot_timestamp != t:
+                    continue
+                run_id = run.backup_run.job_run_id
+                t_secs = run.backup_run.stats.start_time_usecs
+                break
+        if not run_id :
+            module.fail_json(msg="Run details not available")
+        source_object_info["jobRunId"] = run_id
+        source_object_info["startedTimeUsecs"] = t_secs
+    except APIException as err:
+        module.fail_json(msg="Error occured while fetching job run details, error details %s" % err)
+
+
+
 def wait_restore_complete(module, self):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
@@ -482,19 +507,18 @@ def main():
             # => Currently, the only supported environments types are list in the choices
             # => For future enhancements, the below list should be consulted.
             # => 'SQL', 'View', 'Puppeteer', 'Pure', 'Netapp', 'HyperV', 'Acropolis', 'Azure'
-            environment=dict(
-                choices=['PhysicalFiles', 'GenericNas', 'Physical'],
-                default='PhysicalFiles'
-            ),
+            environment=dict(type='str', default='VMware'),
             job_name=dict(type='str', required=True),
             endpoint=dict(type='str', required=True),
-            backup_id=dict(type='str', default=''),
             backup_timestamp=dict(type='str', default=''),
             file_names=dict(type='list', required=True),
             wait_for_job=dict(type='bool', default=True),
             overwrite=dict(type='bool', default=True),
             preserve_attributes=dict(type='bool', default=True),
             restore_location=dict(type='str', default=''),
+            vm_name=dict(type='str', default=''),
+            vm_username=dict(type='str', default=''),
+            vm_password=dict(type='str', default=''),
             wait_minutes=dict(type='str', default=10)
 
         )
@@ -516,6 +540,11 @@ def main():
         environment=module.params.get('environment'),
         name=module.params.get('job_name') + ": " + module.params.get('name')
     )
+
+    global cohesity_client
+    base_controller = BaseController()
+    base_controller.global_headers['user-agent'] = 'Ansible-v2.2.0'
+    cohesity_client = get_cohesity_client(module)
 
     if module.params.get('backup_id'):
         job_details['jobRunId'] = module.params.get('backup_id')
@@ -559,68 +588,69 @@ def main():
                 ": " +
                 module.params.get('name'))
         else:
-            # check__mandatory__params(module)
-            environment = module.params.get('environment')
             response = []
+            environment = module.params.get('environment')
+            endpoint = module.params.get('endpoint')
 
-            if environment in ("PhysicalFiles", "GenericNas", "Physical"):
-                # => Gather the Source Details
-                job_details['file_names'] = module.params.get('file_names')
-                prot_source = dict(
-                    environment="Physical",
+            # => Gather the Source Details
+            source_id = None
+            vcenter_list = cohesity_client.protection_sources.list_protection_sources_root_nodes(environment='k'+environment)
+            for vcenter in vcenter_list:
+                if vcenter.protection_source.vmware_protection_source.name == endpoint:
+                    source_id = vcenter.protection_source.id
+            if not source_id:
+                module.fail_json(msg="Vcenter '%s' is not registered to the cluster" % endpoint)
+            job_details['endpoint'] = source_id
+
+            restore_file_list = job_details['file_names']
+
+            vm_id = None
+            vm_name = module.params.get("vm_name")
+
+            # Fetch the virtual machine source id, using which files can be searched.
+            objects = cohesity_client.protection_sources.list_virtual_machines(v_center_id=source_id,names=vm_name)
+            for each_object in objects:
+                if each_object.name == vm_name:
+                    vm_id = each_object.id
+                    break
+
+            for file_name in job_details['file_names']:
+                resp = cohesity_client.restore_tasks.search_restored_files(
+                    environments='kVMware',search=file_name, source_ids=vm_id)
+
+                # Fail if the file is not available.
+                if not (resp and resp.files):
+                    module.fail_json(msg="File '%s' is not available to restore" % file_name)
+                for file_obj in resp.files:
+                    if not (file_obj.filename == file_name and file_obj.protection_source.name == vm_name):
+                        module.fail_json(
+                            msg="File '%s' is not available in virtual machine '%s' to restore" % (file_name, vm_name))
+                    source_object_info = dict(jobId=file_obj.job_id,
+                        protectionSourceId=file_obj.source_id,
+                        environment="kVMware")
+
+                get__job_information__for_file(module, source_object_info)
+
+                # For VMware file restore, VM credentials are mandatory.
+                if not (module.params.get('username') or module.params.get('password')):
+                    module.fail_json(msg="Please provide VM credentials to to proceed with restore.")
+                restore_data = dict(
+                    name=module.params.get('job_name') + ": " + module.params.get('name'),
+                    filenames=restore_file_list,
+                    targetSourceId=vm_id,
+                    targetParentSourceId=source_id,
+                    sourceObjectInfo=source_object_info,
                     token=job_details['token'],
-                    endpoint=module.params.get('endpoint')
+                    overwrite=module.params.get('overwrite'),
+                    username=module.params.get('vm_username'),
+                    password=module.params.get('vm_password'),
+                    preserveAttributes=module.params.get('preserve_attributes'))
 
-                )
-                if environment == "GenericNas":
-                    prot_source['environment'] = "GenericNas"
-                source_id = get__prot_source_id__by_endpoint(
-                    module, prot_source)
-                if not source_id:
-                    module.fail_json(
-                        msg="Failed to find the endpoint on the cluster",
-                        changed=False)
-                job_details['endpoint'] = source_id
+                if module.params.get('restore_location'):
+                    restore_data['newBaseDirectory'] = module.params.get(
+                        'restore_location')
 
-                restore_file_list = []
-                for restore_file in job_details['file_names']:
-                    if environment in ("PhysicalFiles", "Physical"):
-                        restore_file_list.append(
-                            convert__windows_file_name(restore_file))
-                    elif environment == "GenericNas":
-                        restore_file_list.append(strip__prefix(
-                            job_details['endpoint'], restore_file))
-                    else:
-                        restore_file_list = restore_file
-
-                job_details['file_names'] = restore_file_list
-                source_object_info = get__snapshot_information__for_file(
-                    module, job_details)
-
-                for objectInfo in source_object_info:
-                    restore_data = dict(
-                        name=module.params.get('job_name') +
-                        ": " +
-                        module.params.get('name'),
-                        filenames=restore_file_list,
-                        targetSourceId=objectInfo['protectionSourceId'],
-                        sourceObjectInfo=objectInfo,
-                        token=job_details['token'],
-                        overwrite=module.params.get('overwrite'),
-                        preserveAttributes=module.params.get('preserve_attributes'))
-
-                    if module.params.get('restore_location'):
-                        restore_data['newBaseDirectory'] = module.params.get(
-                            'restore_location')
-
-                    response.append(start_restore__files(module, restore_data))
-
-            else:
-                # => This error should never happen based on the set assigned to the parameter.
-                # => However, in case, we should raise an appropriate error.
-                module.fail_json(
-                    msg="Invalid Environment Type selected: {0}".format(
-                        module.params.get('environment')), changed=False)
+                response.append(start_restore__files(module, restore_data))
 
             task = dict(
                 changed=False

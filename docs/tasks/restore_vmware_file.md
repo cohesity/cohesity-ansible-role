@@ -34,15 +34,13 @@ Use this task to perform a Cohesity file restore operation.
 ## Ansible Variables
 [top](#task-cohesity-file-restore-operation)
 
-The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Syntax](../library/cohesity_restore_file.md) in the Cohesity Restore Files module.
+The following is a list of variables and the configuration expected when leveraging this task in your playbook.  For more information on these variables, see [Syntax](../library/cohesity_restore_vmware_file.md) in the Cohesity Restore Files module.
 ```yaml
-cohesity_restore_file:
+cohesity_restore_vmware_file:
   state: "present"
   name: ""
-  environment: "PhysicalFiles"
   job_name: ""
   endpoint: ""
-  backup_id: ""
   files: ""
   wait_for_job: True
   wait_minutes: 10
@@ -50,6 +48,9 @@ cohesity_restore_file:
   preserve_attributes: True
   restore_location: ""
   backup_timestamp: ""
+  vm_name: ""
+  vm_username: ""
+  vm_password: ""
 ```
 ## Customize Your Playbooks
 [top](#task-cohesity-file-restore-operation)
@@ -75,16 +76,6 @@ You can create a file called `restore_files.yml`, add the contents from the samp
   - hosts: workstation
     # => Please change these variables to connect
     # => to your Cohesity Cluster
-    vars:
-        var_cohesity_server: cohesity_cluster_vip
-        var_cohesity_admin: "{{ username }}"
-        var_cohesity_password: "{{ password }}"
-        var_validate_certs: False
-        var_cohesity_restore_name: "Ansible Test File Restore"
-        var_cohesity_endpoint: 10.2.132.141
-        var_cohesity_job_name: "protect_physical_linux"
-        var_cohesity_files:
-           - "/home/cohesity/Documents"
     roles:
       - cohesity.cohesity_ansible_role
     tasks:
@@ -96,14 +87,20 @@ You can create a file called `restore_files.yml`, add the contents from the samp
             cohesity_server: "{{ var_cohesity_server }}"
             cohesity_admin: "{{ var_cohesity_admin }}"
             cohesity_password: "{{ var_cohesity_password }}"
-            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_validate_certs: False
             cohesity_restore_file:
-                name: "{{ var_cohesity_restore_name }}"
-                endpoint: "{{ var_cohesity_endpoint }}"
-                environment: "PhysicalFiles"
-                job_name: "{{ var_cohesity_job_name }}"
-                files: "{{ var_cohesity_files }}"
+                name: "Ansible File Restore"
+                job_name: "Protect file from Vmware Backup"
+                endpoint: "myvcenter.cohesity.demo"
+                files:
+                  - "/home/cohesity/sample"
                 wait_for_job: True
+                state: "present"
+                backup_timestamp: 2021-04-11:21:37
+                restore_location: /home/cohesity/
+                vm_name: "TestSdk"
+                vm_username: "{{ vm_username }}"
+                vm_password: "{{ vm_password }}"
 
 ```
 
@@ -115,24 +112,25 @@ The following information is copied directly from the included task in this role
 ```yaml
 ---
 - name: "Cohesity Recovery Job: Restore a set of files"
-  cohesity_restore_file:
+  cohesity_restore_vmware_file:
     cluster: "{{ cohesity_server }}"
     username: "{{ cohesity_admin }}"
     password: "{{ cohesity_password }}"
-    validate_certs: "{{ cohesity_validate_certs }}"
-    state:  "{{ cohesity_restore_file.state | default('present') }}"
+    validate_certs: "{{ cohesity_validate_certs | default(False) }}"
+    state: "{{ cohesity_restore_file.state | default('present') }}"
     name: "{{ cohesity_restore_file.name | default('') }}"
-    environment: "{{ cohesity_restore_file.environment | default('PhysicalFiles') }}"
     job_name: "{{ cohesity_restore_file.job_name | default('') }}"
     endpoint: "{{ cohesity_restore_file.endpoint | default('') }}"
-    backup_id: "{{ cohesity_restore_file.backup_id | default('') }}"
     file_names: "{{ cohesity_restore_file.files | default('') }}"
     wait_for_job: "{{ cohesity_restore_file.wait_for_job | default('yes') }}"
     wait_minutes: "{{ cohesity_restore_file.wait_minutes | default(10) }}"
     overwrite: "{{ cohesity_restore_file.overwrite | default('yes') }}"
     preserve_attributes: "{{ cohesity_restore_file.preserve_attributes | default('yes') }}"
     restore_location: "{{ cohesity_restore_file.restore_location | default('') }}"
-    backup_timestamp: "{{cohesity_restore_file.backup_timestamp | default('') }}"
+    backup_timestamp: "{{ cohesity_restore_file.backup_timestamp | default('') }}"
+    vm_name: "{{ cohesity_restore_file.vm_name | default('') }}"
+    vm_password: "{{ cohesity_restore_file.vm_password | default('') }}"
+    vm_username: "{{ cohesity_restore_file.vm_username | default('') }}"
   tags: always
 
 ```
