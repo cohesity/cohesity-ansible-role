@@ -221,41 +221,6 @@ def check__protection_restore__exists(module, self):
     return False
 
 
-# => This method will convert the Windows Based file paths into correctly formatted
-# => versions consumable by Cohesity Restore Jobs.
-def convert__windows_file_name(filename):
-
-    # => Raise an exception if the Path format is incorrect
-    if '\\' in filename and ':' not in filename:
-        msg = "Windows Based files must be in /Drive/path/to/file or Drive:\\path\\to\\file format."
-        raise ParameterViolation(msg)
-    if ":" in filename:
-        get_file_source = filename.split(":")
-        if len(get_file_source) > 1:
-            drive_letter = "/" + get_file_source[0]
-            file_path = get_file_source[1]
-        else:
-            drive_letter = ""
-            file_path = filename
-
-        # => Replace the back slashes with forward slashes.
-        for char in ("\\\\", "\\"):
-            file_path = file_path.replace(char, "/")
-
-        # => Combine the Drive Letter and the Formmated File Path for the restore
-        filename = drive_letter + file_path
-    return filename
-
-
-# => Remove the Prefix from a File Path.  This is used to remove the Share
-# => or Export path from the restored file information.
-def strip__prefix(prefix, file_path):
-
-    if file_path.startswith(prefix):
-        return file_path[len(prefix):]
-    return file_path
-
-
 # => Return the Protection Job information based on the Environment and Job Name
 def get__job_information__for_restore(module, self):
     # => Gather the Protection Jobs by Environment to allow us
@@ -280,78 +245,6 @@ def get__job_information__for_restore(module, self):
         # => it is returned as an array.
         return job_data[0]
 
-
-# => Return an Object containing information for the file based restore
-def get__snapshot_information__for_file(module, self):
-    restore_objects = []
-    # => Return the Protection Job information based on the Environment and Job Name
-    job_data = get__job_information__for_restore(module, self)
-
-    for filename in self['file_names']:
-        # => Build the Restore Dictionary Object
-        restore_details = dict(
-            jobRunId="",
-            jobUid=dict(
-                clusterId=job_data['uid']['clusterId'],
-                clusterIncarnationId=job_data['uid']['clusterIncarnationId'],
-                id=job_data['uid']['id']
-            ),
-            protectionSourceId=self['endpoint'],
-            startedTimeUsecs=""
-        )
-        self['restore_obj'] = restore_details.copy()
-        self['restore_obj']['filename'] = filename
-        output = get__file_snapshot_information__by_filename(module, self)
-        if not output:
-            failure = dict(
-                changed=False,
-                job_name=self['job_name'],
-                filename=filename,
-                environment=self['environment'],
-                msg="Failed to find a snapshot for the file in the chosen Job name.")
-            module.fail_json(**failure)
-
-        # => TODO: Add support for selecting a previous backup.
-        # => For now, let's just grab the most recent snapshot.
-        if 'jobRunId' in self:
-            output = [jobRun for jobRun in output if jobRun['snapshot']
-                      ['jobRunId'] == int(self['jobRunId'])]
-
-        if 'backup_timestamp' in self:
-            snapshot_timestamp = datetime.strptime(
-                self['backup_timestamp'], '%Y-%m-%d:%H:%M').replace(second=0)
-            jobRuns = output
-            output = []
-            for jobRun in jobRuns:
-                t = datetime.strptime(
-                    time.ctime(
-                        jobRun['snapshot']['startedTimeUsecs'] /
-                        1000000),
-                    '%a %b %d %H:%M:%S %Y').replace(
-                    second=0)
-                if snapshot_timestamp == t:
-                    output.append(jobRun)
-                    break
-
-        # => If the file has no snapshot, then we will need to fail out this call
-        if len(output) == 0:
-            # failed_file = filename.replace("/","",1).replace("/","\\").replace("\\",":\\",1)
-            module.fail_json(
-                msg="Cohesity Restore failed",
-                error="No snapshot exists for the file " +
-                filename)
-        snapshot_info = output[0]
-        restore_details['jobRunId'] = snapshot_info['snapshot']['jobRunId']
-        restore_details['startedTimeUsecs'] = snapshot_info['snapshot']['startedTimeUsecs']
-
-        exists = [item for item in restore_objects if item['jobRunId']
-                  == restore_details['jobRunId']]
-        if not exists:
-            restore_objects.append(restore_details)
-    return restore_objects
-
-
-# => Perform the Restore of a File to the selected ProtectionSource Target
 def start_restore__files(module, self):
     payload = self.copy()
     return start_restore(
@@ -518,7 +411,7 @@ def main():
             restore_location=dict(type='str', default=''),
             vm_name=dict(type='str', default=''),
             vm_username=dict(type='str', default=''),
-            vm_password=dict(type='str', default=''),
+            vm_password=dict(type='str', default='', no_log=True),
             wait_minutes=dict(type='str', default=10)
 
         )
@@ -622,7 +515,7 @@ def main():
                 if not (resp and resp.files):
                     module.fail_json(msg="File '%s' is not available to restore" % file_name)
                 for file_obj in resp.files:
-                    if not (file_obj.filename == file_name and file_obj.protection_source.name == vm_name):
+                    if file_obj.filename != file_name and file_obj.protection_source.name != vm_name:
                         module.fail_json(
                             msg="File '%s' is not available in virtual machine '%s' to restore" % (file_name, vm_name))
                     source_object_info = dict(jobId=file_obj.job_id,
