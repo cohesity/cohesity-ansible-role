@@ -63,6 +63,25 @@ class ProtectionException(Exception):
     pass
 
 
+def get_timezone():
+    # Function to get ansible control node timezone.
+    # :returns timezone
+    default_timezone = "America/Los_Angeles"
+    try:
+        import subprocess
+        cmd = "timedatectl status"
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+        out, err = proc.communicate()
+        for line in out.split("\n"):
+            if "Time zone" in line:
+                default_timezone = line.split()[2]
+    except Exception as err:
+        pass
+    finally:
+        return default_timezone
+
+
+
 def get_source_id_by_endpoint(module):
     # Fetch source id using endpoint
     try:
@@ -326,7 +345,7 @@ def main():
             environment=dict(default='kOracle'),
             protection_policy=dict(type='str', aliases=['policy'], default='Bronze'),
             storage_domain=dict(type='str', default='DefaultStorageDomain'),
-            time_zone=dict(type='str', default='America/Los_Angeles'),
+            time_zone=dict(type='str', default=''),
             start_time=dict(type='str', default=''),
             delete_backups=dict(type='bool', default=False),
             ondemand_run_type=dict(
@@ -341,6 +360,8 @@ def main():
     # => Create a new module object
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
+    if not module.params.get("time_zone"):
+        module.params["time_zone"] = get_timezone()
     global cohesity_client
     cohesity_client = get_cohesity_client(module)
 
@@ -396,10 +417,12 @@ def main():
             body.source_special_parameters = list()
             resp = cohesity_client.protection_sources.list_protection_sources(
                 environment='kOracle', id=parent_id)
+
             if not resp:
                 module.fail_json(msg="Oracle source is not available to protect")
+
             for node in resp[0].nodes:
-                application_nodes.extend(node["applicationNodes"])
+                application_nodes.extend(node.get("applicationNodes", []))
 
             # Make copy of database list and remove once entity id fetched. This check
             # is to ensure availability of databases in server.
