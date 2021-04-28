@@ -256,7 +256,7 @@ def get__prot_source_root_id__by_environment(module, self):
                     node['protectionSource']['environment'] != 'kVMware':
                 return node['protectionSource']['id']
             elif node['protectionSource']['environment'] == 'kVMware':
-                return module.params['protection_sources'][0]['endpoint']
+                return node['protectionSource']['id']
 
         raise ProtectionException(
             "There was a very serious situation where the chosen environment did not return a valid Root Node ID")
@@ -337,7 +337,9 @@ def get__prot_source_id__by_endpoint(module, self):
             env_types = ['Physical', 'GenericNas']
             if self['environment'] in env_types:
                 for node in source['nodes']:
-                    if node['protectionSource']['name'] == self['endpoint']:
+                    if self['endpoint'] in [
+                        node['registrationInfo']['accessInfo']['endpoint'],
+                        node['protectionSource']['name']]:
                         return node['protectionSource']['id']
             else:
                 for node in source:

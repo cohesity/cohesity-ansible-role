@@ -290,7 +290,7 @@ def wait__for_job_state__transition(module, self, job_runs, state='start'):
                 if currently_active:
                     status = currently_active[0][
                         'backupRun']['status'].lstrip('k')
-                    valid_states = ['Accepted', 'Success']
+                    valid_states = ['Accepted', 'Success', 'Running']
                     for check_state in valid_states:
                         if status == check_state:
                             try:
