@@ -15,6 +15,8 @@ import json
 import traceback
 from ansible.module_utils.urls import open_url, urllib_error
 import ansible.module_utils.six.moves.urllib_parse as urllib_parse
+from cohesity_management_sdk.cohesity_client import CohesityClient
+from cohesity_management_sdk.controllers.base_controller import BaseController
 
 try:
     # => TODO:  Find a better way to handle this!!!
@@ -37,6 +39,31 @@ class ProtectionException(Exception):
 
 class HTTPException(Exception):
     pass
+
+
+def get_cohesity_client(module):
+    '''
+    function to get cohesity cohesity client
+    :param module: object that holds parameters passed to the module
+    :return:
+    '''
+    try:
+        cluster_vip = module.params.get('cluster')
+        username = module.params.get('username')
+        password = module.params.get('password')
+        domain = 'LOCAL'
+        if "@" in username:
+            user_domain = username.split("@")
+            username = user_domain[0]
+            domain = user_domain[1]
+
+        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
+                                         username=username,
+                                         password=password,
+                                         domain=domain)
+        return cohesity_client
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
 
 
 def get__cluster(self):
