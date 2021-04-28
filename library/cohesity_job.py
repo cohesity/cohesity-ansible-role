@@ -104,6 +104,19 @@ options:
       - Optional and only valid when I(state=absent)
     type: bool
     default: no
+  delete_sources:
+    description:
+      - Specifies job is already available, if source available in Protection Job needs to be removed.
+      - Optional and only valid when (environment=Physical, PhysicalFiles, GenericNas)
+    type: bool
+    default: True
+  append_to_existing:
+    description:
+      - Specifies when job is already available and new list of virtual machines needs to be added to existing list.
+      - If not specified new list of vms will replace the existing vms available in the Protection job.
+      - Optional and only valid when (environment=VMware)
+    type: bool
+    default: False
   ondemand_run_type:
     description:
       - Specifies the type of OnDemand Backup.

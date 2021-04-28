@@ -17,6 +17,8 @@
   - [Exclude VMs from an existing VMware Server Protection Job](#Exclude-VMs-from-an-existing-VMware-Server-Protection-Job)
   - [Create a protection job to protect a Cohesity view](#Create-a-protection-job-to-protect-a-Cohesity-view)
   - [Create a GenericNas protection job](#Create-a-GenericNas-protection-job)
+  - [Add new list of virtual machines to existing sources available in a Protection Job](#Add-new-list-of-virtual-machines-to-existing-sources-available-in-a-Protection-Job)
+  - [Remove Physical and Nas sources from an existing Protection Job](#Remove-Physical-and-Nas-sources-from-an-existing-Protection-Job)
 - [Parameters](#parameters)
 - [Outputs](#outputs)
 
@@ -60,6 +62,8 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
     cancel_active: <boolean to determine if an active job should be canceled>
     exclude: <list of vm's or resource pools or folders to be excluded from an existing or new VMware protection job>
     include: <list of vm's or resource pools or folders to be included in an existing or new VMware protection job>
+    append_to_existing: <boolean to determine new list of include vms should overwrite or append to existing vms available in the job>
+    delete_sources: <boolean to determine list of physical sources to be removed from job.>
 ```
 
 ## Examples
@@ -230,6 +234,45 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
        - endpoint: 10.21.31.121:/nfs
 ```
 
+### Remove Physical and Nas sources from an existing Protection Job
+[top](#cohesity-protection-job)
+
+```yaml
+- cohesity_job:
+    cluster: cohesity.lab
+    username: admin
+    password: password
+    state: present
+    name: myvcenter
+    environment: Physical
+    protection_sources:
+      - endpoint: myhost.domain.lab
+    delete_sources: True
+```
+
+
+### Add new list of virtual machines to existing sources available in a Protection Job
+[top](#cohesity-protection-job)
+
+```yaml
+- cohesity_job:
+    cluster: cohesity.lab
+    username: admin
+    password: password
+    state: present
+    name: protect_vm
+    policy: Gold
+    storage_domain: "DefaultStorageDomain"
+    sources:
+      - endpoint: myvcenter.com
+    environment: "VMware"
+    include: 
+      - myvm1
+      - myvm2
+    exclude:
+      - myvm3
+    append_to_existing: true
+```
 
 
 ## Parameters
@@ -261,6 +304,9 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
 |   | exclude | Array | | List of vm's or resource pools or folders to be excluded from an existing or new VMware protection job. Can be used only when *state=present* | 
 |   | include | Array | | List of vm's or resource pools or folders to be included in an existing or new VMware protection job. Can be used only when *state=present* |
 |   | view_name | String | | Name of the view to protect. Must be used only when the **environment** is **View** |
+|   | append_to_existing | Boolean | | Specifies list of include vms must be added to existing vms in the job or override existing vms. Must be used only when the **environment** is **VMware** and **state** is **present**|
+|   | delete_sources | Boolean | | Specifies whether to delete the sources available in the protection job. Must be used only when the **environment** is **Physical or PhysicalFiles or GenericNas** and **state** is **present** |
+
 ## Outputs
 [top](#cohesity-protection-job)
 
