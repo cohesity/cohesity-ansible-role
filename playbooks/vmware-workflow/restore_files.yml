@@ -10,9 +10,9 @@
             tasks_from: restore_vmware_file
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
-            cohesity_admin: "{{ var_cohesity_username }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
             cohesity_password: "{{ var_cohesity_password }}"
-            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_validate_certs: False
             cohesity_restore_vmware_file:
                 name: "Ansible File Restore"
                 job_name: "ProtectFiles"

@@ -13,9 +13,9 @@
             tasks_from: oracle_source
         vars:
             cohesity_server: orcl-serv2-eng-db.com
-            cohesity_admin: "{{ var_cohesity_username }}"
-            cohesity_password: "{{ cohesity_cluster_password }}"
-            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_admin: "{{ username }}"
+            cohesity_password: "{{ password }}"
+            cohesity_validate_certs: False
             cohesity_oracle:
                 state: absent
                 endpoint: "{{ item }}"

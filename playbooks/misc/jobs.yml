@@ -9,6 +9,13 @@
 # =>
 ---
   - hosts: workstation
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: cohesity_cluster_vip
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
     gather_facts: no
     roles:
       - cohesity.cohesity_ansible_role
@@ -20,7 +27,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -35,7 +42,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -50,7 +57,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -64,7 +71,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -78,7 +85,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -100,7 +107,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -121,7 +128,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -134,7 +141,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -148,7 +155,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -165,7 +172,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -183,7 +190,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -201,7 +208,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -218,7 +225,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -235,7 +242,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -253,7 +260,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -271,7 +278,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:

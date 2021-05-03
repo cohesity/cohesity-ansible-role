@@ -1,6 +1,12 @@
 ---
   - hosts: localhost
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
     vars:
+        var_cohesity_server: 10.2.171.30
+        var_cohesity_admin: admin
+        var_cohesity_password: Admin123
+        var_validate_certs: False
         var_cohesity_restore_name: "NAS Test File Restore-nested-2"
         var_cohesity_job_name: "protect_nas"
         var_export_path: "chandu-ve-01-vip.pm.cohesity.com:/Insight-View01"
@@ -13,7 +19,7 @@
             tasks_from: restore_file
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
-            cohesity_admin: "{{ var_cohesity_username }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
             cohesity_password: "{{ var_cohesity_password }}"
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_restore_file:

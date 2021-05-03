@@ -9,6 +9,13 @@
 # =>
 ---
   - hosts: linux
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
+    vars:
+        var_cohesity_server: 10.2.134.20
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
     # => We need to gather facts to determine the OS type of
     # => the machine
     gather_facts: yes
@@ -22,7 +29,7 @@
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
-            cohesity_admin: "{{ var_cohesity_username }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
             cohesity_password: "{{ var_cohesity_password }}"
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_agent:
@@ -35,7 +42,7 @@
             tasks_from: agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
-            cohesity_admin: "{{ var_cohesity_username }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
             cohesity_password: "{{ var_cohesity_password }}"
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_agent:
@@ -43,7 +50,13 @@
         tags: [ 'cohesity', 'agent', 'install', 'physical', 'linux' ]
 
   - hosts: windows
+    # => Please change these variables to connect
+    # => to your Cohesity Cluster
     vars:
+        var_cohesity_server: 10.2.134.20
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
         var_windows_reboot: True
     gather_facts: no
     roles:
@@ -55,7 +68,7 @@
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
-            cohesity_admin: "{{ var_cohesity_username }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
             cohesity_password: "{{ var_cohesity_password }}"
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_agent:
@@ -69,7 +82,7 @@
             tasks_from: win_agent
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
-            cohesity_admin: "{{ var_cohesity_username }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
             cohesity_password: "{{ var_cohesity_password }}"
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_agent:

@@ -15,14 +15,21 @@
           name: cohesity.cohesity_ansible_role
           tasks_from: agent
       vars:
-          cohesity_server: "{{ cohesity_cluster_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
-          cohesity_password: "{{ var_cohesity_password }}"
-          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_server: 10.2.145.27
+          cohesity_admin: "{{ username }}"
+          cohesity_password: "{{ password }}"
+          cohesity_validate_certs: False
           cohesity_agent:
               state: present
 
 - hosts: local
+    # => We need to specify these variables to connect
+    # => to the Cohesity Cluster
+  vars:
+        var_cohesity_server: 10.2.145.27
+        var_cohesity_admin: "{{ username }}"
+        var_cohesity_password: "{{ password }}"
+        var_validate_certs: False
   gather_facts: no
   roles:
       - cohesity.cohesity_ansible_role
@@ -33,7 +40,7 @@
             tasks_from: source
         vars:
             cohesity_server: "{{ var_cohesity_server }}"
-            cohesity_admin: "{{ var_cohesity_username }}"
+            cohesity_admin: "{{ var_cohesity_admin }}"
             cohesity_password: "{{ var_cohesity_password }}"
             cohesity_validate_certs: "{{ var_validate_certs }}"
             cohesity_source:
@@ -49,7 +56,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
@@ -74,7 +81,7 @@
           tasks_from: job
         vars:
           cohesity_server: "{{ var_cohesity_server }}"
-          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_admin: "{{ var_cohesity_admin }}"
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_protection:
