@@ -312,7 +312,7 @@ def main():
 
     global cohesity_client
     base_controller = BaseController()
-    base_controller.global_headers['user-agent'] = 'cohesity-ansible/v2.2.0'
+    base_controller.global_headers['user-agent'] = 'cohesity-ansible/v2.3.0'
     cohesity_client = get_cohesity_client(module)
     clone_exists, clone_details = get_clone_task(module, False)
 
