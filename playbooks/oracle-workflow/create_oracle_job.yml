@@ -11,9 +11,9 @@
           tasks_from: oracle_job
         vars:
           cohesity_server: orcl-serv2-eng-db.com
-          cohesity_admin: "{{ username }}"
-          cohesity_password: "{{ password }}"
-          cohesity_validate_certs: False
+          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_password: "{{ cohesity_cluster_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_oracle:
               state: present
               job_name: protect_oracle

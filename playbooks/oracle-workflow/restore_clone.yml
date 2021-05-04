@@ -10,10 +10,10 @@
           name: cohesity.cohesity_ansible_role
           tasks_from: oracle_restore
         vars:
-          cohesity_server: orcl-serv2-eng-db.com
-          cohesity_admin: "{{ username }}"
-          cohesity_password: "{{ password }}"
-          cohesity_validate_certs: False
+          cohesity_server: "{{ var_cohesity_server }}"
+          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_oracle:
               source_db: cdb1
               task_name: recover_tasks
