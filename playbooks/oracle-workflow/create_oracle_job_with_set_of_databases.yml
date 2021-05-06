@@ -21,3 +21,6 @@
               policy: "Silver"
               endpoint: "orcl-serv2-eng-db.com"
               cancel_active: true
+              databases:
+                - "cdb1"
+                - "cdb2"
