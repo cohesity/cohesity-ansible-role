@@ -301,7 +301,7 @@ def unregister_job(module, _id):
     '''
     try:
         body = DeleteProtectionJobParam()
-        body.delete_snapshots = module.params.get('delete_snapshots')
+        body.delete_snapshots = module.params.get('delete_backups')
         resp = cohesity_client.protection_jobs.delete_protection_job(_id, body)
         return resp
     except Exception as error:

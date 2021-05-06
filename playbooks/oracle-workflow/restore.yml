@@ -1,6 +1,6 @@
 #=> Create a new Oracle database restore.
 ---
-  - hosts: linux
+  - hosts: localhost
     gather_facts: no
     roles:
       - cohesity.cohesity_ansible_role

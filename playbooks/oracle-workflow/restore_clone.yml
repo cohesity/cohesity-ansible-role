@@ -1,6 +1,6 @@
 #=> Create a Oracle database restore(clone) to protection view.
 ---
-  - hosts: linux
+  - hosts: localhost
     gather_facts: no
     roles:
       - cohesity.cohesity_ansible_role

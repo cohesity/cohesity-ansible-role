@@ -15,14 +15,7 @@
           cohesity_password: "{{ var_cohesity_password }}"
           cohesity_validate_certs: "{{ var_validate_certs }}"
           cohesity_oracle:
-              state: present
+              state: absent
               job_name: protect_oracle
-              storage_domain: "DefaultStorageDomain"
-              policy: "Silver"
-              endpoint: "{{ item }}"
-              cancel_active: true
-              environment: Oracle
-              databases:
-                - "dbs01"
-              time_zone: Africa/Cairo
+              delete_backups: true
         with_items: "{{ groups['oracle'] }}"

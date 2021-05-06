@@ -19,4 +19,4 @@
             cohesity_oracle:
                 state: absent
                 endpoint: "{{ item }}"
-        with_items: "{{ groups['linux'] }}"
+        with_items: "{{ groups['oracle'] }}"
