@@ -39,7 +39,7 @@ This Ansible Module supports database restore operation for the chosen Cohesity 
     validate_certs: <boolean to determine if SSL certificates should be validated>
     state: <state of the restore operation>
     task_name: <name of the restore job>
-    view_name: <Name of view to write database files>
+    clone_app_view: <Boolean to determine whether to restore the files to cohesity cluster(view) or target server>
     source_server: <Name of the source server>
     source_db: <Name of the database available in source server which needs to be restored>
     targe_server: <Name of the target server>
@@ -84,7 +84,7 @@ This Ansible Module supports database restore operation for the chosen Cohesity 
     task_name: Restore task name
     source_server: orcl-serv2-eng-db.com
     source_db: database_1
-    view_name: myview
+    clone_app_view: true
 
 ```
 
@@ -98,7 +98,7 @@ This Ansible Module supports database restore operation for the chosen Cohesity 
 | X | **password** | String | | Password belonging to the selected Username (password used to login to cluster from UI).  This parameter is not logged. |
 |   | validate_certs | Boolean | False | Switch that determines whether SSL Validation is enabled. |
 | X | **task_name** | String | | Name of the Restore Job.  |
-|   | view_name | String | | Name of the view, where database files are restored. Required if the file is restored to view.  |
+|   | clone_app_view | Boolean | | Switch that determines recovery type. Required if the file is restored to view.  |
 | X | **source_server** | String | | Name of the Source server where database is present.  |
 | X | **source_db** | String | | Name of the database to restore.  |
 |   | target_server | String | | Name of the target server. Required if the files are restored to a server.  |
