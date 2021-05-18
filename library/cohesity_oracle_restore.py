@@ -103,7 +103,7 @@ def create_recover_job(module, token, database_info):
     # Alternate location params.
     alternate_location_params = None
     server = module.params.get('cluster') 
-    view_name = module.params.get('view_name', None)
+    clone_app_view = module.params.get('clone_app_view')
     source_db = module.params.get('source_db') 
     source_server = module.params.get('source_server') 
     validate_certs = module.params.get('validate_certs') 
@@ -111,11 +111,10 @@ def create_recover_job(module, token, database_info):
     target_server = newDatabaseName=module.params.get('target_server')
     oracle_restore_params = dict(captureTailLogs=False)
    
-    if view_name:
+    if clone_app_view:
         action = 'kCloneAppView'
         vm_action = 'kCloneVMs'
-        oracle_restore_params['oracleCloneAppViewParamsVec'] = [
-              dict(mountPathIdentifier=view_name)]
+        oracle_restore_params['oracleCloneAppViewParamsVec'] = [dict()]
 
     elif source_server != target_server or source_db != target_db:
         alternate_location_params = dict(newDatabaseName=module.params.get('target_db'),
@@ -145,8 +144,7 @@ def create_recover_job(module, token, database_info):
         response = json.loads(response.read())
         return response
     except Exception as err:
-        module.exit_json(output='Error while recovery task creation')
-
+        module.fail_json(msg='Error while recovery task creation, error message: "%s".' % err)
 
 
 def check_for_status(module, task_id):
@@ -217,7 +215,7 @@ def main():
             fra_size_mb=dict(type=int, default=2048),
             bct_file=dict(type=str, default=''),
             log_time=dict(type=str, default=''),
-            view_name=dict(type=str, default=''),
+            clone_app_view=dict(type=bool, default=False),
             overwrite=dict(type=bool, default=False),
             no_recovery=dict(type=bool, default=False)
         )
@@ -239,13 +237,10 @@ def main():
     # Check for restore task status.
     task_id = resp['restoreTask']['performRestoreTaskState']['base']['taskId']
     status = check_for_status(module, task_id)
-    view_name = module.params.get('view_name')
-    target, server = (view_name, 'view') if view_name else \
-        (module.params.get('target_server'), 'server')
-    msg = 'Successfully restored task to %s %s' % (server, target)
+    msg = 'Successfully created restore task %s' % module.params.get('task_name')
     if status == False:
         msg = 'Error occured during task recovery.'
-    module.exit_json(changed=status, output=msg)
+        module.fail_json(msg=msg)
 
     module.exit_json(**results)
 
