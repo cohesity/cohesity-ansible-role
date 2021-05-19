@@ -17,5 +17,5 @@
           cohesity_oracle:
               source_db: cdb1
               task_name: recover_tasks
-              view_name: xyz
+              clone_app_view: True
               source_server: {{ source_server }}

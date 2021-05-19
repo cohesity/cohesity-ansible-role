@@ -6,7 +6,7 @@
     password: "{{ cohesity_password }}"
     validate_certs: "{{ cohesity_validate_certs | default(False) }}"
     task_name: "{{ cohesity_oracle.task_name | default('')}}"
-    view_name: "{{ cohesity_oracle.view_name | default('')}}"
+    clone_app_view: "{{ cohesity_oracle.clone_app_view | default(False)}}"
     source_db: "{{ cohesity_oracle.source_db}}"
     source_server: "{{ cohesity_oracle.source_server }}"
     target_server: "{{ cohesity_oracle.target_server | default('') }}"
