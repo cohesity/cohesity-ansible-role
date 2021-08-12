@@ -1,0 +1,36 @@
+---
+  - hosts: localhost
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+     - name: Get Token
+       uri:
+          url: https://<<CLUSTER_ENDPOINT>>/irisservices/api/v1/public/accessTokens
+          headers:
+            Content-Type: application/json
+          body:
+            username: "USERNAME"
+            password: "PASSWORD"
+            domain: "LOCAL"          
+          method: POST
+          status_code: 201
+          body_format: json
+          return_content: yes
+          validate_certs: false
+       register: token
+
+     - name: Get Protection Job
+       uri:
+          url: https://10.15.9.15/irisservices/api/v1/public/protectionJobs
+          headers:
+            Authorization: "Bearer {{ (token.content | from_json).accessToken  }}"
+            Content-Type: application/json
+          method: GET
+          body_format: json
+          return_content: yes
+          validate_certs: false
+       register: cohesity
+     - name: Return API Content
+       debug:
+          msg: "{{ cohesity.content }}"
