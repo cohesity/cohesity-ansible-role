@@ -22,7 +22,7 @@
 
      - name: Get Protection Job
        uri:
-          url: https://10.15.9.15/irisservices/api/v1/public/protectionJobs
+          url: https://<<CLUSTER_ENDPOINT>>/irisservices/api/v1/public/protectionJobs
           headers:
             Authorization: "Bearer {{ (token.content | from_json).accessToken  }}"
             Content-Type: application/json
