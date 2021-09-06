@@ -381,17 +381,46 @@ def parse_vmware_protection_sources_json(response, vm_names):
     return list(set(ids))
 
 
+def get_tag_ids(module, tags, parentSourceId, token):
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    #token = job_details['token']
+    try:
+        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=%s&excludeTypes=kResourcePool,kVirtualMachine,kComputeResource,kDatastore" % str(parentSourceId)
+
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token,
+                   "user-agent": "Ansible-v2.2.0"}
+
+        response = open_url(
+            url=uri,
+            method='GET',
+            headers=headers,
+            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
+
+        if not response.getcode() == 200:
+            raise ProtectionException(
+                msg="Failed to get VMware protection tag details")
+        response = json.loads(response.read())
+        ids = parse_vmware_protection_sources_json(response, tags)
+        return ids
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, modul
+
+
 def get_vmware_ids(module, job_meta_data, job_details, vm_names):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
     token = job_details['token']
     try:
-        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + str(job_meta_data['parentSourceId'])
-
+        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + \
+            str(job_meta_data['parentSourceId'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
                    "user-agent": "cohesity-ansible/v2.3.0"}
-
         response = open_url(
             url=uri,
             method='GET',
@@ -492,6 +521,12 @@ def register_job(module, self):
             payload['sourceSpecialParameters'] = create_paths_parameter(module, payload['sourceIds'])
         elif payload['environment'] == "kVMware":
             parent_source_id = {"parentSourceId": self['parentSourceId']}
+            if len(module.params.get('include_tags')) != 0:
+                tag_list = list()
+                for tags in module.params.get('include_tags'):
+                    tag_ids = get_tag_ids(module, tags, self['parentSourceId'], token)
+                    tag_list.append(tag_ids)
+                payload['vmTagIds'] = tag_list
             if len(module.params.get('include')) != 0:
                 vms = module.params.get('include')
                 payload['sourceIds'] = get_vmware_ids(module, parent_source_id, self, vms)
@@ -776,6 +811,12 @@ def update_vmware_job(module, job_meta_data, job_details):
                     source_id for source_id in existing_source_ids if source_id not in include_vm_ids])
             job_meta_data['sourceIds'] = include_vm_ids
         job_meta_data['token'] = job_details['token']
+        if len(module.params.get('include_tags')) != 0:
+            tag_list = list()
+            for tags in module.params.get('include_tags'):
+                tag_ids = get_tag_ids(module, tags, job_meta_data['parentSourceId'], job_details['token'])
+                tag_list.append(tag_ids)
+            job_meta_data['vmTagIds'] = tag_list
         response = update_job(module, job_meta_data, "")
         results = dict(
             changed=True,
@@ -963,7 +1004,8 @@ def main():
             validate_certs=dict(type='bool', default=False),
             append_to_existing=dict(type='bool', default=False),
             exclude=dict(type=list, default=''),
-            include=dict(type=list, default='')
+            include=dict(type=list, default=''),
+            include_tags=dict(type=list, default='')
         )
     )
 
