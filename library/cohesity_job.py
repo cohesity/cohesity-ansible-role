@@ -381,12 +381,13 @@ def parse_vmware_protection_sources_json(response, vm_names):
     return list(set(ids))
 
 
-def get_tag_ids(module, tags, parentSourceId, token):
+def _get_tag_ids(module, tags, parentSourceId, token):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
-    #token = job_details['token']
     try:
-        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=%s&excludeTypes=kResourcePool,kVirtualMachine,kComputeResource,kDatastore" % str(parentSourceId)
+        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?"
+              "id=%s&excludeTypes=kResourcePool,kVirtualMachine,"
+              "kComputeResource,kDatastore" % str(parentSourceId)
 
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
@@ -524,7 +525,7 @@ def register_job(module, self):
             if len(module.params.get('include_tags')) != 0:
                 tag_list = list()
                 for tags in module.params.get('include_tags'):
-                    tag_ids = get_tag_ids(module, tags, self['parentSourceId'], token)
+                    tag_ids = _get_tag_ids(module, tags, self['parentSourceId'], token)
                     tag_list.append(tag_ids)
                 payload['vmTagIds'] = tag_list
             if len(module.params.get('include')) != 0:
@@ -814,7 +815,7 @@ def update_vmware_job(module, job_meta_data, job_details):
         if len(module.params.get('include_tags')) != 0:
             tag_list = list()
             for tags in module.params.get('include_tags'):
-                tag_ids = get_tag_ids(module, tags, job_meta_data['parentSourceId'], job_details['token'])
+                tag_ids = _get_tag_ids(module, tags, job_meta_data['parentSourceId'], job_details['token'])
                 tag_list.append(tag_ids)
             job_meta_data['vmTagIds'] = tag_list
         response = update_job(module, job_meta_data, "")
