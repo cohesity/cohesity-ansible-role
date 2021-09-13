@@ -13,19 +13,20 @@ from ansible.module_utils.urls import open_url, urllib_error
 try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
-    from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
+    from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token, get_cohesity_client
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
         get__protection_run__all__by_id
 except Exception as e:
-    from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
+    from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token, get_cohesity_client
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
         get__protection_run__all__by_id
+
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -381,35 +382,29 @@ def parse_vmware_protection_sources_json(response, vm_names):
     return list(set(ids))
 
 
-def _get_tag_ids(module, tags, parentSourceId, token):
-    server = module.params.get('cluster')
-    validate_certs = module.params.get('validate_certs')
+def _get_tag_ids(module, tags, parentSourceId):
+    """
+    Function to fetch VMware tag ids for list of tag names.
+    """ 
     try:
-        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?"
-              "id=%s&excludeTypes=kResourcePool,kVirtualMachine,"
-              "kComputeResource,kDatastore" % str(parentSourceId)
-
-        headers = {"Accept": "application/json",
-                   "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
-
-        response = open_url(
-            url=uri,
-            method='GET',
-            headers=headers,
-            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
-
-        if not response.getcode() == 200:
-            raise ProtectionException(
-                msg="Failed to get VMware protection tag details")
-        response = json.loads(response.read())
-        ids = parse_vmware_protection_sources_json(response, tags)
-        return ids
+        client, status = get_cohesity_client(module)
+        if not status:
+            module.fail_json(
+                msg="Error while creating cohesity client, err msg '%s'" % client,
+                changed=False)
+        result = client.protection_sources.list_protection_sources(
+            id=parentSourceId)
+        if not result or not result[0].nodes:
+            module.fail_json(
+                msg="Failed to fetch tags for source with id " + str(
+                    parentSourceId), changed=False)
+        nodes = result[0].nodes
+        return parse_vmware_protection_sources_json(nodes, tags)
     except urllib_error.URLError as e:
         # => Capture and report any error messages.
         raise__cohesity_exception__handler(e.read(), module)
     except Exception as error:
-        raise__cohesity_exception__handler(error, modul
+        raise__cohesity_exception__handler(error, module)
 
 
 def get_vmware_ids(module, job_meta_data, job_details, vm_names):
@@ -525,7 +520,7 @@ def register_job(module, self):
             if len(module.params.get('include_tags')) != 0:
                 tag_list = list()
                 for tags in module.params.get('include_tags'):
-                    tag_ids = _get_tag_ids(module, tags, self['parentSourceId'], token)
+                    tag_ids = _get_tag_ids(module, tags, self['parentSourceId'])
                     tag_list.append(tag_ids)
                 payload['vmTagIds'] = tag_list
             if len(module.params.get('include')) != 0:
@@ -815,7 +810,7 @@ def update_vmware_job(module, job_meta_data, job_details):
         if len(module.params.get('include_tags')) != 0:
             tag_list = list()
             for tags in module.params.get('include_tags'):
-                tag_ids = _get_tag_ids(module, tags, job_meta_data['parentSourceId'], job_details['token'])
+                tag_ids = _get_tag_ids(module, tags, job_meta_data['parentSourceId'])
                 tag_list.append(tag_ids)
             job_meta_data['vmTagIds'] = tag_list
         response = update_job(module, job_meta_data, "")
@@ -1006,6 +1001,7 @@ def main():
             append_to_existing=dict(type='bool', default=False),
             exclude=dict(type=list, default=''),
             include=dict(type=list, default=''),
+            exclude_tags=dict(type=list, default=''),
             include_tags=dict(type=list, default='')
         )
     )
