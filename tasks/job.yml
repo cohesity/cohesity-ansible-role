@@ -17,6 +17,7 @@
     append_to_existing: "{{ cohesity_protection.append_to_existing | default(False) }}"
     exclude: "{{ cohesity_protection.exclude | default('') }}"
     include: "{{ cohesity_protection.include | default('') }}"
+    include_tags: "{{ cohesity_protection.include_tags | default('') }}"
     time_zone: "{{ cohesity_protection.time_zone | default('America/Los_Angeles') }}"
     start_time: "{{ cohesity_protection.start_time | default('') }}"
     delete_sources:  "{{ cohesity_protection.delete_sources | default(False) }}"

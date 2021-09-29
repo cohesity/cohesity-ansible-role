@@ -1,0 +1,34 @@
+#=> Create a new VMware protection Job to protect only a set of tags provided.
+---
+  - hosts: local
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Protection job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ cohesity_cluster_server }}"
+          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_password: "{{ var_cohesity_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: present
+              job_name: "protect_vm"
+              policy: Gold
+              storage_domain: "DefaultStorageDomain"
+              sources:
+                - endpoint: vc-67.eco.eng.cohesity.com
+              environment: "VMware"
+              include: 
+                - VM1
+              # Autoprotect tags should be provided as list of tags, each list can
+              # contain one or more tags.
+              include_tags:
+                -
+                  - Tag1
+                -
+                  - Tag2
+                  - Tag3
