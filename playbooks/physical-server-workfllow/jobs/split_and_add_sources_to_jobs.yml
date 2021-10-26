@@ -1,0 +1,42 @@
+# Create a multiple file based protection jobs with user-defined maximum source
+# count.
+# The following command will create protection job per 20 sources, for total list of
+# sources provided.
+# Jobs will be assigned start time as follows job1=>00:00, job2=>01.00, so on.
+# ansible-playbook playbooks/split_and_add_sources_to_jobs.yml -i ansible_config.ini
+# --extra-vars '{"max_sources_per_job":20}
+
+---
+  - hosts: localhost
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Protection job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ cohesity_cluster_server }}"
+          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_password: "{{ cohesity_cluster_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          max_sources_per_job: "{{ max_sources_per_job | int }}"
+          count: "{{ (item.0 / max_sources_per_job  ) | int }}"
+          hr: "{{ (count|int) % 23 }}"
+          hour: '{{ "%02d" | format(hr|int) }}'
+          cohesity_protection:
+              state: present
+              job_name: "protect_vm_{{ count }}"
+              storage_domain: "DefaultStorageDomain"
+              policy: "2-TEST-LINUX-Policy"
+              start_time: "{{ hour }}:00"
+              sources:
+                - endpoint: "{{ item.1 }}"
+                  paths:
+                    - includeFilePath: "/path1/"
+                      excludeFilePaths:
+                        - "/path1/exclude_path1" # This path should be present under /path1
+                      skipNestedVolumes: False
+              environment: "PhysicalFiles"
+        with_indexed_items: "{{ groups['linux'] }}"
