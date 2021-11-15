@@ -11,7 +11,7 @@
             name: cohesity.cohesity_ansible_role
             tasks_from: source
         vars:
-            cohesity_server: ""{{ cohesity_cluster_server }}""
+            cohesity_server: "{{ cohesity_cluster_server }}"
             cohesity_admin: "{{ var_cohesity_username }}"
             cohesity_password: "{{ cohesity_cluster_password }}"
             cohesity_validate_certs: "{{ var_validate_certs }}"
