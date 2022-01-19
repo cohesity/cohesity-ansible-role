@@ -1,0 +1,32 @@
+# => Cohesity Agent Management
+# =>
+# => Collection: cohesity.cohesity_collection
+# =>
+
+# => Remove the Cohesity Agent on each Linux host
+# => specified in the Ansible inventory
+# =>
+---
+- hosts: linux
+  # => We need to specify these variables to connect
+  # => to the Cohesity cluster
+  vars:
+      cohesity_server: 10.2.145.49
+      cohesity_admin: admin
+      cohesity_password: Cohe$1ty
+      cohesity_validate_certs: False
+  # => We need to gather facts to determine the OS type of
+  # => the machine
+  gather_facts: yes
+  become: true
+  collections:
+      - cohesity.cohesity_collection
+  tasks:
+      - name: Remove Cohesity Agent from Linux Server
+        vars:
+            cohesity_server: "{{ cohesity_server }}"
+            cohesity_admin: "{{ cohesity_admin }}"
+            cohesity_password: "{{ cohesity_password }}"
+            cohesity_validate_certs: "{{ cohesity_validate_certs }}"
+        cohesity_agent:
+            state: absent

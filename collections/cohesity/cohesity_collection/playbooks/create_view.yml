@@ -1,0 +1,49 @@
+#=> Playbook to Create a new Protection View.
+---
+  - hosts: workstation
+    gather_facts: no
+    collections:
+      - cohesity.cohesity_collection
+    vars:
+      cohesity_server: cluster_vip
+      cohesity_admin: admin
+      cohesity_password: admin
+      cohesity_validate_certs: False
+      name: ViewName
+      state: present
+    tasks:
+      - name: "Cohesity view: Set {{ name }} to state of {{ state | default('present') }}"
+        cohesity_view:
+          cluster: "{{ cohesity_server }}"
+          username: "{{ cohesity_admin }}"
+          password: "{{ cohesity_password }}"
+          state: "{{ state | default('present') }}"
+          name: "AnsibleView"
+          description: "View is created using Ansible"
+          storage_domain: "DefaultStorageDomain"
+          qos_policy: "Backup Target Low"
+          protocol: "All"
+          case_insensitive: False
+          inline_dedupe_compression: False
+          security:
+            security_mode: "NativeMode"
+            override_global_whitelist:
+            whitelist:
+              subnet_ip: 
+              subnet_mask: 
+              nfs_permission:
+              smb_permission:
+              nfs_root_squash:
+              nfs_root_squash:
+          quota:
+            set_logical_quota:
+            hard_limit_bytes:
+            set_alert_threshold:
+            alert_limit_bytes:
+          nfs_options:
+            user_id:
+            group_id:
+          smb_options:
+            view_discovery:
+            access_based_enumeration:
+          

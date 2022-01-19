@@ -21,7 +21,7 @@ from ansible.module_utils.urls import open_url, urllib_error
 from tempfile import mkstemp, mkdtemp
 
 try:
-    from ansible_collections.module_utils.cohesity_utilities import cohesity_common_argument_spec, \
+    from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_utilities import cohesity_common_argument_spec, \
         raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_auth import \
         get__cohesity_auth__token

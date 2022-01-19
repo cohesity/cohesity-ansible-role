@@ -1,4 +1,0 @@
----
-# => This task remains emptied on purpose.  This allows the inclusion of this
-# => role into your existing playbooks while not executing any of the example
-# => plays

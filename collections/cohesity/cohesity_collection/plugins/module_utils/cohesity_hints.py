@@ -211,7 +211,7 @@ def get__protection_run__all(self):
         if 'active_only' in self:
             if self['active_only']:
                 objects = [objects_item for objects_item in objects if objects_item[
-                    'backupRun'].get('status') == "kAccepted"]
+                    'backupRun'].get('status') in ["kAccepted", "kRunning"] ]
         return objects
     except urllib_error.URLError as error:
         raise HTTPException(error.read())

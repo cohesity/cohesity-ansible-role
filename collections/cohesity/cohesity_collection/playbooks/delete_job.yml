@@ -1,0 +1,24 @@
+#=> Delete a protection job from cluster.
+---
+  - hosts: workstation
+    gather_facts: no
+    collections:
+      - cohesity.cohesity_collection
+    vars:
+      cohesity_server: cluster_vip
+      cohesity_admin: admin
+      cohesity_password: admin
+      cohesity_validate_certs: False
+    tasks:
+      - name: Delete Protection job
+  
+        cohesity_job:
+          cluster: "{{ cohesity_server }}"
+          username: "{{ cohesity_admin }}"
+          password: "{{ cohesity_password }}"
+          validate_certs: "{{ cohesity_validate_certs }}"
+          state: "absent"
+          name: "PhysicalJob"
+          environment: "PhysicalFiles"
+          delete_backups: "True"
+          cancel_active: "True"
