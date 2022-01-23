@@ -1,26 +1,26 @@
 # => Cohesity Facts saved to JSON file
 # =>
 ---
-  - hosts: localhost
-    # => Please change these variables to connect
-    # => to your Cohesity Cluster
-    vars:
-        cohesity_server: cluster_vip
-        cohesity_admin: admin
-        cohesity_password: admin
-        cohesity_validate_certs: False
-    gather_facts: yes
-    tasks:
-        # => Gather Cohesity Facts
-        - name: Gather Cohesity Cluster Details
-          cohesity_facts:
-              cluster: "{{ cohesity_server }}"
-              username: "{{ cohesity_admin }}"
-              password: "{{ cohesity_password }}"
-              validate_certs: "{{ cohesity_validate_certs }}"
-              state: complete
-              include_deleted: False
-          register: cohesity
+- hosts: localhost
+  # => Please change these variables to connect
+  # => to your Cohesity Cluster
+  vars:
+      cohesity_server: cluster_vip
+      cohesity_admin: admin
+      cohesity_password: admin
+      cohesity_validate_certs: false
+  gather_facts: true
+  tasks:
+      # => Gather Cohesity Facts
+      - name: Gather Cohesity Cluster Details
+        cohesity_facts:
+            cluster: "{{ cohesity_server }}"
+            username: "{{ cohesity_admin }}"
+            password: "{{ cohesity_password }}"
+            validate_certs: "{{ cohesity_validate_certs }}"
+            state: complete
+            include_deleted: false
+        register: cohesity
 
-        - name: "Write the Collected Facts to {{ inventory_dir }}/cohesity_facts.json"
-          local_action: copy content="{{ cohesity | to_nice_json }}" dest="{{ inventory_dir }}/cohesity_facts.json"
+      - name: "Write the Collected Facts to {{ inventory_dir }}/cohesity_facts.json"
+        local_action: copy content="{{ cohesity | to_nice_json }}" dest="{{ inventory_dir }}/cohesity_facts.json"

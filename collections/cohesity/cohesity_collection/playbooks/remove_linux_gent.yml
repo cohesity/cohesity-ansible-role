@@ -11,13 +11,13 @@
   # => We need to specify these variables to connect
   # => to the Cohesity cluster
   vars:
-      cohesity_server: 10.2.145.49
+      cohesity_server: cluster_vip
       cohesity_admin: admin
-      cohesity_password: Cohe$1ty
-      cohesity_validate_certs: False
+      cohesity_password: admin
+      cohesity_validate_certs: false
   # => We need to gather facts to determine the OS type of
   # => the machine
-  gather_facts: yes
+  gather_facts: true
   become: true
   collections:
       - cohesity.cohesity_collection

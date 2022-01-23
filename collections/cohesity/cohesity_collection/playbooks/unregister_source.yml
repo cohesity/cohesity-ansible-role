@@ -1,22 +1,23 @@
 # Playbook to Unregister source from the cluster.
 ---
-  - hosts: localhost
-    # => We need to specify these variables to connect
-    # => to the Cohesity cluster
+- hosts: localhost
+  # => We need to specify these variables to connect
+  # => to the Cohesity cluster
+  vars:
     cohesity_server: cluster_vip
-      cohesity_admin: admin
-      cohesity_password: admin
-      cohesity_validate_certs: False
-    become: false
-    collections:
-        - cohesity.cohesity_collection
-    tasks:
-      - name: "Cohesity Protection Source: Set {{ cohesity_source.endpoint | default('endpoint') }} to state of {{ cohesity_source.state | default('present') }}"
-        cohesity_source:
-            server: "{{ cohesity_server }}"
-            admin: "{{ cohesity_admin }}"
-            password: "{{ cohesity_password }}"
-            validate_certs: "{{ cohesity_validate_certs }}"
-            state: absent
-            endpoint: 10.2.102.17
-            environment: "Physical"
+    cohesity_admin: admin
+    cohesity_password: admin
+    cohesity_validate_certs: false
+  become: false
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: "Cohesity Protection Source: Set {{ cohesity_source.endpoint | default('endpoint') }} to {{ cohesity_source.state | default('present') }}"
+      cohesity_source:
+        server: "{{ cohesity_server }}"
+        admin: "{{ cohesity_admin }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: absent
+        endpoint: 10.2.102.17
+        environment: "Physical"

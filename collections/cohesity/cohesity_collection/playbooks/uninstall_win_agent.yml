@@ -8,7 +8,7 @@
 # =>
 ---
 - hosts: windows
-  gather_facts: yes
+  gather_facts: true
   become: false
   collections:
     - cohesity.cohesity_collection
@@ -16,7 +16,7 @@
     cohesity_server: cluster_vip
     cohesity_admin: admin
     cohesity_password: admin
-    cohesity_validate_certs: False
+    cohesity_validate_certs: false
     state: absent
     reboot: true
   tasks:
@@ -29,7 +29,7 @@
         state: "{{ state }}"
       tags: always
       register: installed
-    
+
     - name: Firewall rule to allow CohesityAgent on TCP port 50051
       win_firewall_rule:
         name: Cohesity Agent Ansible
@@ -41,13 +41,13 @@
         direction: in
         protocol: tcp
         state: "{{ state }}"
-        enabled: yes
+        enabled: true
       tags: always
-    
+
     # => This reboot will only be triggered if both of the following conditions are true:
-    # => - The registered variable 'installed' returns True when the changed state is queried.
-    # => - The user defined variable 'cohesity_win_agent_reboot' returns as True.
-    - name: Reboot the Hosts after agent modification # noqa 503
+    # => - The registered variable 'installed' returns true when the changed state is queried.
+    # => - The user defined variable 'cohesity_win_agent_reboot' returns as true.
+    - name: Reboot the Hosts after agent modification   # noqa 503
       win_reboot:
         reboot_timeout: 180
       when:
