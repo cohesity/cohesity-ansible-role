@@ -255,14 +255,14 @@ def download_agent(module, path):
             headers = {
                 "Accept": "application/octet-stream",
                 "Authorization": "Bearer " + token,
-                "user-agent": "cohesity-ansible/v2.3.0"}
+                "user-agent": "cohesity-ansible/v2.3.2"}
         elif not module.params.get('download_uri'):
             os_type = "Linux"
             server = module.params.get('cluster')
             token = get__cohesity_auth__token(module)
             package_type = 'kScript'
             if module.params.get('native_package'):
-                if module.params.get('operating_system') in ('CentOS', 'RedHat'):
+                if module.params.get('operating_system') in ('CentOS', 'RedHat', 'OracleLinux'):
                     package_type = 'kRPM'
                 elif module.params.get('operating_system') == 'SLES':
                     package_type = 'kSuseRPM'
@@ -273,12 +273,12 @@ def download_agent(module, path):
             headers = {
                 "Accept": "application/octet-stream",
                 "Authorization": "Bearer " + token,
-                "user-agent": "cohesity-ansible/v2.3.0"}
+                "user-agent": "cohesity-ansible/v2.3.2"}
         else:
             uri = module.params.get('download_uri')
             headers = {
                 "Accept": "application/octet-stream",
-                "user-agent": "cohesity-ansible/v2.3.0"}
+                "user-agent": "cohesity-ansible/v2.3.2"}
 
         agent = open_url(url=uri, headers=headers,
                          validate_certs=False, timeout=REQUEST_TIMEOUT)
@@ -370,7 +370,7 @@ def install_agent(module, installer, native):
                 user = module.params.get('service_user')
             if module.params.get('operating_system') == "Ubuntu":
                 cmd = "sudo COHESITYUSER={0} dpkg -i {1}".format(user, installer)
-            elif module.params.get('operating_system') in ("CentOS", "RedHat"):
+            elif module.params.get('operating_system') in ("CentOS", "RedHat", "OracleLinux"):
                 cmd = "sudo COHESITYUSER={0} rpm -i {1}".format(user, installer)
             elif module.params.get('operating_system') == "AIX":
                 cmd = "sudo COHESITYUSER={0} installp -ad {1} all".format(user, installer)
@@ -381,7 +381,7 @@ def install_agent(module, installer, native):
         except Exception as e:
             if module.params.get('operating_system') == "Ubuntu":
                 cmd = "sudo COHESITYUSER=%s dpkg -i %s" % (user, installer)
-            elif module.params.get('operating_system') in ("CentOS", "RedHat"):
+            elif module.params.get('operating_system') in ("CentOS", "RedHat", "OracleLinux"):
                 cmd = "sudo COHESITYUSER=%s  rpm -i %s" % (user, installer)
 
     rc, stdout, stderr = module.run_command(cmd, cwd=installer)
@@ -449,7 +449,7 @@ def remove_agent(module, installer, native):
             if rc:
                 installation_failures(
                     module, stdout, rc, "Failed to uninstall cohesity agent ")
-        elif module.params.get('operating_system') in ("CentOS", "RedHat"):
+        elif module.params.get('operating_system') in ("CentOS", "RedHat", "OracleLinux"):
             cmd = "sudo rpm -e cohesity-agent"
             rc, stdout, stderr = module.run_command(cmd)
             if rc:
@@ -511,7 +511,7 @@ def get_source_details(module, source_id):
                   "/irisservices/api/v1/public/protectionSources?environments=kPhysical"
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.0"}
+                   "user-agent": "cohesity-ansible/v2.3.2"}
         response = open_url(
             url=uri,
             headers=headers,
@@ -561,7 +561,7 @@ def update_agent(module):
                   "/irisservices/api/v1/public/physicalAgents/upgrade"
             headers = {"Accept": "application/json",
                        "Authorization": "Bearer " + token,
-                       "user-agent": "cohesity-ansible/v2.3.0"}
+                       "user-agent": "cohesity-ansible/v2.3.2"}
             payload = {
                 "agentIds": [source_details['agent']['id']]
             }

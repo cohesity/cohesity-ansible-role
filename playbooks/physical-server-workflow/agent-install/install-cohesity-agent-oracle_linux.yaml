@@ -1,0 +1,21 @@
+#=> Install cohesity agent on linux machines using native packages. The service user field is required and the user must exist on linux machines
+---
+- hosts: oraclelinux
+  gather_facts: yes
+  become: true
+  roles:
+      - cohesity.cohesity_ansible_role
+  tasks:
+    - name: Install new Cohesity Agent on each Oracle Linux Server
+      include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: agent
+      vars:
+         cohesity_server: "{{ cohesity_cluster_server }}"
+         cohesity_admin: "{{ var_cohesity_username }}"
+         cohesity_password: "{{ cohesity_cluster_password }}"
+         cohesity_validate_certs: "{{ var_validate_certs }}"
+         cohesity_agent:
+              state: present
+              native_package: False
+              service_user: cohesity-user 

@@ -15,6 +15,14 @@
     - cohesity_agent.state == "present"
   tags: always
 
+- name: Install Prerequisite Packages for OracleLinux
+  action: >
+    {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-utils" state=present
+  when:
+    - ansible_distribution == "OracleLinux"
+    - cohesity_agent.state == "present"
+  tags: always
+
 - name: Install Prerequisite Packages for SLES
   action: >
     {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,libcap-progs" state=present
