@@ -1,0 +1,44 @@
+#=> Create a file based protection job for all linux sources
+---
+  - hosts: local
+    gather_facts: no
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Protection job
+        include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: job
+        vars:
+          cohesity_server: "{{ cohesity_cluster_server }}"
+          cohesity_admin: "{{ var_cohesity_username }}"
+          cohesity_password: "{{ cohesity_cluster_password }}"
+          cohesity_validate_certs: "{{ var_validate_certs }}"
+          cohesity_protection:
+              state: present
+              job_name: "protect_vm"
+              storage_domain: "DefaultStorageDomain"
+              sources:
+                - endpoint: "{{ item }}"
+                  paths:
+                    - includeFilePath: "/path1/"
+                      excludeFilePaths:
+                        - "/path1/exclude_path1" # This path should be present under /path1
+                        - "/path1/exclude_path2" # This path should be present under /path1
+                      skipNestedVolumes: False
+                    - includeFilePath: "/path2"
+                      excludeFilePaths:
+                        - "/path2/exclude_path1" # This path should be present under /path2
+                      skipNestedVolumes: False
+              environment: "PhysicalFiles"
+              disable_indexing: False
+              # In case of job update, indexing allow/deny prexies will be updated with the
+              # provided values. If not provided will be updated with default values.
+              indexing:
+                allowed_prefix:
+                  - /root
+                  - /var
+                denied_prefix:
+                  - /log
+                  - /etc
+        with_items: "{{ groups['linux'] }}"

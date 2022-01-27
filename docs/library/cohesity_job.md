@@ -90,6 +90,12 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
             skipNestedVolumes: False
     protection_policy: Bronze
     storage_domain: Default
+    disable_indexing: False
+    indexing:
+      allowed_prefix:
+        - /
+      denied_prefix:
+        - /root
 ```
 
 ### Create a new VMware Server Protection Job
@@ -306,6 +312,8 @@ This Ansible Module is used to register, remove, start, and stop the Cohesity Pr
 |   | view_name | String | | Name of the view to protect. Must be used only when the **environment** is **View** |
 |   | append_to_existing | Boolean | | Specifies list of include vms must be added to existing vms in the job or override existing vms. Must be used only when the **environment** is **VMware** and **state** is **present**|
 |   | delete_sources | Boolean | | Specifies whether to delete the sources available in the protection job. Must be used only when the **environment** is **Physical or PhysicalFiles or GenericNas** and **state** is **present** |
+|   | disable_indexing | Boolean | | Specifies whether to disable indexing while job creation. By default, indexing is enabled. Can be used only when *state=present* |
+|   | indexing | Dictionary | | Contains list of prefix to be allowed/denied for indexing. By default, allowed_prefix value contians '/' and denied_prefix following paths /$Recycle.Bin, /Windows, /Program Files, /Program Files (x86), /ProgramData, /System Volume Information, /Users/*/AppData, /Recovery, /var, /usr, /sys, /proc, /lib, /grub, /grub2, /opt, /splunk. Can be used only when *state=present* and *disable_indexing=False*. Incase of existing jobs, job update will override the existing indexing prefixes with allowed_prefix/denied_prefix provided.|
 
 ## Outputs
 [top](#cohesity-protection-job)
