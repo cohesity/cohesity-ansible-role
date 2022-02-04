@@ -1,0 +1,24 @@
+#=> Upgrade cohesity agent on linux machines. The Source must be already added to the cluster.
+---
+- hosts: linux
+  gather_facts: yes
+  become: true
+  roles:
+      - cohesity.cohesity_ansible_role
+  tasks:
+    - name: Upgrade Cohesity Agent on each Linux Server
+      include_role:
+          name: cohesity.cohesity_ansible_role
+          tasks_from: agent
+      vars:
+         cohesity_server: "{{ cohesity_cluster_server }}"
+         cohesity_admin: "{{ var_cohesity_username }}"
+         cohesity_password: "{{ cohesity_cluster_password }}"
+         cohesity_validate_certs: "{{ var_validate_certs }}"
+         cohesity_agent:
+              state: present
+              native_package: False
+              service_user: cohesity-user 
+              create_user: True
+              upgrade: True
+              host: "{{ inventory_hostname }}"

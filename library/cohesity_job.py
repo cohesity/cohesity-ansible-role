@@ -13,19 +13,19 @@ from ansible.module_utils.urls import open_url, urllib_error
 try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
-    from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token, get_cohesity_client
+    from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
-        get__protection_run__all__by_id
+        get__protection_run__all__by_id, get_cohesity_client
 except Exception as e:
-    from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token, get_cohesity_client
+    from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
-        get__protection_run__all__by_id
+        get__protection_run__all__by_id, get_cohesity_client
 
 
 ANSIBLE_METADATA = {
@@ -416,7 +416,7 @@ def get_vmware_ids(module, job_meta_data, job_details, vm_names):
             str(job_meta_data['parentSourceId'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         response = open_url(
             url=uri,
             method='GET',
@@ -445,7 +445,7 @@ def get_vmware_vm_ids(module, job_meta_data, job_details, vm_names):
               "/irisservices/api/v1/public/protectionSources/virtualMachines?vCenterId=" + str(job_meta_data['parentSourceId'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         response = open_url(
             url=uri,
             method='GET',
@@ -485,7 +485,7 @@ def get_view_storage_domain_id(module, self):
         uri = "https://" + server + "/irisservices/api/v1/public/views/" + view_name
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         response = open_url(url=uri, method="GET", headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         response = json.loads(response.read())
@@ -496,6 +496,39 @@ def get_view_storage_domain_id(module, self):
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
 
+def update_indexing(module, payload):
+    """
+    """
+    payload['indexingPolicy'] = {
+        "disableIndexing": module.params.get('disable_indexing'),
+        "allowPrefixes": ["/"],
+        "denyPrefixes": [
+            "/$Recycle.Bin",
+            "/Windows",
+            "/Program Files",
+            "/Program Files (x86)",
+            "/ProgramData",
+            "/System Volume Information",
+            "/Users/*/AppData",
+            "/Recovery",
+            "/var",
+            "/usr",
+            "/sys",
+            "/proc",
+            "/lib",
+            "/grub",
+            "/grub2",
+            "/opt",
+            "/splunk",
+        ]
+    }
+    if module.params.get('indexing').get('allowed_prefix', None):
+        payload['indexingPolicy']['allowPrefixes'] = module.params.get(
+            'indexing')['allowed_prefix']
+    if module.params.get('indexing').get('denied_prefix', None):
+        payload['indexingPolicy']['denyPrefixes'] = module.params.get(
+            'indexing')['denied_prefix']
+    return payload
 
 def register_job(module, self):
     server = module.params.get('cluster')
@@ -505,7 +538,7 @@ def register_job(module, self):
         uri = "https://" + server + "/irisservices/api/v1/public/protectionJobs"
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -513,6 +546,7 @@ def register_job(module, self):
 
         payload['environment'] = "k" + self['environment']
         payload['timezone'] = self['timezone']
+        update_indexing(module, payload)
         if payload['environment'] == "kPhysicalFiles":
             payload['sourceSpecialParameters'] = create_paths_parameter(module, payload['sourceIds'])
         elif payload['environment'] == "kVMware":
@@ -575,7 +609,7 @@ def start_job(module, self):
             "/irisservices/api/v1/public/protectionJobs/run/" + str(self['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         source_ids = payload.get('sourceIds', [])
         payload = dict()
         payload['runNowParameters'] = [{'sourceId':source_id} for source_id in source_ids]
@@ -623,7 +657,7 @@ def update_job(module, job_details, update_source_ids=None):
             "/irisservices/api/v1/public/protectionJobs/" + str(job_details['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         payload = job_details.copy()
         del payload['token']
         if module.params.get('environment') == 'PhysicalFiles' and module.params.get('delete_sources') == False:
@@ -671,7 +705,7 @@ def get_prot_job_details(self, module):
 
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         response = open_url(url=uri, headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         if not response.getcode() == 200:
@@ -714,7 +748,7 @@ def stop_job(module, self):
             str(self['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -766,7 +800,7 @@ def unregister_job(module, self):
             "/irisservices/api/v1/public/protectionJobs/" + str(self['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
 
         payload = dict(
             deleteSnapshots=self['deleteSnapshots']
@@ -907,6 +941,16 @@ def update_job_util(module, job_details, job_exists):
         existing_job_details['sourceIds'])
 
     update_sources = []
+    is_indexing_updated = False
+    indexing_policy = existing_job_details["indexingPolicy"]
+    indexing = module.params.get('indexing', {})
+    if module.params.get('disable_indexing') == False:
+        if (set(indexing.get('allowed_prefix', [])) != set(indexing_policy.get('allowPrefixes', []))) or (set(indexing.get('denied_prefix', [])) != set(indexing_policy.get('denyPrefixes', []))):
+            update_indexing(module, existing_job_details)
+            is_indexing_updated = True
+    if indexing_policy["disableIndexing"] != module.params.get('disable_indexing'):
+        update_indexing(module, existing_job_details)
+        is_indexing_updated = True
     if job_details['environment'] == 'PhysicalFiles':
         existing_file_path = defaultdict(dict)
         # Fetch existing include exclude path details.
@@ -937,14 +981,15 @@ def update_job_util(module, job_details, job_exists):
                     break
     if update_sources:
         already_exist_in_job = False
-    if already_exist_in_job and len(job_details['sourceIds']) != 0:
+    if not is_indexing_updated and already_exist_in_job and len(job_details['sourceIds']) != 0:
         results = dict(
             changed=False,
             msg="The protection sources are already being protected",
             id=job_exists,
             name=module.params.get('name')
         )
-    elif (not already_exist_in_job) and len(job_details['sourceIds']) != 0:
+    elif is_indexing_updated or (not already_exist_in_job and len(job_details['sourceIds']) != 0):
+        indexing_msg = ""
         new_sources = list(set(job_details['sourceIds']).difference(existing_job_details['sourceIds']))
         if update_sources:
             # Add sources with updated paths to new sources.
@@ -952,11 +997,13 @@ def update_job_util(module, job_details, job_exists):
             [existing_job_details['sourceIds'].remove(_id) for _id in new_sources if _id in existing_job_details['sourceIds']]
         existing_job_details['sourceIds'].extend(new_sources)
         existing_job_details['token'] = job_details['token']
+        if is_indexing_updated:
+            indexing_msg = "indexing policies, "
         response = update_job(module, existing_job_details, new_sources)
         if job_details['environment'] == 'PhysicalFiles':
-            msg = "Successfully added sources and filepaths to existing protection job"
+            msg = "Successfully updated " + indexing_msg + "sources and filepaths to existing protection job"
         else:
-            msg = "Successfully added sources to existing protection job"
+            msg = "Successfully updated " + indexing_msg + "sources to existing protection job"
         results = dict(
             changed=True,
             msg=msg,
@@ -1002,7 +1049,9 @@ def main():
             exclude=dict(type=list, default=''),
             include=dict(type=list, default=''),
             exclude_tags=dict(type=list, default=''),
-            include_tags=dict(type=list, default='')
+            include_tags=dict(type=list, default=''),
+            disable_indexing=dict(type=bool, default=False),
+            indexing=dict(type=dict, default={})
         )
     )
 

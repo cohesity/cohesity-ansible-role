@@ -377,7 +377,7 @@ def start_restore(module, uri, self):
         uri = "https://" + server + uri
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -421,7 +421,7 @@ def wait_restore_complete(module, self):
         headers = {
             "Accept": "application/json",
             "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.2"}
+                   "user-agent": "cohesity-ansible/v2.3.3"}
         attempts = 0
         # => Wait for the restore based on a predetermined number of minutes with checks every 30 seconds.
         while attempts < wait_counter:

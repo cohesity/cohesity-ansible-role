@@ -21,4 +21,6 @@
     time_zone: "{{ cohesity_protection.time_zone | default('America/Los_Angeles') }}"
     start_time: "{{ cohesity_protection.start_time | default('') }}"
     delete_sources:  "{{ cohesity_protection.delete_sources | default(False) }}"
+    disable_indexing: "{{ cohesity_protection.disable_indexing | default(False) }}"
+    indexing: "{{ cohesity_protection.indexing | default('') }}"
   tags: always
