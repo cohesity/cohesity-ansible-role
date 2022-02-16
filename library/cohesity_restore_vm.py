@@ -6,6 +6,10 @@ from __future__ import (absolute_import, division, print_function)
 __metaclass__ = type
 
 import json
+try:
+    from urllib import quote
+except ImportError as e:
+    from urllib.parse import quote
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import open_url, urllib_error
 
@@ -97,7 +101,12 @@ options:
     default: 20
   datastore_id:
     description:
-      - Specifies the datastore where the files should be recovered to. This field is mandatory to recover objects to
+      - Specifies the datastore id where the files should be recovered to. This field is mandatory to recover objects to
+      - a different resource pool or to a different parent source. If not specified, objects are recovered to their original
+      - datastore locations in the parent source.
+  datastore_name:
+    description:
+      - Specifies the datastore name where the files should be recovered to. This field is mandatory to recover objects to
       - a different resource pool or to a different parent source. If not specified, objects are recovered to their original
       - datastore locations in the parent source.
   datastore_folder_id:
@@ -108,6 +117,9 @@ options:
       - Specifies whether the network should be left in disabled state. Attached network is enabled by default. Set this flag to true to disable it.
     type: bool
     default: yes
+  network_name:
+    description:
+      - Specifies name of the network to be attached to the cloned or recovered object.
   network_id:
     description:
       - Specifies a network configuration to be attached to the cloned or recovered object. Specify this field to override
@@ -137,6 +149,9 @@ options:
   vm_folder_id:
     description:
       - Specifies a folder where the VMs should be restored
+  vm_folder_name:
+    description:
+      - Specifies a folder name where the VMs should be restored
 
 
 extends_documentation_fragment:
@@ -296,7 +311,8 @@ def get_vmware_source_objects(module, source_id):
     token = get__cohesity_auth__token(module)
     try:
         uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + str(
-            source_id) + "&excludeTypes=kVirtualMachine" + "&includeDatastores=true"
+            source_id) + "&excludeTypes=kVirtualMachine" + "&includeDatastores=true" + \
+                "&includeNetworks=true" + "&includeVMFolders=true"
 
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
@@ -356,7 +372,7 @@ def get__vmware_snapshot_information__by_source(module, self, source_details):
     try:
         uri = "https://" + server + \
             "/irisservices/api/v1/public/restore/objects" + \
-            "?environments=kVMware&search=" + self['restore_obj']['vmname'] +\
+            "?environments=kVMware&search=" + quote(self['restore_obj']['vmname']) +\
               "&registeredSourceIds=" + str(source_details['id'])
 
         headers = {"Accept": "application/json",
@@ -613,13 +629,15 @@ def main():
             datastore_folder_id=dict(type='str'),
             network_connected=dict(type='bool', default=True),
             network_id=dict(type='str'),
+            network_name=dict(type='str'),
             power_state=dict(type='bool', default=True),
             prefix=dict(type='str'),
             resource_pool_id=dict(type='str'),
             resource_pool_name=dict(type='str', default=''),
             recovery_process_type=dict(type='str', default='InstantRecovery'),
             suffix=dict(type='str'),
-            vm_folder_id=dict(type='str')
+            vm_folder_id=dict(type='str'),
+            vm_folder_name=dict(type='str')
 
         )
     )
@@ -747,9 +765,27 @@ def main():
                         if module.params.get('network_id'):
                             restore_data['vmwareParameters']['networkId'] = module.params.get(
                                 'network_id')
+                        if module.params.get('network_name'):
+                            network_name = module.params.get('network_name')
+                            network_id = get_vmware_object_id(restore_to_source_objects,
+                                network_name, 'kNetwork')
+                            if not network_id:
+                                module.fail_json(
+                                    msg="Failed to find network with name %s" % network_name,
+                                    changed=False)
+                            restore_data['vmwareParameters']['networkId'] = network_id
                         if module.params.get('vm_folder_id'):
                             restore_data['vmwareParameters']['vmFolderId'] = module.params.get(
                                 'vm_folder_id')
+                        if module.params.get('vm_folder_name'):
+                            vm_folder_name = module.params.get('vm_folder_name')
+                            vm_folder_id = get_vmware_object_id(restore_to_source_objects,
+                                vm_folder_name, 'kFolder')
+                            if not vm_folder_id:
+                                module.fail_json(
+                                    msg="Failed to find folder with name %s" % vm_folder_name,
+                                    changed=False)
+                            restore_data['vmwareParameters']['vmFolderId'] = vm_folder_id
                     else:
                         module.fail_json(msg="The resource pool and datastore details are"
                                              " required for restoring to a new location")

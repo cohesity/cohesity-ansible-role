@@ -52,12 +52,14 @@ cohesity_restore_vm:
   datastore_folder_id: ""
   network_connected: yes
   network_id: ""
+  network_name: ""
   power_state: yes
   resource_pool_id: ""
   resource_pool_name: ""
   prefix: ""
   suffix: ""
   vm_folder_id: ""
+  vm_folder_name: ""
   recovery_type: InstantRecovery
 ```
 ## Customize Your Playbooks
@@ -147,12 +149,14 @@ The following information is copied directly from the included task in this role
     datastore_folder_id: "{{ cohesity_restore_vm.datastore_folder_id | default('') }}"
     network_connected: "{{ cohesity_restore_vm.network_connected | default('yes') }}"
     network_id: "{{ cohesity_restore_vm.network_id | default('') }}"
+    network_name: "{{ cohesity_restore_vm.network_name | default('') }}"
     power_state: "{{ cohesity_restore_vm.power_state | default('yes') }}"
     resource_pool_id: "{{ cohesity_restore_vm.resource_pool_id | default('') }}"
     resource_pool_name: "{{ cohesity_restore_vm.resource_pool_name | default('') }}"
     prefix: "{{ cohesity_restore_vm.prefix | default('') }}"
     suffix: "{{ cohesity_restore_vm.suffix | default('') }}"
     vm_folder_id: "{{ cohesity_restore_vm.vm_folder_id | default('') }}"
+    vm_folder_name: "{{ cohesity_restore_vm.vm_folder_name | default('') }}"
     recovery_process_type: "{{ cohesity_restore_vm.recovery_type | default('InstantRecovery') }}"
   tags: always
 

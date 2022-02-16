@@ -13,8 +13,13 @@ from Cohesity Platforms.
 
 import json
 import traceback
+try:
+    from urllib import quote
+except ImportError as e:
+    from urllib.parse import quote
 from ansible.module_utils.urls import open_url, urllib_error
 import ansible.module_utils.six.moves.urllib_parse as urllib_parse
+
 from cohesity_management_sdk.cohesity_client import CohesityClient
 from cohesity_management_sdk.controllers.base_controller import BaseController
 
@@ -431,7 +436,7 @@ def get__vmware_snapshot_information__by_vmname(module, self):
     try:
         uri = "https://" + server + \
             "/irisservices/api/v1/public/restore/objects" + \
-            "?environments[]=kVMware&search=" + self['restore_obj']['vmname'] + "&jobIds[]=" + str(self['restore_obj']['jobUid']['id'])
+            "?environments[]=kVMware&search=" + quote(self['restore_obj']['vmname']) + "&jobIds[]=" + str(self['restore_obj']['jobUid']['id'])
 
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}
