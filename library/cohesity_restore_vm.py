@@ -612,7 +612,7 @@ def main():
             endpoint=dict(type='str', required=True),
             restore_to_source=dict(type='str', default=''),
             job_name=dict(type='str', default=''),
-            backup_id=dict(type='str'),
+            backup_id=dict(type='int'),
             backup_timestamp=dict(type='str'),
             # => Currently, the only supported environments types are list in the choices
             # => For future enhancements, the below list should be consulted.
@@ -624,19 +624,19 @@ def main():
             vm_names=dict(type='list'),
             wait_for_job=dict(type='bool', default=True),
             wait_minutes=dict(type='str', default=20),
-            datastore_id=dict(type='str'),
+            datastore_id=dict(type='int'),
             datastore_name=dict(type='str', default=''),
-            datastore_folder_id=dict(type='str'),
+            datastore_folder_id=dict(type='int'),
             network_connected=dict(type='bool', default=True),
-            network_id=dict(type='str'),
+            network_id=dict(type='int'),
             network_name=dict(type='str'),
             power_state=dict(type='bool', default=True),
             prefix=dict(type='str'),
-            resource_pool_id=dict(type='str'),
+            resource_pool_id=dict(type='int'),
             resource_pool_name=dict(type='str', default=''),
             recovery_process_type=dict(type='str', default='InstantRecovery'),
             suffix=dict(type='str'),
-            vm_folder_id=dict(type='str'),
+            vm_folder_id=dict(type='int'),
             vm_folder_name=dict(type='str')
 
         )
