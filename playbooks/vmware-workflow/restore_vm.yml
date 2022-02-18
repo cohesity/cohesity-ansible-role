@@ -1,0 +1,29 @@
+#=> restore vms from VMware Backup based on timestamp provided or recent job run is used for the operation.
+---
+  - hosts: localhost
+    roles:
+      - cohesity.cohesity_ansible_role
+    tasks:
+      - name: Restore VMs
+        include_role:
+            name: cohesity.cohesity_ansible_role
+            tasks_from: restore_vm
+        vars:
+            cohesity_server: "{{ var_cohesity_server }}"
+            cohesity_admin: "{{ var_cohesity_username }}"
+            cohesity_password: "{{ var_cohesity_password }}"
+            cohesity_validate_certs: "{{ var_validate_certs }}"
+            cohesity_restore_vm:
+                name: "Testing"
+                job_name: "CancelSingleHost"
+                vms:
+                  - automation_vm_1-KsZ4
+                network_name: "VLAN21"
+                vm_folder_name: "cohesity_folder"
+                wait_for_job: true
+                state: "present"
+                restore_to_source: "myvmware.host.com"
+                resource_pool_name: "cohesity-resource_pool"
+                datastore_name: "cohesity_datastore"
+                network_connected: false
+
