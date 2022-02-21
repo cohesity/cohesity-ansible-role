@@ -20,9 +20,11 @@ from cohesity_management_sdk.models.subnet import Subnet
 from cohesity_management_sdk.models.update_view_param import UpdateViewParam
 
 try:
+    from module_utils.storage.cohesity.cohesity_hints import get_cohesity_client
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec,\
         raise__cohesity_exception__handler
 except Exception:
+    from ansible.module_utils.storage.cohesity.cohesity_hints import get_cohesity_client
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec,\
         raise__cohesity_exception__handler
 
@@ -262,31 +264,6 @@ def delete_view(module):
     except APIException as ex:
         raise__cohesity_exception__handler(
             str(json.loads(ex.context.response.raw_body)), module)
-    except Exception as error:
-        raise__cohesity_exception__handler(error, module)
-
-
-def get_cohesity_client(module):
-    '''
-    function to get cohesity cohesity client
-    :param module: object that holds parameters passed to the module
-    :return:
-    '''
-    try:
-        cluster_vip = module.params.get('cluster')
-        username = module.params.get('username')
-        password = module.params.get('password')
-        domain = 'LOCAL'
-        if "@" in username:
-            user_domain = username.split("@")
-            username = user_domain[0]
-            domain = user_domain[1]
-
-        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
-                                         username=username,
-                                         password=password,
-                                         domain=domain)
-        return cohesity_client
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
 

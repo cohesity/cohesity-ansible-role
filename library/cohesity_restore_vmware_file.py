@@ -22,7 +22,7 @@ try:
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, \
-        get__prot_source_root_id__by_environment, get__restore_job__by_type
+        get__prot_source_root_id__by_environment, get__restore_job__by_type, get_cohesity_client
 except ImportError:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT

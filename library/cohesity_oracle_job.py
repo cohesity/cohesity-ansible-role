@@ -24,9 +24,11 @@ try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
+    from module_utils.storage.cohesity.cohesity_hints import get_cohesity_client
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
 except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
+    from ansible.module_utils.storage.cohesity.cohesity_hints import get_cohesity_client
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
 
 ANSIBLE_METADATA = {
@@ -304,31 +306,6 @@ def unregister_job(module, _id):
         body.delete_snapshots = module.params.get('delete_backups')
         resp = cohesity_client.protection_jobs.delete_protection_job(_id, body)
         return resp
-    except Exception as error:
-        raise__cohesity_exception__handler(error, module)
-
-
-def get_cohesity_client(module):
-    '''
-    function to get cohesity cohesity client
-    :param module: object that holds parameters passed to the module
-    :return:
-    '''
-    try:
-        cluster_vip = module.params.get('cluster')
-        username = module.params.get('username')
-        password = module.params.get('password')
-        domain = 'LOCAL'
-        if '@' in username:
-            user_domain = username.split('@')
-            username = user_domain[0]
-            domain = user_domain[1]
-
-        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
-                                         username=username,
-                                         password=password,
-                                         domain=domain)
-        return cohesity_client
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
 

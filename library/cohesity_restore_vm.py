@@ -20,13 +20,13 @@ try:
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, get__vmware_snapshot_information__by_vmname, \
-        get__prot_source_root_id__by_environment, get__restore_job__by_type
+        get__prot_source_root_id__by_environment, get__restore_job__by_type, get_cohesity_client
 except ImportError:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, get__vmware_snapshot_information__by_vmname, \
-        get__prot_source_root_id__by_environment, get__restore_job__by_type
+        get__prot_source_root_id__by_environment, get__restore_job__by_type, get_cohesity_client
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -627,6 +627,7 @@ def main():
             datastore_id=dict(type='int'),
             datastore_name=dict(type='str', default=''),
             datastore_folder_id=dict(type='int'),
+            interface_group_name=dict(type='str'),
             network_connected=dict(type='bool', default=True),
             network_id=dict(type='int'),
             network_name=dict(type='str'),
@@ -774,6 +775,22 @@ def main():
                                     msg="Failed to find network with name %s" % network_name,
                                     changed=False)
                             restore_data['vmwareParameters']['networkId'] = network_id
+                        if module.params.get('interface_group_name'):
+                            iface_group = module.params.get('interface_group_name')
+                            # Check the group exist in the cluster.
+                            cohesity_client = get_cohesity_client(module)
+                            vlans = cohesity_client.vlan.get_vlans()
+                            for vlan in vlans:
+                                if vlan.iface_group_name == iface_group:
+                                    restore_data['vlanParameters'] = dict(
+                                            interfaceName=iface_group,
+                                            #vlan=vlan.id,)
+                                            disableVlan=True)
+                                    break
+                            if restore_data.get('vlanParameters', None) == None:
+                                module.fail_json(
+                                    msg="Failed to find Inferface Group with name %s" % iface_group,
+                                        changed=False)
                         if module.params.get('vm_folder_id'):
                             restore_data['vmwareParameters']['vmFolderId'] = module.params.get(
                                 'vm_folder_id')
@@ -784,7 +801,7 @@ def main():
                             if not vm_folder_id:
                                 module.fail_json(
                                     msg="Failed to find folder with name %s" % vm_folder_name,
-                                    changed=False)
+                                        changed=False)
                             restore_data['vmwareParameters']['vmFolderId'] = vm_folder_id
                     else:
                         module.fail_json(msg="The resource pool and datastore details are"

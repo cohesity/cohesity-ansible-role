@@ -387,8 +387,8 @@ def _get_tag_ids(module, tags, parentSourceId):
     Function to fetch VMware tag ids for list of tag names.
     """ 
     try:
-        client, status = get_cohesity_client(module)
-        if not status:
+        client = get_cohesity_client(module)
+        if not client:
             module.fail_json(
                 msg="Error while creating cohesity client, err msg '%s'" % client,
                 changed=False)
