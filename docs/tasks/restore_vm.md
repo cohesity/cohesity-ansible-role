@@ -141,7 +141,7 @@ The following information is copied directly from the included task in this role
     endpoint: "{{ cohesity_restore_vm.endpoint | default('') }}"
     restore_to_source: "{{ cohesity_restore_vm.restore_to_source | default('') }}"
     backup_id: "{{ cohesity_restore_vm.backup_id | default(omit) }}"
-    vm_names: "{{ cohesity_restore_vm.vms | default('') }}"
+    vm_names: "{{ cohesity_restore_vm.vms | default(cohesity_restore_vm.vm_names | default('')) }}"
     wait_for_job: "{{ cohesity_restore_vm.wait_for_job | default('yes') }}"
     wait_minutes: "{{ cohesity_restore_vm.wait_minutes | default(30) }}"
     datastore_id: "{{ cohesity_restore_vm.datastore_id | default(omit) }}"

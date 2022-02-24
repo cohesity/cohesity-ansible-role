@@ -255,7 +255,7 @@ def download_agent(module, path):
             headers = {
                 "Accept": "application/octet-stream",
                 "Authorization": "Bearer " + token,
-                "user-agent": "cohesity-ansible/v2.3.3"}
+                "user-agent": "cohesity-ansible/v2.3.4"}
         elif not module.params.get('download_uri'):
             os_type = "Linux"
             server = module.params.get('cluster')
@@ -273,12 +273,12 @@ def download_agent(module, path):
             headers = {
                 "Accept": "application/octet-stream",
                 "Authorization": "Bearer " + token,
-                "user-agent": "cohesity-ansible/v2.3.3"}
+                "user-agent": "cohesity-ansible/v2.3.4"}
         else:
             uri = module.params.get('download_uri')
             headers = {
                 "Accept": "application/octet-stream",
-                "user-agent": "cohesity-ansible/v2.3.3"}
+                "user-agent": "cohesity-ansible/v2.3.4"}
 
         agent = open_url(url=uri, headers=headers,
                          validate_certs=False, timeout=REQUEST_TIMEOUT)
@@ -511,7 +511,7 @@ def get_source_details(module, source_id):
                   "/irisservices/api/v1/public/protectionSources?environments=kPhysical"
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.3"}
+                   "user-agent": "cohesity-ansible/v2.3.4"}
         response = open_url(
             url=uri,
             headers=headers,
@@ -561,7 +561,7 @@ def update_agent(module):
                   "/irisservices/api/v1/public/physicalAgents/upgrade"
             headers = {"Accept": "application/json",
                        "Authorization": "Bearer " + token,
-                       "user-agent": "cohesity-ansible/v2.3.3"}
+                       "user-agent": "cohesity-ansible/v2.3.4"}
             payload = {
                 "agentIds": [source_details['agent']['id']]
             }

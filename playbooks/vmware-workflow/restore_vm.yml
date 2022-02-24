@@ -26,3 +26,4 @@
           resource_pool_name: "cohesity-resource_pool"
           datastore_name: "cohesity_datastore"
           network_connected: false
+          interface_group_name: "iface_name"

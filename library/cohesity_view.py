@@ -300,7 +300,7 @@ def main():
 
     global cohesity_client
     base_controller = BaseController()
-    base_controller.global_headers['user-agent'] = 'cohesity-ansible/v2.3.3'
+    base_controller.global_headers['user-agent'] = 'cohesity-ansible/v2.3.4'
     cohesity_client = get_cohesity_client(module)
     view_exists, view_details = get_view_details(module)
 
