@@ -1,5 +1,11 @@
 # Cohesity Ansible Changelog
 
+## Version v2.3.4
+  Date:   Thu Feb 24 2022
+    UPDATE:   Added support to provide interface group name, network name
+              and folder name while Restoring VM.
+    UPDATE:   User authentication fix for MT, AD user support.
+    UPDATE:   Documentation update
 
 ## Version 0.4.0
   Date:   Tue Oct 30 2018

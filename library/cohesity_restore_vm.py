@@ -20,13 +20,13 @@ try:
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, get__vmware_snapshot_information__by_vmname, \
-        get__prot_source_root_id__by_environment, get__restore_job__by_type
+        get__prot_source_root_id__by_environment, get__restore_job__by_type, get_cohesity_client
 except ImportError:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from ansible.module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, get__vmware_snapshot_information__by_vmname, \
-        get__prot_source_root_id__by_environment, get__restore_job__by_type
+        get__prot_source_root_id__by_environment, get__restore_job__by_type, get_cohesity_client
 
 ANSIBLE_METADATA = {
     'metadata_version': '1.0',
@@ -109,9 +109,16 @@ options:
       - Specifies the datastore name where the files should be recovered to. This field is mandatory to recover objects to
       - a different resource pool or to a different parent source. If not specified, objects are recovered to their original
       - datastore locations in the parent source.
+    type: str
+    default: ''
   datastore_folder_id:
     description:
       - Specifies the folder where the restore datastore should be created. This is applicable only when the VMs are being cloned.
+  interface_group_name:
+    description:
+      - Specifies the folder where the restore datastore should be created. This is applicable only when the VMs are being cloned.
+    type: str
+    default: ''
   network_connected:
     description:
       - Specifies whether the network should be left in disabled state. Attached network is enabled by default. Set this flag to true to disable it.
@@ -120,6 +127,8 @@ options:
   network_name:
     description:
       - Specifies name of the network to be attached to the cloned or recovered object.
+    type: str
+    default: ''
   network_id:
     description:
       - Specifies a network configuration to be attached to the cloned or recovered object. Specify this field to override
@@ -152,7 +161,8 @@ options:
   vm_folder_name:
     description:
       - Specifies a folder name where the VMs should be restored
-
+    type: str
+    default: ''
 
 extends_documentation_fragment:
     - cohesity
@@ -275,7 +285,7 @@ def get_source_details(module, restore_to_source):
               "/irisservices/api/v1/public/protectionSources/rootNodes?environments=kVMware"
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.3"}
+                   "user-agent": "cohesity-ansible/v2.3.4"}
         response = open_url(
             url=uri,
             headers=headers,
@@ -316,7 +326,7 @@ def get_vmware_source_objects(module, source_id):
 
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.3"}
+                   "user-agent": "cohesity-ansible/v2.3.4"}
 
         response = open_url(
             url=uri,
@@ -377,7 +387,7 @@ def get__vmware_snapshot_information__by_source(module, self, source_details):
 
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.3"}
+                   "user-agent": "cohesity-ansible/v2.3.4"}
         objects = open_url(url=uri, headers=headers,
                            validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         objects = json.loads(objects.read())
@@ -505,7 +515,7 @@ def start_restore(module, uri, self):
         uri = "https://" + server + uri
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.3"}
+                   "user-agent": "cohesity-ansible/v2.3.4"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -548,7 +558,7 @@ def wait_restore_complete(module, self):
             "/irisservices/api/v1/public/restore/tasks/" + str(self['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.3"}
+                   "user-agent": "cohesity-ansible/v2.3.4"}
         attempts = 0
         # => Wait for the restore based on a predetermined number of minutes with checks every 30 seconds.
         while attempts < wait_counter:
@@ -627,6 +637,7 @@ def main():
             datastore_id=dict(type='int'),
             datastore_name=dict(type='str', default=''),
             datastore_folder_id=dict(type='int'),
+            interface_group_name=dict(type='str'),
             network_connected=dict(type='bool', default=True),
             network_id=dict(type='int'),
             network_name=dict(type='str'),
@@ -730,9 +741,26 @@ def main():
                 if module.params.get('prefix'):
                     restore_data['vmwareParameters']['prefix'] = module.params.get(
                         'prefix')
+
                 if module.params.get('suffix'):
                     restore_data['vmwareParameters']['suffix'] = module.params.get(
                         'suffix')
+
+                if module.params.get('interface_group_name'):
+                    iface_group = module.params.get('interface_group_name')
+                    # Check the group exist in the cluster.
+                    cohesity_client = get_cohesity_client(module)
+                    vlans = cohesity_client.vlan.get_vlans()
+                    for vlan in vlans:
+                        if vlan.iface_group_name == iface_group:
+                            restore_data['vlanParameters'] = dict(
+                                    interfaceName=iface_group,
+                                    disableVlan=True)
+                            break
+                    if restore_data.get('vlanParameters', None) == None:
+                        module.fail_json(
+                            msg="Failed to find Inferface Group with name %s" % iface_group,
+                                changed=False)
 
                 if module.params.get('restore_to_source'):
                     datastore_id = module.params.get('datastore_id')
@@ -774,9 +802,11 @@ def main():
                                     msg="Failed to find network with name %s" % network_name,
                                     changed=False)
                             restore_data['vmwareParameters']['networkId'] = network_id
+
                         if module.params.get('vm_folder_id'):
                             restore_data['vmwareParameters']['vmFolderId'] = module.params.get(
                                 'vm_folder_id')
+
                         if module.params.get('vm_folder_name'):
                             vm_folder_name = module.params.get('vm_folder_name')
                             vm_folder_id = get_vmware_object_id(restore_to_source_objects,
@@ -784,7 +814,7 @@ def main():
                             if not vm_folder_id:
                                 module.fail_json(
                                     msg="Failed to find folder with name %s" % vm_folder_name,
-                                    changed=False)
+                                        changed=False)
                             restore_data['vmwareParameters']['vmFolderId'] = vm_folder_id
                     else:
                         module.fail_json(msg="The resource pool and datastore details are"

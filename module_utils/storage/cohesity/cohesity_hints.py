@@ -28,10 +28,10 @@ try:
     # => When unit testing, we need to look in the correct location however, when run via ansible,
     # => the expectation is that the modules will live under ansible.
     from module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
-    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
+    from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
 except Exception as e:
     from ansible.module_utils.storage.cohesity.cohesity_auth import Authentication, TokenException, ParameterViolation
-    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec
+    from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
 
 
 class ParameterViolation(Exception):
@@ -57,7 +57,12 @@ def get_cohesity_client(module):
         username = module.params.get('username')
         password = module.params.get('password')
         domain = 'LOCAL'
-        if "@" in username:
+        if "/" in username:
+            user_domain = username.split("/")
+            username = user_domain[1]
+            domain = user_domain[0]
+
+        elif "@" in username:
             user_domain = username.split("@")
             username = user_domain[0]
             domain = user_domain[1]

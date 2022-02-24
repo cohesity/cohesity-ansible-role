@@ -22,7 +22,7 @@ try:
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
     from module_utils.storage.cohesity.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__protection_jobs__by_environment, get__file_snapshot_information__by_filename, \
-        get__prot_source_root_id__by_environment, get__restore_job__by_type
+        get__prot_source_root_id__by_environment, get__restore_job__by_type, get_cohesity_client
 except ImportError:
     from ansible.module_utils.storage.cohesity.cohesity_auth import get__cohesity_auth__token
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
@@ -261,7 +261,7 @@ def start_restore(module, uri, self):
         uri = "https://" + server + uri
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.3"}
+                   "user-agent": "cohesity-ansible/v2.3.4"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -339,7 +339,7 @@ def wait_restore_complete(module, self):
         headers = {
             "Accept": "application/json",
             "Authorization": "Bearer " + token,
-                   "user-agent": "cohesity-ansible/v2.3.3"}
+                   "user-agent": "cohesity-ansible/v2.3.4"}
         attempts = 0
         # => Wait for the restore based on a predetermined number of minutes with checks every 30 seconds.
         while attempts < wait_counter:
@@ -436,7 +436,7 @@ def main():
 
     global cohesity_client
     base_controller = BaseController()
-    base_controller.global_headers['user-agent'] = 'Ansible-v2.3.3'
+    base_controller.global_headers['user-agent'] = 'Ansible-v2.3.4'
     cohesity_client = get_cohesity_client(module)
 
     if module.params.get('backup_id'):

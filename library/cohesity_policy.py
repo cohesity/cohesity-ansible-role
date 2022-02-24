@@ -23,9 +23,11 @@ from cohesity_management_sdk.models.snapshot_archival_copy_policy import Snapsho
 from cohesity_management_sdk.models.time_of_day import TimeOfDay
 
 try:
+    from module_utils.storage.cohesity.cohesity_hints import get_cohesity_client
     from module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec,\
         raise__cohesity_exception__handler
 except Exception:
+    from ansible.module_utils.storage.cohesity.cohesity_hints import get_cohesity_client
     from ansible.module_utils.storage.cohesity.cohesity_utilities import cohesity_common_argument_spec,\
         raise__cohesity_exception__handler
 
@@ -254,31 +256,6 @@ def delete_policy(module, policy_id):
         raise__cohesity_exception__handler(error, module)
 
 
-def get_cohesity_client(module):
-    '''
-    function to get cohesity cohesity client
-    :param module: object that holds parameters passed to the module
-    :return:
-    '''
-    try:
-        cluster_vip = module.params.get('cluster')
-        username = module.params.get('username')
-        password = module.params.get('password')
-        domain = 'LOCAL'
-        if "@" in username:
-            user_domain = username.split("@")
-            username = user_domain[0]
-            domain = user_domain[1]
-
-        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
-                                         username=username,
-                                         password=password,
-                                         domain=domain)
-        return cohesity_client
-    except Exception as error:
-        raise__cohesity_exception__handler(error, module)
-
-
 def main():
     # => Load the default arguments including those specific to the Cohesity protection policy.
     argument_spec = cohesity_common_argument_spec()
@@ -311,7 +288,7 @@ def main():
 
     global cohesity_client
     base_controller = BaseController()
-    base_controller.global_headers['user-agent'] = 'cohesity-ansible/v2.3.3'
+    base_controller.global_headers['user-agent'] = 'cohesity-ansible/v2.3.4'
     cohesity_client = get_cohesity_client(module)
     policy_exists, policy_details = get_policy_details(module)
 

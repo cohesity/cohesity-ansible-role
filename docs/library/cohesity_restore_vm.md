@@ -45,19 +45,24 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
     endpoint: <identifies the source endpoint to which the the restore operation will be performed>
     backup_id: <optional Cohesity Backup Run ID for the restore operation.  If not selected, the most recent RunId will be used>
     backup_timestamp: <not implemented>
-    vm_names:
+    vms:
       - <list of virtual machines to be restored by the operation>
     wait_for_job: <boolean to determine if the task should wait for the restore operation to complete prior to moving to the next operation>
     wait_minutes: <number of minutes to wait until the job completes>
     datastore_id: <id of the datastore to which the machines will be restored>
+    datastore_name: <name of the datastore to which the machines will be restored>
     datastore_folder_id: <id of the datastore_folder to which the machines will be restored>
+    interface_group_name: <name of the interface group to which the virtual machines should be connected>
     network_connected: <boolean to determine if the virtual machine network should be connected>
     network_id: <id of the network to which the virtual machines should be connected>
+    network_name: <name of the network to which the virtual machines should be connected>
     power_state: <boolean to determine if the restored machines should be powered on>
     resource_pool_id: <id of the resource pool to which the virtual machines will be restored>
+    resource_pool_name: <name of the resource pool to which the virtual machines will be restored>
     prefix: <string prepended to the begining of the virtual machine name>
     suffix: <string appended to the end of the virtual machine name>
     vm_folder_id: <id of the vCenter Folder to which the machine will be restored>
+    vm_folder_name: <name of the vCenter Folder to which the machine will be restored>
 ```
 
 ## Examples
@@ -78,7 +83,7 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
     endpoint: "myvcenter.cohesity.demo"
     environment: "VMware"
     job_name: "myvcenter.cohesity.demo"
-    vm_names:
+    vms:
       - chs-win-01
 ```
 
@@ -97,7 +102,7 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
     environment: "VMware"
     job_name: "myvcenter.cohesity.demo"
     backup_id: "48291"
-    vm_names:
+    vms:
       - chs-win-01
       - chs-win-02
     prefix: "rst-"
@@ -119,7 +124,7 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
     endpoint: "myvcenter.cohesity.demo"
     environment: "VMware"
     job_name: "myvcenter.cohesity.demo"
-    vm_names:
+    vms:
       - chs-win-01
     recovery_type: CopyRecovery
 ```
@@ -141,18 +146,23 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
 | X | **endpoint** | String | | Specifies the network endpoint where the Protection Source is reachable. It can be the URL, hostname, IP address, NFS mount point, or SMB Share of the Protection Source. |
 |   | backup_id | Integer |  | Optional Cohesity ID to use as source for the restore operation.  If not selected, the most recent RunId will be used. |
 |   | backup_timestamp | String |  | Not implemented. |
-| X | **vm_names** | Array |  | Array of Virtual Machines to restore. |
+| X | **vms** | Array |  | Array of Virtual Machines to restore. |
 |   | wait_for_job | Boolean | True | Should wait until the Restore Job completes |
 |   | wait_minutes | String | 5 | Number of minutes to wait until the job completes. |
-|   | datastore_id | Integer | | Specifies the datastore where the object’s files should be restored. This field is mandatory to restore objects to a different resource pool or to a different parent source. If not specified, objects are restored to their original datastore locations in the parent source. |
+|   | datastore_id | Integer | | Specifies the datastore Id where the object’s files should be restored. This field is mandatory to restore objects to a different resource pool or to a different parent source. If not specified, objects are restored to their original datastore locations in the parent source. |
+|   | datastore_name | String | | Specifies the datastore name where the object’s files should be restored. This field is mandatory to restore objects to a different resource pool or to a different parent source. If not specified, objects are restored to their original datastore locations in the parent source. |
 |   | datastore_folder_id | Integer | | Specifies the folder where the restore datastore should be created. This is applicable only when the VMs are being cloned. |
+|   | interface_group_name | String | | Specifies the folder network interface group name to be attached to the restored object. |
 |   | network_connected | Boolean | True | Specifies whether the network should be left in disabled state. Attached network is enabled by default. Set this flag to true to disable it. |
-|   | network_id | Integer | | Specifies a network configuration to be attached to the cloned or restored object. Specify this field to override the preserved network configuration or to attach a new network configuration to the cloned or restored objects. |
+|   | network_id | Integer | | Specifies a network Id configuration to be attached to the cloned or restored object. Specify this field to override the preserved network configuration or to attach a new network configuration to the cloned or restored objects. |
+|   | network_name | String | | Specifies a network name configuration to be attached to the cloned or restored object. Specify this field to override the preserved network configuration or to attach a new network configuration to the cloned or restored objects. |
 |   | power_state | Boolean | True| Specifies the power state of the cloned or restored objects. By default, the cloned or restored objects are powered off. |
-|   | resource_pool_id | Integer | | Specifies the resource pool where the cloned or restored objects are attached. |
+|   | resource_pool_id | Integer | | Specifies the resource pool Id where the cloned or restored objects are attached. |
+|   | resource_pool_name | String | | Specifies the resource pool name where the cloned or restored objects are attached. |
 |   | prefix | String | | Specifies a prefix to prepended to the source object name to derive a new name for the restored or cloned object. |
 |   | suffix | String | | Specifies a suffix to appended to the original source object name to derive a new name for the restored or cloned object |
-|   | vm_folder_id | Integer | | Specifies a folder where the VMs should be restored |
+|   | vm_folder_id | Integer | | Specifies a folder Id where the VMs should be restored |
+|   | vm_folder_name | String | | Specifies a folder name where the VMs should be restored |
 |   | recovery_type | String | InstantRecovery | Specifies the type of recovery process to be performed. If unspecified, then an InstantRecovery will be performed. |
 
 
@@ -192,7 +202,7 @@ This Ansible Module supports Physical and GenericNas environments and initiates 
             "type": "kRecoverVMs", 
             "username": "VALUE_SPECIFIED_IN_NO_LOG_PARAMETER", 
             "viewBoxId": 5, 
-            "vm_names": [
+            "vms": [
                 "chs-win-01"
             ], 
             "vmwareParameters": {}
