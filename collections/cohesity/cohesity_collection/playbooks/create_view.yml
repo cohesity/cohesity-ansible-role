@@ -5,17 +5,13 @@
   collections:
     - cohesity.cohesity_collection
   vars:
-    cohesity_server: cluster_vip
-    cohesity_admin: admin
-    cohesity_password: admin
-    cohesity_validate_certs: false
     name: ViewName
     state: present
   tasks:
     - name: "Cohesity view: Set {{ name }} to state of {{ state | default('present') }}"
       cohesity_view:
         cluster: "{{ cohesity_server }}"
-        username: "{{ cohesity_admin }}"
+        username: "{{ cohesity_username }}"
         password: "{{ cohesity_password }}"
         state: "{{ state | default('present') }}"
         name: "AnsibleView"

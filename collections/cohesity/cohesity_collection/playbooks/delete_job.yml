@@ -4,16 +4,11 @@
   gather_facts: false
   collections:
   - cohesity.cohesity_collection
-  vars:
-    cohesity_server: cluster_vip
-    cohesity_admin: admin
-    cohesity_password: admin
-    cohesity_validate_certs: false
   tasks:
     - name: Delete Protection job
       cohesity_job:
         cluster: "{{ cohesity_server }}"
-        username: "{{ cohesity_admin }}"
+        username: "{{ cohesity_username }}"
         password: "{{ cohesity_password }}"
         validate_certs: "{{ cohesity_validate_certs }}"
         state: "absent"

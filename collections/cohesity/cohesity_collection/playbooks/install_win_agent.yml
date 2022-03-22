@@ -3,7 +3,7 @@
 # => Collection: cohesity.cohesity_collection
 # =>
 
-# => UnInstall the Cohesity Agent on each Windows host
+# => Install the Cohesity Agent on each Windows host
 # => specified in the Ansible inventory
 # =>
 ---
@@ -13,18 +13,20 @@
   collections:
     - cohesity.cohesity_collection
   vars:
-    state: absent
+    state: present
     reboot: true
   tasks:
-    - name: "Cohesity agent: Set Agent to state of {{ state | default('absent') }}"
+    - name: "Cohesity agent: Set Agent to state of {{ state | default('present') }}"
       cohesity_win_agent:
         cluster: "{{ cohesity_server }}"
         username: "{{ cohesity_username }}"
         password: "{{ cohesity_password }}"
         validate_certs: "{{ cohesity_validate_certs }}"
         state: "{{ state }}"
-        service_user: ""
-        service_password: ""
+        service_user: "{{ service_user | default('') }}"
+        service_password: "{{ service_password | default('') }}"
+        preserve_settings: "{{ preserve_settings | default(False) }}"
+        install_type: "{{ install_type | default('volcbt') }}"
       tags: always
       register: installed
 

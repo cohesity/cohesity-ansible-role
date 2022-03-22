@@ -1,7 +1,7 @@
 #
 # cohesity_hints
 #
-# Copyright (c) 2018 Cohesity Inc
+# Copyright (c) 2022 Cohesity Inc
 # Apache License Version 2.0
 #
 
@@ -22,6 +22,12 @@ from Cohesity Platforms.
 
 import json
 import traceback
+
+try:
+    from urllib import quote
+except ImportError as e:
+    from urllib.parse import quote
+
 from ansible.module_utils.urls import open_url, urllib_error
 import ansible.module_utils.six.moves.urllib_parse as urllib_parse
 
@@ -46,6 +52,36 @@ class ProtectionException(Exception):
 
 class HTTPException(Exception):
     pass
+
+
+def get_cohesity_client(module):
+    '''
+    function to get cohesity cohesity client
+    :param module: object that holds parameters passed to the module
+    :return:
+    '''
+    try:
+        cluster_vip = module.params.get('cluster')
+        username = module.params.get('username')
+        password = module.params.get('password')
+        domain = 'LOCAL'
+        if "/" in username:
+            user_domain = username.split("/")
+            username = user_domain[1]
+            domain = user_domain[0]
+
+        elif "@" in username:
+            user_domain = username.split("@")
+            username = user_domain[0]
+            domain = user_domain[1]
+
+        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
+                                         username=username,
+                                         password=password,
+                                         domain=domain)
+        return cohesity_client
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
 
 
 def get__cluster(self):
@@ -238,7 +274,7 @@ def get__prot_source_root_id__by_environment(module, self):
                     node['protectionSource']['environment'] != 'kVMware':
                 return node['protectionSource']['id']
             elif node['protectionSource']['environment'] == 'kVMware':
-                return module.params['protection_sources'][0]['endpoint']
+                return node['protectionSource']['id']
 
         raise ProtectionException(
             "There was a very serious situation where the chosen environment did not return a valid Root Node ID")
@@ -319,7 +355,9 @@ def get__prot_source_id__by_endpoint(module, self):
             env_types = ['Physical', 'GenericNas']
             if self['environment'] in env_types:
                 for node in source['nodes']:
-                    if node['protectionSource']['name'] == self['endpoint']:
+                    if self['endpoint'] in [
+                        node['registrationInfo']['accessInfo']['endpoint'],
+                        node['protectionSource']['name']]:
                         return node['protectionSource']['id']
             else:
                 for node in source:
@@ -411,7 +449,7 @@ def get__vmware_snapshot_information__by_vmname(module, self):
     try:
         uri = "https://" + server + \
             "/irisservices/api/v1/public/restore/objects" + \
-            "?environments[]=kVMware&search=" + self['restore_obj']['vmname'] + "&jobIds[]=" + str(self['restore_obj']['jobUid']['id'])
+            "?environments[]=kVMware&search=" + quote(self['restore_obj']['vmname']) + "&jobIds[]=" + str(self['restore_obj']['jobUid']['id'])
 
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token}

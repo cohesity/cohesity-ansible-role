@@ -1,13 +1,6 @@
 # Playbook to create protection policy.
 ---
 - hosts: localhost
-  # => We need to specify these variables to connect
-  # => to the Cohesity cluster
-  vars:
-    cohesity_server: cluster_vip
-    cohesity_admin: admin
-    cohesity_password: admin
-    cohesity_validate_certs: false
   # => We need to gather facts to determine the OS type of
   # => the machine
   gather_facts: true
@@ -17,8 +10,8 @@
   tasks:
     - name: Create protection policy to cohesity server.
       cohesity_policy:
-        server: "{{ cohesity_server }}"
-        admin: "{{ cohesity_admin }}"
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
         password: "{{ cohesity_password }}"
         validate_certs: "{{ cohesity_validate_certs }}"
         name: 'Ansible'

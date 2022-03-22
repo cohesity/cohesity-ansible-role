@@ -22,6 +22,7 @@ from cohesity_management_sdk.models.update_view_param import UpdateViewParam
 try:
     from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_utilities import cohesity_common_argument_spec,\
         raise__cohesity_exception__handler
+    from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_hints import get_cohesity_client
 except Exception:
     pass # pass
 
@@ -265,30 +266,6 @@ def delete_view(module):
         raise__cohesity_exception__handler(error, module)
 
 
-def get_cohesity_client(module):
-    '''
-    function to get cohesity cohesity client
-    :param module: object that holds parameters passed to the module
-    :return:
-    '''
-    try:
-        cluster_vip = module.params.get('cluster')
-        username = module.params.get('username')
-        password = module.params.get('password')
-        domain = 'LOCAL'
-        if "@" in username:
-            user_domain = username.split("@")
-            username = user_domain[0]
-            domain = user_domain[1]
-
-        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
-                                         username=username,
-                                         password=password,
-                                         domain=domain)
-        return cohesity_client
-    except Exception as error:
-        raise__cohesity_exception__handler(error, module)
-
 
 def main():
     # => Load the default arguments including those specific to the Cohesity protection policy.
@@ -322,7 +299,7 @@ def main():
 
     global cohesity_client
     base_controller = BaseController()
-    base_controller.global_headers['user-agent'] = 'Ansible-v2.2.0'
+    base_controller.global_headers['user-agent'] = 'cohesity-ansible/v0.0.1'
     cohesity_client = get_cohesity_client(module)
     view_exists, view_details = get_view_details(module)
 

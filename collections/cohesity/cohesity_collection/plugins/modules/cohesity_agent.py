@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2018 Cohesity Inc
+# Copyright (c) 2022 Cohesity Inc
 # Apache License Version 2.0
 #
 
@@ -277,12 +277,12 @@ def download_agent(module, path):
             headers = {
                 "Accept": "application/octet-stream",
                 "Authorization": "Bearer " + token,
-                "user-agent": "Ansible-v2.2.0"}
+                "user-agent": "cohesity-ansible/v0.0.1"}
         else:
             uri = module.params.get('download_uri')
             headers = {
                 "Accept": "application/octet-stream",
-                "user-agent": "Ansible-v2.2.0"}
+                "user-agent": "cohesity-ansible/v0.0.1"}
 
         agent = open_url(url=uri, headers=headers,
                          validate_certs=False, timeout=REQUEST_TIMEOUT)
@@ -471,7 +471,7 @@ def remove_agent(module, installer, native):
 
 
 def create_download_dir(module, dir_path):
-    # => Note: 2018-12-06
+    # => Note: 2022-12-06
     # => Added this method to provide an alternate parameter to download the installer.
     # => This code was almost entirely pulled out of the Ansible File module.
     curpath = ''
@@ -513,7 +513,7 @@ def get_source_details(module, source_id):
                   "/irisservices/api/v1/public/protectionSources?environments=kPhysical"
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
+                   "user-agent": "cohesity-ansible/v0.0.1"}
         response = open_url(
             url=uri,
             headers=headers,
@@ -563,7 +563,7 @@ def update_agent(module):
                   "/irisservices/api/v1/public/physicalAgents/upgrade"
             headers = {"Accept": "application/json",
                        "Authorization": "Bearer " + token,
-                       "user-agent": "Ansible-v2.2.0"}
+                       "user-agent": "cohesity-ansible/v0.0.1"}
             payload = {
                 "agentIds": [source_details['agent']['id']]
             }

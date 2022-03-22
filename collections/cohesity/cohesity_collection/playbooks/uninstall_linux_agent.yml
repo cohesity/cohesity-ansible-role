@@ -8,14 +8,6 @@
 # =>
 ---
 - hosts: linux
-  # => We need to specify these variables to connect
-  # => to the Cohesity cluster
-  vars:
-    cohesity_server: cluster_vip
-    cohesity_admin: admin
-    cohesity_password: admin
-    cohesity_validate_certs: false
-    state: absent
   # => We need to gather facts to determine the OS type of
   # => the machine
   gather_facts: true
@@ -23,80 +15,12 @@
   collections:
     - cohesity.cohesity_collection
   tasks:
-    - name: Install Prerequisite Packages for CentOS or RedHat
-      action: >
-        {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-utils" state=present
-      when:
-        - ansible_distribution == "CentOS" or ansible_distribution == "RedHat"
-        - state == "present"
-      tags: always
-
-    - name: Install Prerequisite Packages for Ubuntu
-      action: >
-        {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,nfs-common" state=present
-      when:
-        - ansible_distribution == "Ubuntu"
-        - state == "present"
-      tags: always
-
-    - name: Install Prerequisite Packages for SLES
-      action: >
-        {{ ansible_pkg_mgr }} name="wget,rsync,lsof,lvm2,libcap-progs" state=present
-      when:
-        - ansible_distribution == "SLES"
-        - state == "present"
-      tags: always
-
-    - name: Install Prerequisite Packages for AIX
-      action: >
-        {{ ansible_pkg_mgr }} name="wget,rsync" state=present
-      when:
-        - ansible_distribution == "AIX"
-        - state == "present"
-      tags: always
-
-    - name: Check if firewall is enabled on CentOS or RedHat
-      command: "firewall-cmd --state"
-      ignore_errors: true
-      register: firewall_status_centos
-      when:
-        - ansible_distribution == "CentOS" or ansible_distribution == "RedHat" or ansible_distribution == "SLES"
-        - state == "present"
-      tags: always
-
-    - name: Enable tcp port 50051 for CentOS or RedHat
-      command: "firewall-cmd {{ item }}"
-      with_items:
-        - --zone=public --permanent --add-port 50051/tcp
-        - --reload
-      when:
-        - ansible_distribution == "CentOS" or ansible_distribution == "RedHat" or ansible_distribution == "SLES"
-        - state == "present"
-        - firewall_status_centos.rc == 0
-      tags: always
-
-    - name: Check if firewall is enabled on Ubuntu
-      command: "ufw status"
-      register: firewall_status_ubuntu
-      when:
-        - ansible_distribution == "Ubuntu"
-        - state == "present"
-      tags: always
-
-    - name: Enable tcp port 50051 for Ubuntu
-      command: ufw allow 50051/tcp
-      when:
-        - ansible_distribution == "Ubuntu"
-        - state == "present"
-        - 'firewall_status_ubuntu.stdout_lines[0] == "Status: active"'
-      tags: always
-
-    - name: "Cohesity agent: Set Agent to state of {{ state | default('present') }}"
+    - name: "Cohesity agent: Set Agent to state of absent }}"
       cohesity_agent:
         cluster: "{{ cohesity_server }}"
-        username: "{{ cohesity_admin }}"
+        username: "{{ cohesity_username }}"
         password: "{{ cohesity_password }}"
         validate_certs: "{{ cohesity_validate_certs }}"
-        state: "{{ state }}"
+        state: "absent"
         operating_system: "{{ ansible_distribution }}"
         native_package: true

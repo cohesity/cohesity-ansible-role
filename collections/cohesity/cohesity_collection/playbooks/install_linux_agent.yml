@@ -8,13 +8,7 @@
 # =>
 ---
 - hosts: linux
-  # => We need to specify these variables to connect
-  # => to the Cohesity cluster
   vars:
-    cohesity_server: cluster_vip
-    cohesity_admin: admin
-    cohesity_password: admin
-    cohesity_validate_certs: false
     state: present
     create_user: false
     native_package: false
@@ -106,7 +100,7 @@
     - name: "Cohesity agent: Set Agent to state of {{ state | default('present') }}"
       cohesity_agent:
         cluster: "{{ cohesity_server }}"
-        username: "{{ cohesity_admin }}"
+        username: "{{ cohesity_username }}"
         password: "{{ cohesity_password }}"
         validate_certs: "{{ cohesity_validate_certs }}"
         state: "{{ state | default('present') }}"

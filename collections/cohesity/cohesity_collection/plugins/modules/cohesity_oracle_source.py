@@ -19,7 +19,7 @@ try:
     # => the expectation is that the modules will live under ansible.
     from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_auth import get__cohesity_auth__token
     from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
-    from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_hints import get__prot_source__all
+    from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_hints import get_cohesity_client
 except Exception as e:
     pass # pass
 
@@ -161,31 +161,6 @@ def unregister_source(module, source_id):
     except urllib_error.URLError as e:
         # => Capture and report any error messages.
         raise__cohesity_exception__handler(e.read(), module)
-    except Exception as error:
-        raise__cohesity_exception__handler(error, module)
-
-
-def get_cohesity_client(module):
-    '''
-    function to get cohesity cohesity client
-    :param module: object that holds parameters passed to the module
-    :return:
-    '''
-    try:
-        cluster_vip = module.params.get('cluster')
-        username = module.params.get('username')
-        password = module.params.get('password')
-        domain = 'LOCAL'
-        if "@" in username:
-            user_domain = username.split("@")
-            username = user_domain[0]
-            domain = user_domain[1]
-
-        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
-                                         username=username,
-                                         password=password,
-                                         domain=domain)
-        return cohesity_client
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
 

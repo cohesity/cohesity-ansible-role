@@ -22,6 +22,7 @@ try:
     # => the expectation is that the modules will live under ansible.
     from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_auth import get__cohesity_auth__token
     from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler, REQUEST_TIMEOUT
+    from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_hints import get_cohesity_client
 except Exception as e:
     pass # pass
 
@@ -32,38 +33,12 @@ ANSIBLE_METADATA = {
 }
 
 
-
 class ParameterViolation(Exception):
     pass
 
 
 class ProtectionException(Exception):
     pass
-
-
-def get_cohesity_client(module):
-    '''
-    function to get cohesity cohesity client
-    :param module: object that holds parameters passed to the module
-    :return:
-    '''
-    try:
-        cluster_vip = module.params.get('cluster')
-        username = module.params.get('username')
-        password = module.params.get('password')
-        domain = 'LOCAL'
-        if '@' in username:
-            user_domain = username.split('@')
-            username = user_domain[0]
-            domain = user_domain[1]
-
-        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
-                                         username=username,
-                                         password=password,
-                                         domain=domain)
-        return cohesity_client
-    except Exception as error:
-        raise__cohesity_exception__handler(error, module)
 
 
 def create_recover_job(module, token, database_info):
@@ -102,7 +77,7 @@ def create_recover_job(module, token, database_info):
     # Alternate location params.
     alternate_location_params = None
     server = module.params.get('cluster') 
-    view_name = module.params.get('view_name', None)
+    clone_app_view = module.params.get('clone_app_view')
     source_db = module.params.get('source_db') 
     source_server = module.params.get('source_server') 
     validate_certs = module.params.get('validate_certs') 
@@ -110,11 +85,10 @@ def create_recover_job(module, token, database_info):
     target_server = newDatabaseName=module.params.get('target_server')
     oracle_restore_params = dict(captureTailLogs=False)
    
-    if view_name:
+    if clone_app_view:
         action = 'kCloneAppView'
         vm_action = 'kCloneVMs'
-        oracle_restore_params['oracleCloneAppViewParamsVec'] = [
-              dict(mountPathIdentifier=view_name)]
+        oracle_restore_params['oracleCloneAppViewParamsVec'] = [dict()]
 
     elif source_server != target_server or source_db != target_db:
         alternate_location_params = dict(newDatabaseName=module.params.get('target_db'),
@@ -144,8 +118,7 @@ def create_recover_job(module, token, database_info):
         response = json.loads(response.read())
         return response
     except Exception as err:
-        module.exit_json(output='Error while recovery task creation')
-
+        module.fail_json(msg='Error while recovery task creation, error message: "%s".' % err)
 
 
 def check_for_status(module, task_id):
@@ -216,7 +189,7 @@ def main():
             fra_size_mb=dict(type=int, default=2048),
             bct_file=dict(type=str, default=''),
             log_time=dict(type=str, default=''),
-            view_name=dict(type=str, default=''),
+            clone_app_view=dict(type=bool, default=False),
             overwrite=dict(type=bool, default=False),
             no_recovery=dict(type=bool, default=False)
         )
@@ -228,24 +201,20 @@ def main():
     global cohesity_client
     cohesity_client = get_cohesity_client(module)
 
-    results = dict(
-        changed=False,
-        msg='Attempting to restore task'
-    )
     token = get__cohesity_auth__token(module)
     database_info =  search_for_database(token, module)
     resp = create_recover_job(module, token, database_info)
     # Check for restore task status.
     task_id = resp['restoreTask']['performRestoreTaskState']['base']['taskId']
     status = check_for_status(module, task_id)
-    view_name = module.params.get('view_name')
-    target, server = (view_name, 'view') if view_name else \
-        (module.params.get('target_server'), 'server')
-    msg = 'Successfully restored task to %s %s' % (server, target)
     if status == False:
         msg = 'Error occured during task recovery.'
-    module.exit_json(changed=status, output=msg)
+        module.fail_json(msg=msg)
 
+    results = dict(
+        changed=True,
+        msg = 'Successfully created restore task "%s"' % module.params.get('task_name')
+    )
     module.exit_json(**results)
 
 

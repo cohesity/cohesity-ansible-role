@@ -20,6 +20,7 @@ try:
     # => the expectation is that the modules will live under ansible.
     from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_auth import get__cohesity_auth__token
     from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_utilities import cohesity_common_argument_spec, raise__cohesity_exception__handler
+    from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_hints import get_cohesity_client
 except Exception as e:
     pass # pass
 
@@ -28,6 +29,7 @@ ANSIBLE_METADATA = {
     'supported_by': 'community',
     'status': ['preview']
 }
+
 
 
 EXAMPLES = '''
@@ -55,6 +57,25 @@ class ParameterViolation(Exception):
 
 class ProtectionException(Exception):
     pass
+
+
+def get_timezone():
+    # Function to get ansible control node timezone.
+    # :returns timezone
+    default_timezone = "America/Los_Angeles"
+    try:
+        import subprocess
+        cmd = "timedatectl status"
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stdin=subprocess.PIPE, shell=True)
+        out, err = proc.communicate()
+        for line in out.split("\n"):
+            if "Time zone" in line:
+                default_timezone = line.split()[2]
+    except Exception as err:
+        pass
+    finally:
+        return default_timezone
+
 
 
 def get_source_id_by_endpoint(module):
@@ -276,34 +297,9 @@ def unregister_job(module, _id):
     '''
     try:
         body = DeleteProtectionJobParam()
-        body.delete_snapshots = module.params.get('delete_snapshots')
+        body.delete_snapshots = module.params.get('delete_backups')
         resp = cohesity_client.protection_jobs.delete_protection_job(_id, body)
         return resp
-    except Exception as error:
-        raise__cohesity_exception__handler(error, module)
-
-
-def get_cohesity_client(module):
-    '''
-    function to get cohesity cohesity client
-    :param module: object that holds parameters passed to the module
-    :return:
-    '''
-    try:
-        cluster_vip = module.params.get('cluster')
-        username = module.params.get('username')
-        password = module.params.get('password')
-        domain = 'LOCAL'
-        if '@' in username:
-            user_domain = username.split('@')
-            username = user_domain[0]
-            domain = user_domain[1]
-
-        cohesity_client = CohesityClient(cluster_vip=cluster_vip,
-                                         username=username,
-                                         password=password,
-                                         domain=domain)
-        return cohesity_client
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
 
@@ -328,12 +324,15 @@ def main():
             cancel_active=dict(type='bool', default=False),
             validate_certs=dict(type='bool', default=False),
             endpoint=dict(type=str, default=''),
+            databases=dict(type=list, default=[]),
         )
     )
 
     # => Create a new module object
     module = AnsibleModule(argument_spec=argument_spec,
                            supports_check_mode=True)
+    if not module.params.get("time_zone"):
+        module.params["time_zone"] = get_timezone()
     global cohesity_client
     cohesity_client = get_cohesity_client(module)
 
@@ -370,16 +369,50 @@ def main():
 
     elif module.params.get('state') == 'present':
         parent_id, source_id = get_source_id_by_endpoint(module)
+        if not (parent_id and source_id):
+            module.fail_json(msg="Source '%s' is not registered to cluster, Please register the source and try again." % module.params.get('endpoint'))
         check__mandatory__params(module)
         body = ProtectionJobRequestBody()
         body.name = module.params.get('name')
-        body.parent_source_id = parent_id
+        body.parent_source_id = source_id
         body.source_ids = [source_id]
         body.view_box_id = get__storage_domain_id__by_name(module)
         body.environment = module.params.get('environment')
         body.policy_id = get__prot_policy_id__by_name(module)
         body.timezone = module.params.get('time_zone').strip()
         body.description = module.params.get('description')
+        databases = module.params.get('databases')
+        if databases:
+            entity_ids = list()
+            application_nodes = []
+            body.source_special_parameters = list()
+            resp = cohesity_client.protection_sources.list_protection_sources(
+                environment='kOracle', id=parent_id)
+
+            if not resp:
+                module.fail_json(msg="Oracle source is not available to protect")
+
+            for node in resp[0].nodes:
+                application_nodes.extend(node.get("applicationNodes", []))
+
+            # Make copy of database list and remove once entity id fetched. This check
+            # is to ensure availability of databases in server.
+            copy_database = copy.deepcopy(databases)
+            for database in databases:
+                for node in application_nodes:
+                    if node["protectionSource"]["name"] == database.strip():
+                        entity_ids.append(node["protectionSource"]["id"])
+                        copy_database.remove(database)
+                if len(databases) == len(entity_ids):
+                    break
+            if copy_database:
+                module.fail_json("Following list of databases are not available in the "
+                                 "Oracle Server: %s" % ", ".join(copy_database))
+            spl_params = SourceSpecialParameter()
+            spl_params.source_id = source_id
+            spl_params.oracle_special_parameters = OracleSpecialParameters()
+            spl_params.oracle_special_parameters.application_entity_ids = entity_ids
+            body.source_special_parameters.append(spl_params)
 
         if module.params.get('start_time'):
             start_time = list(module.params.get(
@@ -395,22 +428,24 @@ def main():
                 hour=int(start_time[0] + start_time[1]),
                 minute=int(start_time[2] + start_time[3])
             )
+        try:
+            if job_exists:
+                response = cohesity_client.protection_jobs.update_protection_job(body, job_exists)
+                msg = 'Updation of Cohesity Protection Job Complete'
+            else:
+                response = cohesity_client.protection_jobs.create_protection_job(body)
+                msg = 'Creation of Cohesity Protection Job Complete'
+            response = dict(id=response.id,
+                            name=response.name,
+                            environment=response.environment)
 
-        if job_exists:
-            response = cohesity_client.protection_jobs.update_protection_job(body, job_exists)
-            msg = 'Updation of Cohesity Protection Job Complete'
-        else:
-            response = cohesity_client.protection_jobs.create_protection_job(body)
-            msg = 'Creation of Cohesity Protection Job Complete'
-        response = dict(id=response.id,
-                        name=response.name,
-                        environment=response.environment)
-
-        results = dict(
-            changed=True,
-            msg=msg,
-            **response
-        )
+            results = dict(
+                changed=True,
+                msg=msg,
+                **response
+            )
+        except APIException as err:
+            module.fail_json(msg=err.message)
 
     elif module.params.get('state') == 'absent':
         if job_exists:

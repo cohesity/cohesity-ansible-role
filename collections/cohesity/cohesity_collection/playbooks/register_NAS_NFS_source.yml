@@ -1,13 +1,7 @@
 # Playbook to register GenericNas(NFS) Source.
 ---
 - hosts: localhost
-  # => We need to specify these variables to connect
-  # => to the Cohesity cluster
   vars:
-    cohesity_server: cluster_vip
-    cohesity_admin: admin
-    cohesity_password: admin
-    cohesity_validate_certs: false
     endpoint: SourceName
     state: present
   become: false
@@ -16,8 +10,8 @@
   tasks:
     - name: "Cohesity Protection Source: Set {{ endpoint | default('endpoint') }} to state of {{ cohesity_source.state | default('present') }}"
       cohesity_source:
-        cohesity_server: "{{ cohesity_server }}"
-        cohesity_admin: "{{ cohesity_admin }}"
+        cohesity_cluster: "{{ cohesity_server }}"
+        cohesity_username: "{{ cohesity_username }}"
         cohesity_password: "{{ cohesity_password }}"
         validate_certs: "{{ cohesity_validate_certs }}"
         state: "{{ state }}"

@@ -2,20 +2,13 @@
 # =>
 ---
 - hosts: localhost
-  # => Please change these variables to connect
-  # => to your Cohesity Cluster
-  vars:
-      cohesity_server: cluster_vip
-      cohesity_admin: admin
-      cohesity_password: admin
-      cohesity_validate_certs: false
   gather_facts: true
   tasks:
       # => Gather Cohesity Facts
       - name: Gather Cohesity Cluster Details
         cohesity_facts:
             cluster: "{{ cohesity_server }}"
-            username: "{{ cohesity_admin }}"
+            username: "{{ cohesity_username }}"
             password: "{{ cohesity_password }}"
             validate_certs: "{{ cohesity_validate_certs }}"
             state: complete

@@ -7,15 +7,11 @@
   vars:
     name: ViewName
     domain: DefaultStorageDomain
-    cohesity_server: cluster_vip
-    cohesity_admin: admin
-    cohesity_password: admin
-    cohesity_validate_certs: false
   tasks:
     - name: "Cohesity view: Set {{ name }} to state of absent"
       cohesity_view:
         cluster: "{{ cohesity_server }}"
-        username: "{{ cohesity_admin }}"
+        username: "{{ cohesity_username }}"
         password: "{{ cohesity_password }}"
         state: "absent"
         name: "{{ name }}"

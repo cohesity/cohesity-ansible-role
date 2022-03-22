@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2018 Cohesity Inc
+# Copyright (c) 2022 Cohesity Inc
 # Apache License Version 2.0
 
 from __future__ import (absolute_import, division, print_function)
@@ -18,7 +18,7 @@ try:
     from ansible_collections.cohesity.cohesity_collection.plugins.module_utils.cohesity_hints import get__prot_source_id__by_endpoint, \
         get__prot_source_root_id__by_environment, get__prot_policy_id__by_name, \
         get__storage_domain_id__by_name, get__protection_jobs__by_environment, \
-        get__protection_run__all__by_id
+        get__protection_run__all__by_id, get_cohesity_client
 except Exception as e:
     pass # pass
 
@@ -27,6 +27,7 @@ ANSIBLE_METADATA = {
     'supported_by': 'community',
     'status': ['preview']
 }
+
 
 DOCUMENTATION = '''
 module: cohesity_job
@@ -99,6 +100,19 @@ options:
       - Optional and only valid when I(state=absent)
     type: bool
     default: no
+  delete_sources:
+    description:
+      - Specifies job is already available, if source available in Protection Job needs to be removed.
+      - Optional and only valid when (environment=Physical, PhysicalFiles, GenericNas)
+    type: bool
+    default: True
+  append_to_existing:
+    description:
+      - Specifies when job is already available and new list of virtual machines needs to be added to existing list.
+      - If not specified new list of vms will replace the existing vms available in the Protection job.
+      - Optional and only valid when (environment=VMware)
+    type: bool
+    default: False
   ondemand_run_type:
     description:
       - Specifies the type of OnDemand Backup.
@@ -272,7 +286,7 @@ def wait__for_job_state__transition(module, self, job_runs, state='start'):
                 if currently_active:
                     status = currently_active[0][
                         'backupRun']['status'].lstrip('k')
-                    valid_states = ['Accepted', 'Success']
+                    valid_states = ['Accepted', 'Success', 'Running']
                     for check_state in valid_states:
                         if status == check_state:
                             try:
@@ -363,17 +377,41 @@ def parse_vmware_protection_sources_json(response, vm_names):
     return list(set(ids))
 
 
+def _get_tag_ids(module, tags, parentSourceId):
+    """
+    Function to fetch VMware tag ids for list of tag names.
+    """ 
+    try:
+        client = get_cohesity_client(module)
+        if not client:
+            module.fail_json(
+                msg="Error while creating cohesity client, err msg '%s'" % client,
+                changed=False)
+        result = client.protection_sources.list_protection_sources(
+            id=parentSourceId)
+        if not result or not result[0].nodes:
+            module.fail_json(
+                msg="Failed to fetch tags for source with id " + str(
+                    parentSourceId), changed=False)
+        nodes = result[0].nodes
+        return parse_vmware_protection_sources_json(nodes, tags)
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
 def get_vmware_ids(module, job_meta_data, job_details, vm_names):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
     token = job_details['token']
     try:
-        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + str(job_meta_data['parentSourceId'])
-
+        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources?id=" + \
+            str(job_meta_data['parentSourceId'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
-
+                   "user-agent": "cohesity-ansible/v0.0.1"}
         response = open_url(
             url=uri,
             method='GET',
@@ -402,7 +440,7 @@ def get_vmware_vm_ids(module, job_meta_data, job_details, vm_names):
               "/irisservices/api/v1/public/protectionSources/virtualMachines?vCenterId=" + str(job_meta_data['parentSourceId'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
+                   "user-agent": "cohesity-ansible/v0.0.1"}
         response = open_url(
             url=uri,
             method='GET',
@@ -442,7 +480,7 @@ def get_view_storage_domain_id(module, self):
         uri = "https://" + server + "/irisservices/api/v1/public/views/" + view_name
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
+                   "user-agent": "cohesity-ansible/v0.0.1"}
         response = open_url(url=uri, method="GET", headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         response = json.loads(response.read())
@@ -453,6 +491,39 @@ def get_view_storage_domain_id(module, self):
     except Exception as error:
         raise__cohesity_exception__handler(error, module)
 
+def update_indexing(module, payload):
+    """
+    """
+    payload['indexingPolicy'] = {
+        "disableIndexing": module.params.get('disable_indexing'),
+        "allowPrefixes": ["/"],
+        "denyPrefixes": [
+            "/$Recycle.Bin",
+            "/Windows",
+            "/Program Files",
+            "/Program Files (x86)",
+            "/ProgramData",
+            "/System Volume Information",
+            "/Users/*/AppData",
+            "/Recovery",
+            "/var",
+            "/usr",
+            "/sys",
+            "/proc",
+            "/lib",
+            "/grub",
+            "/grub2",
+            "/opt",
+            "/splunk",
+        ]
+    }
+    if module.params.get('indexing').get('allowed_prefix', None):
+        payload['indexingPolicy']['allowPrefixes'] = module.params.get(
+            'indexing')['allowed_prefix']
+    if module.params.get('indexing').get('denied_prefix', None):
+        payload['indexingPolicy']['denyPrefixes'] = module.params.get(
+            'indexing')['denied_prefix']
+    return payload
 
 def register_job(module, self):
     server = module.params.get('cluster')
@@ -462,7 +533,7 @@ def register_job(module, self):
         uri = "https://" + server + "/irisservices/api/v1/public/protectionJobs"
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
+                   "user-agent": "cohesity-ansible/v0.0.1"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -470,10 +541,17 @@ def register_job(module, self):
 
         payload['environment'] = "k" + self['environment']
         payload['timezone'] = self['timezone']
+        update_indexing(module, payload)
         if payload['environment'] == "kPhysicalFiles":
             payload['sourceSpecialParameters'] = create_paths_parameter(module, payload['sourceIds'])
         elif payload['environment'] == "kVMware":
             parent_source_id = {"parentSourceId": self['parentSourceId']}
+            if len(module.params.get('include_tags')) != 0:
+                tag_list = list()
+                for tags in module.params.get('include_tags'):
+                    tag_ids = _get_tag_ids(module, tags, self['parentSourceId'])
+                    tag_list.append(tag_ids)
+                payload['vmTagIds'] = tag_list
             if len(module.params.get('include')) != 0:
                 vms = module.params.get('include')
                 payload['sourceIds'] = get_vmware_ids(module, parent_source_id, self, vms)
@@ -526,7 +604,7 @@ def start_job(module, self):
             "/irisservices/api/v1/public/protectionJobs/run/" + str(self['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
+                   "user-agent": "cohesity-ansible/v0.0.1"}
         source_ids = payload.get('sourceIds', [])
         payload = dict()
         payload['runNowParameters'] = [{'sourceId':source_id} for source_id in source_ids]
@@ -565,7 +643,7 @@ def start_job(module, self):
         raise__cohesity_exception__handler(error, module)
 
 
-def update_job(module, job_details, update_source_ids):
+def update_job(module, job_details, update_source_ids=None):
     server = module.params.get('cluster')
     validate_certs = module.params.get('validate_certs')
     token = job_details['token']
@@ -574,10 +652,10 @@ def update_job(module, job_details, update_source_ids):
             "/irisservices/api/v1/public/protectionJobs/" + str(job_details['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
+                   "user-agent": "cohesity-ansible/v0.0.1"}
         payload = job_details.copy()
         del payload['token']
-        if module.params.get('environment') == 'PhysicalFiles':
+        if module.params.get('environment') == 'PhysicalFiles' and module.params.get('delete_sources') == False:
             if 'sourceSpecialParameters' in payload:
                 updated_source_params = []
                 for parameter in payload['sourceSpecialParameters']:
@@ -622,7 +700,7 @@ def get_prot_job_details(self, module):
 
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
+                   "user-agent": "cohesity-ansible/v0.0.1"}
         response = open_url(url=uri, headers=headers,
                             validate_certs=validate_certs, timeout=REQUEST_TIMEOUT)
         if not response.getcode() == 200:
@@ -665,7 +743,7 @@ def stop_job(module, self):
             str(self['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
+                   "user-agent": "cohesity-ansible/v0.0.1"}
         payload = self.copy()
 
         # => Remove the Authorization Token from the Payload
@@ -717,7 +795,7 @@ def unregister_job(module, self):
             "/irisservices/api/v1/public/protectionJobs/" + str(self['id'])
         headers = {"Accept": "application/json",
                    "Authorization": "Bearer " + token,
-                   "user-agent": "Ansible-v2.2.0"}
+                   "user-agent": "cohesity-ansible/v0.0.1"}
 
         payload = dict(
             deleteSnapshots=self['deleteSnapshots']
@@ -758,6 +836,12 @@ def update_vmware_job(module, job_meta_data, job_details):
                     source_id for source_id in existing_source_ids if source_id not in include_vm_ids])
             job_meta_data['sourceIds'] = include_vm_ids
         job_meta_data['token'] = job_details['token']
+        if len(module.params.get('include_tags')) != 0:
+            tag_list = list()
+            for tags in module.params.get('include_tags'):
+                tag_ids = _get_tag_ids(module, tags, job_meta_data['parentSourceId'])
+                tag_list.append(tag_ids)
+            job_meta_data['vmTagIds'] = tag_list
         response = update_job(module, job_meta_data, "")
         results = dict(
             changed=True,
@@ -771,6 +855,49 @@ def update_vmware_job(module, job_meta_data, job_details):
             name=module.params.get('name'),
             changed=False
         )
+
+
+def delete_sources(module, job_meta_data, job_details):
+    missing_sources = []
+    job_details['environment'] = 'Physical'
+    try:
+        for source in module.params.get('protection_sources'):
+            job_details['endpoint'] = source['endpoint']
+            source_id = get__prot_source_id__by_endpoint(
+                module, job_details)
+            if source_id in job_meta_data['sourceIds']:
+                job_meta_data['sourceIds'].remove(source_id)
+            else:
+                missing_sources.append(source['endpoint'])
+            if module.params.get('environment') == 'PhysicalFiles':
+                for source in job_meta_data['sourceSpecialParameters']:
+                    if source['sourceId'] == source_id:
+                        index = job_meta_data['sourceSpecialParameters'].index(source)
+                        del job_meta_data['sourceSpecialParameters'][index]
+        if len(job_meta_data['sourceIds']) == 0:
+            module.fail_json(
+                msg="Cannot remove all the sources from a protection job.",
+                id=job_meta_data['id'],
+                changed=False,
+                name=module.params.get('name'))
+        if missing_sources:
+            # If any source provided is not available in the job, sources are not updated.
+            module.fail_json(
+                msg="Removing sources from protection job failed. Following list of sources"
+                    " are not available in the job: %s" % ", ".join(missing_sources),
+                id=job_meta_data['id'],
+                changed=False,
+                name=module.params.get('name'))
+        job_meta_data['token'] = job_details['token']
+        response = update_job(module, job_meta_data)
+        module.exit_json(
+                changed=True,
+                msg="Successfully removed sources from the protection job",
+                **response)
+    except Exception as err:
+        module.fail_json(
+                changed=False,
+                msg="Error while removing sources from the protection job")
 
 
 def update_job_util(module, job_details, job_exists):
@@ -809,6 +936,16 @@ def update_job_util(module, job_details, job_exists):
         existing_job_details['sourceIds'])
 
     update_sources = []
+    is_indexing_updated = False
+    indexing_policy = existing_job_details["indexingPolicy"]
+    indexing = module.params.get('indexing', {})
+    if module.params.get('disable_indexing') == False:
+        if (set(indexing.get('allowed_prefix', [])) != set(indexing_policy.get('allowPrefixes', []))) or (set(indexing.get('denied_prefix', [])) != set(indexing_policy.get('denyPrefixes', []))):
+            update_indexing(module, existing_job_details)
+            is_indexing_updated = True
+    if indexing_policy["disableIndexing"] != module.params.get('disable_indexing'):
+        update_indexing(module, existing_job_details)
+        is_indexing_updated = True
     if job_details['environment'] == 'PhysicalFiles':
         existing_file_path = defaultdict(dict)
         # Fetch existing include exclude path details.
@@ -839,14 +976,15 @@ def update_job_util(module, job_details, job_exists):
                     break
     if update_sources:
         already_exist_in_job = False
-    if already_exist_in_job and len(job_details['sourceIds']) != 0:
+    if not is_indexing_updated and already_exist_in_job and len(job_details['sourceIds']) != 0:
         results = dict(
             changed=False,
             msg="The protection sources are already being protected",
             id=job_exists,
             name=module.params.get('name')
         )
-    elif (not already_exist_in_job) and len(job_details['sourceIds']) != 0:
+    elif is_indexing_updated or (not already_exist_in_job and len(job_details['sourceIds']) != 0):
+        indexing_msg = ""
         new_sources = list(set(job_details['sourceIds']).difference(existing_job_details['sourceIds']))
         if update_sources:
             # Add sources with updated paths to new sources.
@@ -854,11 +992,13 @@ def update_job_util(module, job_details, job_exists):
             [existing_job_details['sourceIds'].remove(_id) for _id in new_sources if _id in existing_job_details['sourceIds']]
         existing_job_details['sourceIds'].extend(new_sources)
         existing_job_details['token'] = job_details['token']
+        if is_indexing_updated:
+            indexing_msg = "indexing policies, "
         response = update_job(module, existing_job_details, new_sources)
         if job_details['environment'] == 'PhysicalFiles':
-            msg = "Successfully added sources and filepaths to existing protection job"
+            msg = "Successfully updated " + indexing_msg + "sources and filepaths to existing protection job"
         else:
-            msg = "Successfully added sources to existing protection job"
+            msg = "Successfully updated " + indexing_msg + "sources to existing protection job"
         results = dict(
             changed=True,
             msg=msg,
@@ -892,6 +1032,7 @@ def main():
             protection_sources=dict(type='list', aliases=['sources'], default=''),
             protection_policy=dict(type='str', aliases=['policy'], default='Bronze'),
             storage_domain=dict(type='str', default='DefaultStorageDomain'),
+            delete_sources=dict(type='bool', default=False),
             time_zone=dict(type='str', default='America/Los_Angeles'),
             start_time=dict(type='str', default=''),
             delete_backups=dict(type='bool', default=False),
@@ -901,7 +1042,11 @@ def main():
             validate_certs=dict(type='bool', default=False),
             append_to_existing=dict(type='bool', default=False),
             exclude=dict(type=list, default=''),
-            include=dict(type=list, default='')
+            include=dict(type=list, default=''),
+            exclude_tags=dict(type=list, default=''),
+            include_tags=dict(type=list, default=''),
+            disable_indexing=dict(type=bool, default=False),
+            indexing=dict(type=dict, default={})
         )
     )
 
@@ -954,6 +1099,8 @@ def main():
 
         results['source_vars'] = job_details
         if job_exists:
+            if module.params.get('delete_sources') == True:
+                delete_sources(module, job_meta_data, job_details)
             if module.params.get('environment') == "VMware":
                 update_vmware_job(module, job_meta_data, job_details)
             if module.params.get('environment') in ("PhysicalFiles", "Physical", "GenericNas"):
