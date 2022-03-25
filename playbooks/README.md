@@ -14,7 +14,7 @@
 
 * The playbooks here cover NAS protection workflow. It includes `Registration` --> `Job Creation` --> `Job Run` --> `Recover workflow`
 
-### [Physical Server Workflow](./physical-server-workfllow)
+### [Physical Server Workflow](./physical-server-workflow)
 
 * The playbooks here cover Physical protection workflow. It covers Agent installation and uninstallation (linux, windows), job creation, recovery workflow
 
