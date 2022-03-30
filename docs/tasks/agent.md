@@ -15,7 +15,7 @@
 ## Synopsis
 [top](#task-cohesity-agent-management---linux)
 
-Use this task to install the required packages on Ubuntu/Debian and CentOS/RHEL servers and manage the Cohesity Agent.
+Use this task to install the required packages on Ubuntu/Debian, CentOS/RHEL, AIX, SLES servers and manage the Cohesity Agent.
 
 #### How It Works
 - The task starts by installing the required packages on the Ubuntu/Debian or CentOS/RHEL server and enabling tcp port 50051 in firewall (if *state=present*).
