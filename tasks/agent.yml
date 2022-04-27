@@ -76,6 +76,7 @@
   tags: always
 
 - name: "Cohesity agent: Set Agent to state of {{ cohesity_agent.state | default('present') }}"
+  try:
   cohesity_agent:
     cluster: "{{ cohesity_server }}"
     username: "{{ cohesity_admin }}"
