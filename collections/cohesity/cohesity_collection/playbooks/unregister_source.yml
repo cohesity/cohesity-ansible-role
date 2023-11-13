@@ -1,0 +1,16 @@
+# Playbook to Unregister source from the cluster.
+---
+- hosts: localhost
+  become: false
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: "Cohesity Protection Source: Set {{ cohesity_source.endpoint | default('endpoint') }} to {{ cohesity_source.state | default('present') }}"
+      cohesity_source:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: absent
+        endpoint: 10.2.102.17
+        environment: "Physical"

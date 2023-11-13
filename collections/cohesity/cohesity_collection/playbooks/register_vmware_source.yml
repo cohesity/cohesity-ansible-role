@@ -1,0 +1,19 @@
+# Playbook to register Vmware source to the cluster.
+---
+- hosts: localhost
+  become: false
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: "Cohesity Protection Source: Set Source to state of present }}"
+      cohesity_source:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: present
+        endpoint: "vcenter.domain.com"
+        environment: "VMware"
+        vmware_type: "VCenter"
+        source_username: "admin"
+        source_password: "admin"

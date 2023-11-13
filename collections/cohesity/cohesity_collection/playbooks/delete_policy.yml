@@ -1,0 +1,15 @@
+# Playbook to delete protection policy.
+---
+- hosts: localhost
+  become: false
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: Delete protection policy from cohesity server.
+      cohesity_policy:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        name: 'Ansible'
+        state: 'absent'

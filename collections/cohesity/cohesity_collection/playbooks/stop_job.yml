@@ -1,0 +1,19 @@
+# => Collection: cohesity.cohesity_collection
+# =>
+# => Stop a running protection job.
+---
+- hosts: workstation
+  gather_facts: false
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: Stop Protection job
+      cohesity_job:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: "stopped"
+        name: "DeleteJob"
+        cancel_active: true
+        environment: "VMware"

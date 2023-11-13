@@ -1,0 +1,17 @@
+# Playbook to register Physical source to the cluster.
+---
+- hosts: localhost
+  become: false
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: "Cohesity Protection Source: Set Source to state of present }}"
+      cohesity_source:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: present
+        endpoint: 10.2.102.17
+        environment: "Physical"
+        force_register: true

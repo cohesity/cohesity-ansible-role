@@ -1,0 +1,33 @@
+# => Create/Update a new Physical protection job for list of Sources.
+---
+- hosts: workstation
+  gather_facts: false
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: Create Physical Protection job.
+      cohesity_job:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: "present"
+        name: "PhysicalJob"
+        environment: "PhysicalFiles"
+        sources:
+          - endpoint: "{{ item }}"
+            paths:
+              - includeFilePath: "/path1/"
+                excludeFilePaths:
+                  - "/path1/exclude_path1"  # This path should be present under /path1
+                  - "/path1/exclude_path2"  # This path should be present under /path1
+                skipNestedVolumes: false
+              - includeFilePath: "/path2"
+                excludeFilePaths:
+                  - "/path2/exclude_path1"  # This path should be present under /path2
+                skipNestedVolumes: false
+        protection_policy: "Bronze"
+        storage_domain: "DefaultStorageDomain"
+        time_zone: "America/Los_Angeles"
+        start_time: "00:00"
+      with_items: "{{ groups['linux'] }}"

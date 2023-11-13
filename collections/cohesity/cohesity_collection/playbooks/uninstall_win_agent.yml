@@ -1,0 +1,54 @@
+# => Cohesity Agent Management
+# =>
+# => Collection: cohesity.cohesity_collection
+# =>
+
+# => UnInstall the Cohesity Agent on each Windows host
+# => specified in the Ansible inventory
+# =>
+---
+- hosts: windows
+  gather_facts: true
+  become: false
+  collections:
+    - cohesity.cohesity_collection
+  vars:
+    state: absent
+    reboot: true
+  tasks:
+    - name: "Cohesity agent: Set Agent to state of {{ state | default('absent') }}"
+      cohesity_win_agent:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: "{{ state }}"
+        service_user: ""
+        service_password: ""
+      tags: always
+      register: installed
+
+    - name: Firewall rule to allow CohesityAgent on TCP port 50051
+      win_firewall_rule:
+        name: Cohesity Agent Ansible
+        description:
+          - Automated Firewall rule created by the Cohesity Ansible integration to allow
+          - for the Cohesity Agent to communicate through the firewall.
+        localport: 50051
+        action: allow
+        direction: in
+        protocol: tcp
+        state: "{{ state }}"
+        enabled: true
+      tags: always
+
+    # => This reboot will only be triggered if both of the following conditions are true:
+    # => - The registered variable 'installed' returns true when the changed state is queried.
+    # => - The user defined variable 'cohesity_win_agent_reboot' returns as true.
+    - name: Reboot the Hosts after agent modification   # noqa 503
+      win_reboot:
+        reboot_timeout: 180
+      when:
+        - installed.changed
+        - "{{ reboot }}"
+      tags: always

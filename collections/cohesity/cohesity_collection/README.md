@@ -5,8 +5,6 @@
   -->
 # Cohesity Ansible Role
 
-:rotating_light:	This repository has been deprecated, please follow our collection based ansible repo [here](https://github.com/cohesity/ansible-collection) :rotating_light:
-
 ![](docs/assets/images/cohesity_ansible.png)
 
 ## Overview

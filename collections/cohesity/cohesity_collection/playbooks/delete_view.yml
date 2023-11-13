@@ -1,0 +1,19 @@
+# => Playbook to delete a View.
+---
+- hosts: workstation
+  gather_facts: false
+  collections:
+    - cohesity.cohesity_collection
+  vars:
+    name: ViewName
+    domain: DefaultStorageDomain
+  tasks:
+    - name: "Cohesity view: Set {{ name }} to state of absent"
+      cohesity_view:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        state: "absent"
+        name: "{{ name }}"
+        case_insensitive: true
+        storage_domain: "{{ domain }}"

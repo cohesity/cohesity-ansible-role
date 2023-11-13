@@ -1,0 +1,22 @@
+# Playbook to register GenericNas(NFS) Source.
+---
+- hosts: localhost
+  vars:
+    endpoint: SourceName
+    state: present
+  become: false
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: "Cohesity Protection Source: Set {{ endpoint | default('endpoint') }} to state of {{ cohesity_source.state | default('present') }}"
+      cohesity_source:
+        cohesity_cluster: "{{ cohesity_server }}"
+        cohesity_username: "{{ cohesity_username }}"
+        cohesity_password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: "{{ state }}"
+        endpoint: "{{ endpoint }}"
+        environment: "GenericNas"
+        nas_protocol: "NFS"
+        skip_validation: true
+        nas_type: "Host"

@@ -1,0 +1,21 @@
+# Playbook to register GenericNas-SMB source to the cluster.
+---
+- hosts: localhost
+  become: false
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: "Cohesity Protection Source: Set SMB source to state of present"
+      cohesity_source:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: present
+        endpoint: "SMB-Endpoint"
+        environment: "GenericNas"
+        nas_protocol: "SMB"
+        nas_username: "admin"
+        nas_password: "admin"
+        skip_validation: "true"
+        nas_type: "Host"

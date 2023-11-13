@@ -1,0 +1,26 @@
+# => Cohesity Agent Management
+# =>
+# => Collection: cohesity.cohesity_collection
+# =>
+
+# => UnInstall the Cohesity Agent on each Linux host
+# => specified in the Ansible inventory
+# =>
+---
+- hosts: linux
+  # => We need to gather facts to determine the OS type of
+  # => the machine
+  gather_facts: true
+  become: true
+  collections:
+    - cohesity.cohesity_collection
+  tasks:
+    - name: "Cohesity agent: Set Agent to state of absent }}"
+      cohesity_agent:
+        cluster: "{{ cohesity_server }}"
+        username: "{{ cohesity_username }}"
+        password: "{{ cohesity_password }}"
+        validate_certs: "{{ cohesity_validate_certs }}"
+        state: "absent"
+        operating_system: "{{ ansible_distribution }}"
+        native_package: true
