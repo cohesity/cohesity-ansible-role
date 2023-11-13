@@ -328,6 +328,40 @@ def get__protection_source_registration__status(module, self):
         raise__cohesity_exception__handler(error, module)
 
 
+def refresh_vmware_source(module, source_id, access_token):
+    '''
+    :param module: object that holds parameters passed to the module
+    :param source_id: protection source id
+    :param access_token: API access token
+    :return:
+    '''
+    server = module.params.get('cluster')
+    validate_certs = module.params.get('validate_certs')
+    token = access_token
+    try:
+        if not source_id:
+            module.fail_json(msg="The VMware source is not registered with Cohesity to refresh", changed=False)
+        uri = "https://" + server + "/irisservices/api/v1/public/protectionSources/refresh/" + str(source_id)
+        headers = {"Accept": "application/json",
+                   "Authorization": "Bearer " + token}
+        response = open_url(url=uri,
+                            headers=headers,
+                            validate_certs=validate_certs,
+                            method='POST',
+                            timeout=REQUEST_TIMEOUT)
+        results = dict(
+            changed=True,
+            msg="Refreshed VMware protection source",
+            endpoint=module.params.get('endpoint')
+        )
+        module.exit_json(**results)
+    except urllib_error.URLError as e:
+        # => Capture and report any error messages.
+        raise__cohesity_exception__handler(e.read(), module)
+    except Exception as error:
+        raise__cohesity_exception__handler(error, module)
+
+
 # => Register the new Endpoint as a Cohesity Protection Source.
 def register_source(module, self):
     server = module.params.get('cluster')
@@ -423,6 +457,7 @@ def main():
             source_password=dict(type='str', no_log=True, default=''),
             nas_protocol=dict(choices=['NFS', 'SMB'], default='NFS'),
             nas_username=dict(type='str', default=''),
+            refresh=dict(type='bool', default=False),
             nas_password=dict(type='str', no_log=True, default=''),
             nas_type=dict(type='str', default='Host'),
             skip_validation=dict(type='bool', default=False)
@@ -476,6 +511,8 @@ def main():
             prot_sources['physicalType'] = module.params.get(
                 'physical_type')
         if prot_sources['environment'] == "VMware":
+            if module.params.get('refresh'):
+                refresh_vmware_source(module, current_status, prot_sources['token'])
             prot_sources['username'] = module.params.get('source_username')
             prot_sources['password'] = module.params.get('source_password')
             prot_sources['vmwareType'] = module.params.get('vmware_type')
