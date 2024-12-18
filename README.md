@@ -3,9 +3,12 @@
   Description: This project provides a Ansible role for interacting with the Cohesity DataPlatform
   Author: Cohesity Inc
   -->
-# Cohesity Ansible Role
+# Deprecated [Cohesity Ansible Role]
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
 
-:rotating_light:	This repository has been deprecated, please follow our collection based ansible repo [here](https://github.com/cohesity/ansible-collection) :rotating_light:
+:rotating_light:	*This repository has been deprecated, please follow our collection based ansible repo [here](https://github.com/cohesity/ansible-collection)* :rotating_light:
+
+<hr/>
 
 ![](docs/assets/images/cohesity_ansible.png)
 
